@@ -1,8 +1,5 @@
 {{-- AJAX Response for Merchant Products --}}
-@php
-    // Determine view mode
-    $view = request()->input('view_check', 'list-view');
-@endphp
+{{-- $view pre-computed in MerchantController (DATA_FLOW_POLICY) --}}
 
 {{-- Products Content --}}
 <div id="ajax-catalogItems-content">

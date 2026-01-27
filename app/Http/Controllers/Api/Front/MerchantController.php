@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Classes\MuaadhMailer;
-use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\MerchantResource;
@@ -43,14 +42,6 @@ class MerchantController extends Controller
             ];
 
             $prods = $this->merchantCatalogService->getFilteredCatalogItemsForApi($merchant->id, $filters);
-
-            // Inject merchant context for each catalog item
-            $prods->each(function($catalogItem) {
-                $mp = $catalogItem->merchantItems->first();
-                if ($mp) {
-                    CatalogItemContextHelper::apply($catalogItem, $mp);
-                }
-            });
 
             $vprods = (new Collection(CatalogItem::filterProducts($prods)));
             $data['catalogItems'] = CatalogItemListResource::collection($vprods);

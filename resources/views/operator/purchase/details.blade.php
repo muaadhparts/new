@@ -408,13 +408,13 @@
             <div class="col-lg-12 purchase-details-table">
 
                 @foreach($groupedItems as $key1 => $groupData)
-                @php $merchantName = $groupData['merchant']['shop_name'] ?? $groupData['merchant']['name'] ?? __('Unknown Merchant'); @endphp
+                {{-- Merchant name pre-computed in DataBuilder (DATA_FLOW_POLICY) --}}
                 <div class="mr-table">
                     <h4 class="name">
                         <a href="javascript:;" data-bs-toggle="modal" merchant="{{$key1}}"
-                            merchant-store="{{$merchantName}}" class="btn btn-primary btn-sm pl-2 show_add_product"
+                            merchant-store="{{ $groupData['_merchantDisplayName'] }}" class="btn btn-primary btn-sm pl-2 show_add_product"
                             data-bs-target="#add-catalogItem"><i class="fas fa-plus"></i>{{ __("Add Item") }}</a> {{
-                        __('Items Purchased From') }} - <strong>{{$merchantName}}</strong>
+                        __('Items Purchased From') }} - <strong>{{ $groupData['_merchantDisplayName'] }}</strong>
 
                     </h4>
                     <div class="table-responsive">
@@ -433,11 +433,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php $merchant_total = 0; @endphp
+                                {{-- Total pre-computed in DataBuilder as $groupData['total'] (DATA_FLOW_POLICY) --}}
                                 @foreach ($groupData['items'] as $itemKey => $catalogItem)
-                                @php
-                                $merchant_total += $catalogItem['price'];
-                                @endphp
                                 <tr>
                                     <td><input type="hidden" value="{{$key1}}">{{ $catalogItem['item']['id'] }}</td>
 
@@ -466,17 +463,17 @@
                                     </td>
                                     <td>
                                         @if($catalogItem['item']['user_id'] != 0 && $catalogItem['_merchantPurchase'])
-                                        @php $mpStatus = $catalogItem['_merchantPurchase']['status'] ?? 'pending'; @endphp
-                                        @if($mpStatus == 'pending')
-                                        <span class="badge badge-warning">{{ucwords($mpStatus)}}</span>
-                                        @elseif($mpStatus == 'processing')
-                                        <span class="badge badge-info">{{ucwords($mpStatus)}}</span>
-                                        @elseif($mpStatus == 'on delivery')
-                                        <span class="badge badge-primary">{{ucwords($mpStatus)}}</span>
-                                        @elseif($mpStatus == 'completed')
-                                        <span class="badge badge-success">{{ucwords($mpStatus)}}</span>
-                                        @elseif($mpStatus == 'declined')
-                                        <span class="badge badge-danger">{{ucwords($mpStatus)}}</span>
+                                        {{-- Status pre-computed in DataBuilder as _mpStatus (DATA_FLOW_POLICY) --}}
+                                        @if($catalogItem['_mpStatus'] == 'pending')
+                                        <span class="badge badge-warning">{{ucwords($catalogItem['_mpStatus'])}}</span>
+                                        @elseif($catalogItem['_mpStatus'] == 'processing')
+                                        <span class="badge badge-info">{{ucwords($catalogItem['_mpStatus'])}}</span>
+                                        @elseif($catalogItem['_mpStatus'] == 'on delivery')
+                                        <span class="badge badge-primary">{{ucwords($catalogItem['_mpStatus'])}}</span>
+                                        @elseif($catalogItem['_mpStatus'] == 'completed')
+                                        <span class="badge badge-success">{{ucwords($catalogItem['_mpStatus'])}}</span>
+                                        @elseif($catalogItem['_mpStatus'] == 'declined')
+                                        <span class="badge badge-danger">{{ucwords($catalogItem['_mpStatus'])}}</span>
                                         @endif
 
                                         {{-- Ownership Badges --}}

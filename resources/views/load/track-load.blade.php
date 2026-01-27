@@ -13,12 +13,9 @@
         <div class="shipment-tracking mb-5">
             <h4 class="track-section-name mb-4">@lang('Shipment Tracking')</h4>
 
-            @php
-                // Group logs by tracking number
-                $groupedLogs = $shipmentLogs->groupBy('tracking_number');
-            @endphp
+            {{-- $groupedLogs pre-computed in Controller (DATA_FLOW_POLICY) --}}
 
-            @foreach($groupedLogs as $trackingNumber => $logs)
+            @foreach(($groupedLogs ?? collect()) as $trackingNumber => $logs)
                 <div class="track-tracking-group mb-4">
                     <div class="track-tracking-header mb-3">
                         <h5>

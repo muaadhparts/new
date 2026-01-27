@@ -40,6 +40,13 @@ class MerchantPhoto extends Model
         'status' => 'boolean',
     ];
 
+    /**
+     * Accessors to include in array/JSON serialization
+     */
+    protected $appends = [
+        'photo_url',
+    ];
+
     /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */

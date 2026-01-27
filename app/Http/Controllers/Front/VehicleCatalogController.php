@@ -80,6 +80,9 @@ class VehicleCatalogController extends Controller
             $r->code => getLocalizedLabel($r)
         ])->toArray();
 
+        // PRE-COMPUTED: VIN from session for view (DATA_FLOW_POLICY)
+        $vin = Session::get('vin');
+
         return view('catalog.index', [
             'brand' => $brand,
             'catalogs' => $catalogs,
@@ -88,6 +91,7 @@ class VehicleCatalogController extends Controller
             'region' => $region,
             'searchName' => $searchName,
             'searchYear' => $searchYear,
+            'vin' => $vin, // DATA_FLOW_POLICY
         ]);
     }
 
@@ -156,6 +160,7 @@ class VehicleCatalogController extends Controller
             'filters' => $filters,
             'selectedFilters' => $selectedFilters,
             'chips' => $chips,
+            'hasVinSource' => $this->chipsHasVinSource($chips), // DATA_FLOW_POLICY
             'vin' => $vin,
             'isVinMode' => $isVinMode,
         ]);
@@ -215,6 +220,7 @@ class VehicleCatalogController extends Controller
             'filters' => $filters,
             'selectedFilters' => $selectedFilters,
             'chips' => $chips,
+            'hasVinSource' => $this->chipsHasVinSource($chips), // DATA_FLOW_POLICY
             'vin' => $vin,
             'isVinMode' => $isVinMode,
             'key1' => $key1,
@@ -288,6 +294,7 @@ class VehicleCatalogController extends Controller
             'filters' => $filters,
             'selectedFilters' => $selectedFilters,
             'chips' => $chips,
+            'hasVinSource' => $this->chipsHasVinSource($chips), // DATA_FLOW_POLICY
             'vin' => $vin,
             'isVinMode' => $isVinMode,
             'key1' => $key1,
@@ -385,6 +392,7 @@ class VehicleCatalogController extends Controller
             'filters' => $filters,
             'selectedFilters' => $selectedFilters,
             'chips' => $chips,
+            'hasVinSource' => $this->chipsHasVinSource($chips), // DATA_FLOW_POLICY
             'vin' => $vin,
             'isVinMode' => $isVinMode,
             'key1' => $key1,
@@ -420,19 +428,45 @@ class VehicleCatalogController extends Controller
                 && is_array($savedFilters[$spec->name])
                 && ($savedFilters[$spec->name]['source'] ?? '') === 'vin';
 
+            $selectedValue = $savedFilters[$spec->name]['value_id'] ?? null;
+            $items = $spec->items->map(fn($item) => [
+                'value_id' => $item->value_id,
+                'label' => $item->label ?? $item->value_id,
+            ])->toArray();
+
+            // PRE-COMPUTED: Find selected label (DATA_FLOW_POLICY - no @php in view)
+            $selectedLabel = '-- ' . __('catalog.select') . ' --';
+            if ($selectedValue) {
+                foreach ($items as $item) {
+                    if ($item['value_id'] == $selectedValue) {
+                        $selectedLabel = $item['label'];
+                        break;
+                    }
+                }
+            }
+
             $filters[$spec->name] = [
                 'label' => $spec->label ?? $spec->name,
-                'items' => $spec->items->map(fn($item) => [
-                    'value_id' => $item->value_id,
-                    'label' => $item->label ?? $item->value_id,
-                ])->toArray(),
+                'items' => $items,
                 'readonly' => $isFromVin,
-                'selected' => $savedFilters[$spec->name]['value_id'] ?? null,
+                'selected' => $selectedValue,
+                'selectedLabel' => $selectedLabel,
+                'hasValue' => !empty($selectedValue),
             ];
         }
 
         // Add year and month filters
         $this->addDateFilters($filters, $catalog, $savedFilters);
+
+        // PRE-COMPUTED: Count selected filters (DATA_FLOW_POLICY)
+        $selectedCount = collect($filters)->filter(fn($f) => !empty($f['selected']))->count();
+
+        // Store in filters array for view access
+        $filters['_meta'] = [
+            'selectedCount' => $selectedCount,
+            'catalogCode' => $catalog->code ?? '',
+            'catalogName' => $catalog->name ?? $catalog->shortName ?? $catalog->code ?? '',
+        ];
 
         return $filters;
     }
@@ -459,6 +493,20 @@ class VehicleCatalogController extends Controller
             && is_array($savedFilters['month'])
             && ($savedFilters['month']['source'] ?? '') === 'vin';
 
+        $yearSelected = $savedFilters['year']['value_id'] ?? null;
+        $monthSelected = $savedFilters['month']['value_id'] ?? null;
+
+        // PRE-COMPUTED: Selected labels (DATA_FLOW_POLICY)
+        $yearSelectedLabel = __('catalog.year');
+        if ($yearSelected) {
+            $yearSelectedLabel = (string)$yearSelected;
+        }
+
+        $monthSelectedLabel = __('catalog.month');
+        if ($monthSelected) {
+            $monthSelectedLabel = str_pad($monthSelected, 2, '0', STR_PAD_LEFT);
+        }
+
         $filters['year'] = [
             'label' => __('Production Year'),
             'items' => collect($years)->map(fn($y) => [
@@ -466,7 +514,9 @@ class VehicleCatalogController extends Controller
                 'label' => (string)$y,
             ])->toArray(),
             'readonly' => $yearFromVin,
-            'selected' => $savedFilters['year']['value_id'] ?? null,
+            'selected' => $yearSelected,
+            'selectedLabel' => $yearSelectedLabel,
+            'hasValue' => !empty($yearSelected),
         ];
 
         $filters['month'] = [
@@ -476,7 +526,9 @@ class VehicleCatalogController extends Controller
                 'label' => str_pad($m, 2, '0', STR_PAD_LEFT),
             ])->toArray(),
             'readonly' => $monthFromVin,
-            'selected' => $savedFilters['month']['value_id'] ?? null,
+            'selected' => $monthSelected,
+            'selectedLabel' => $monthSelectedLabel,
+            'hasValue' => !empty($monthSelected),
         ];
     }
 
@@ -528,5 +580,15 @@ class VehicleCatalogController extends Controller
         }
 
         return $chips;
+    }
+
+    /**
+     * PRE-COMPUTED: Check if any chip has VIN source (DATA_FLOW_POLICY)
+     * @param array $chips
+     * @return bool
+     */
+    protected function chipsHasVinSource(array $chips): bool
+    {
+        return collect($chips)->contains(fn($c) => ($c['source'] ?? '') === 'vin');
     }
 }

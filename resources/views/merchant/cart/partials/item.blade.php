@@ -1,102 +1,27 @@
 {{--
     Cart Item Row
-    Variables: $item (array from CartItem::toArray()), $issue (optional validation issue)
+    Variables: $item (pre-computed display array from CartItemDTO::toDisplayArray()), $issue (optional validation issue)
+
+    All data is pre-computed in MerchantCartManager - direct array access (DATA_FLOW_POLICY)
 --}}
-@php
-    use Illuminate\Support\Facades\Storage;
-
-    $key = $item['key'] ?? '';
-    $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $key);
-
-    // Item data
-    $name = app()->getLocale() === 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : ($item['name'] ?? '');
-    $photo = $item['photo'] ?? '';
-    $photoUrl = $photo ? Storage::url($photo) : asset('assets/images/noimage.png');
-    $slug = $item['slug'] ?? '';
-    $partNumber = $item['part_number'] ?? '';
-
-    // Brand (OEM - نيسان، تويوتا...)
-    $brandName = app()->getLocale() === 'ar' && !empty($item['brand_name_ar'])
-        ? $item['brand_name_ar']
-        : ($item['brand_name'] ?? '');
-    $brandLogo = $item['brand_logo'] ?? null; // Already full URL from photo_url accessor
-
-    // Quality Brand (أصلي، بديل...)
-    $qualityBrandName = app()->getLocale() === 'ar' && !empty($item['quality_brand_name_ar'])
-        ? $item['quality_brand_name_ar']
-        : ($item['quality_brand_name'] ?? '');
-    $qualityBrandLogo = $item['quality_brand_logo'] ?? null; // Already full URL from logo_url accessor
-
-    // Branch info (primary)
-    $branchId = (int) ($item['branch_id'] ?? 0);
-    $branchName = $item['branch_name'] ?? '';
-
-    // Merchant item ID
-    $merchantItemId = (int) ($item['merchant_item_id'] ?? 0);
-    $merchantName = app()->getLocale() === 'ar' && !empty($item['merchant_name_ar'])
-        ? $item['merchant_name_ar']
-        : ($item['merchant_name'] ?? '');
-
-    // Pricing
-    $unitPrice = (float) ($item['effective_price'] ?? $item['unit_price'] ?? 0);
-    $totalPrice = (float) ($item['total_price'] ?? 0);
-    $discountPercent = 0.0;
-    // Calculate discount from wholesale if any
-    if (!empty($item['whole_sell_qty']) && !empty($item['whole_sell_discount'])) {
-        $qty = (int) ($item['qty'] ?? 1);
-        foreach ($item['whole_sell_qty'] as $i => $threshold) {
-            if ($qty >= (int) $threshold && isset($item['whole_sell_discount'][$i])) {
-                $discountPercent = (float) $item['whole_sell_discount'][$i];
-            }
-        }
-    }
-
-    // Quantity & Stock
-    $qty = (int) ($item['qty'] ?? 1);
-    $minQty = (int) ($item['min_qty'] ?? 1);
-    $stock = (int) ($item['stock'] ?? 0);
-    $preordered = (bool) ($item['preordered'] ?? false);
-
-    // Variants
-    $size = $item['size'] ?? null;
-    $color = $item['color'] ?? null;
-
-    // Catalog Item ID (for fitment)
-    $catalogItemId = (int) ($item['catalog_item_id'] ?? 0);
-
-    // Fitment brands (all brands this part fits)
-    $fitmentBrands = $item['fitment_brands'] ?? [];
-    $fitmentCount = (int) ($item['fitment_count'] ?? count($fitmentBrands));
-
-    // Item URL
-    $itemUrl = $partNumber
-        ? route('front.part-result', $partNumber)
-        : '#';
-
-    // Has issue?
-    $hasIssue = !empty($issue);
-    $issueType = $issue['type'] ?? '';
-    $issueMessage = $issue['message'] ?? '';
-@endphp
-
-<div class="m-cart__item {{ $hasIssue ? 'm-cart__item--has-issue' : '' }}"
-     id="cart-row-{{ $domKey }}"
-     data-cart-key="{{ $key }}"
-     data-branch-id="{{ $branchId }}">
+<div class="m-cart__item {{ !empty($issue) ? 'm-cart__item--has-issue' : '' }}"
+     id="cart-row-{{ $item['domKey'] ?? '' }}"
+     data-cart-key="{{ $item['key'] ?? '' }}"
+     data-branch-id="{{ $item['branch_id'] ?? 0 }}">
 
     {{-- Issue Banner --}}
-    @if($hasIssue)
-        <div class="m-cart__item-issue m-cart__item-issue--{{ $issueType }}">
+    @if(!empty($issue))
+        <div class="m-cart__item-issue m-cart__item-issue--{{ $issue['type'] ?? '' }}">
             <i class="fas fa-exclamation-triangle"></i>
-            <span>{{ $issueMessage }}</span>
+            <span>{{ $issue['message'] ?? '' }}</span>
         </div>
     @endif
 
     {{-- Item Image --}}
     <div class="m-cart__item-image">
-        <a href="{{ $itemUrl }}">
-            <img src="{{ $photoUrl }}"
-                 alt="{{ $name }}"
+        <a href="{{ $item['itemUrl'] ?? '#' }}">
+            <img src="{{ $item['photoUrl'] ?? asset('assets/images/noimage.png') }}"
+                 alt="{{ $item['localizedName'] ?? '' }}"
                  loading="lazy"
                  onerror="this.onerror=null; this.src='{{ asset('assets/images/noimage.png') }}';">
         </a>
@@ -104,91 +29,91 @@
 
     {{-- Item Details --}}
     <div class="m-cart__item-details">
-        <a href="{{ $itemUrl }}" class="m-cart__item-name">
-            {{ Str::limit($name, 60) }}
+        <a href="{{ $item['itemUrl'] ?? '#' }}" class="m-cart__item-name">
+            {{ Str::limit($item['localizedName'] ?? '', 60) }}
         </a>
 
         {{-- Part Number --}}
         <div class="m-cart__item-meta">
-            @if($partNumber)
-                <span class="m-cart__item-part_number">{{ $partNumber }}</span>
+            @if($item['part_number'] ?? null)
+                <span class="m-cart__item-part_number">{{ $item['part_number'] }}</span>
             @endif
         </div>
 
         {{-- Brand & Quality Brand Badges --}}
         <div class="m-cart__item-brands">
-            @if($brandName)
+            @if($item['localizedBrandName'] ?? null)
                 <span class="m-cart__item-brand" title="@lang('Brand')">
-                    @if($brandLogo)
-                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="m-cart__brand-logo">
+                    @if($item['brand_logo'] ?? null)
+                        <img src="{{ $item['brand_logo'] }}" alt="{{ $item['localizedBrandName'] }}" class="m-cart__brand-logo">
                     @endif
-                    <span>{{ $brandName }}</span>
+                    <span>{{ $item['localizedBrandName'] }}</span>
                 </span>
             @endif
-            @if($qualityBrandName)
+            @if($item['localizedQualityBrandName'] ?? null)
                 <span class="m-cart__item-quality" title="@lang('Quality')">
-                    @if($qualityBrandLogo)
-                        <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="m-cart__quality-logo">
+                    @if($item['quality_brand_logo'] ?? null)
+                        <img src="{{ $item['quality_brand_logo'] }}" alt="{{ $item['localizedQualityBrandName'] }}" class="m-cart__quality-logo">
                     @endif
-                    <span>{{ $qualityBrandName }}</span>
+                    <span>{{ $item['localizedQualityBrandName'] }}</span>
                 </span>
             @endif
             {{-- Fitment Button --}}
-            @if($catalogItemId > 0 && $fitmentCount > 0)
+            @if(($item['catalog_item_id'] ?? 0) > 0 && ($item['fitment_count'] ?? 0) > 0)
                 <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
-                        data-catalog-item-id="{{ $catalogItemId }}"
-                        data-part-number="{{ $partNumber }}"
+                        data-catalog-item-id="{{ $item['catalog_item_id'] }}"
+                        data-part-number="{{ $item['part_number'] ?? '' }}"
                         title="@lang('Vehicle Compatibility')">
-                    @if($fitmentCount === 1 && !empty($fitmentBrands[0]['logo']))
-                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                    @if(($item['fitment_count'] ?? 0) === 1 && !empty($item['fitment_brands'][0]['logo']))
+                        <img src="{{ $item['fitment_brands'][0]['logo'] }}" alt="" class="catalog-btn__logo">
                     @else
                         <i class="fas fa-car"></i>
                     @endif
-                    @if($fitmentCount === 1)
-                        <span>{{ $fitmentBrands[0]['name'] }}</span>
+                    @if(($item['fitment_count'] ?? 0) === 1)
+                        <span>{{ $item['fitment_brands'][0]['name'] ?? '' }}</span>
                     @else
                         <span>@lang('Fits')</span>
-                        <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
+                        <span class="catalog-badge catalog-badge-sm">{{ $item['fitment_count'] }}</span>
                     @endif
                 </button>
             @endif
         </div>
 
         {{-- Variants --}}
-        @if (!empty($size) || !empty($color))
+        @if (!empty($item['size']) || !empty($item['color']))
             <div class="m-cart__item-variants">
-                @if (!empty($color))
-                    <span class="m-cart__item-color" style="--swatch-color: #{{ ltrim($color, '#') }};"></span>
+                @if (!empty($item['color']))
+                    <span class="m-cart__item-color" style="--swatch-color: #{{ ltrim($item['color'], '#') }};"></span>
                 @endif
-                @if (!empty($size))
-                    <span class="m-cart__item-size">{{ $size }}</span>
+                @if (!empty($item['size']))
+                    <span class="m-cart__item-size">{{ $item['size'] }}</span>
                 @endif
             </div>
         @endif
 
         {{-- Preorder Badge --}}
-        @if ($preordered)
+        @if ($item['preordered'] ?? false)
             <span class="m-cart__item-preorder">
                 <i class="fas fa-clock"></i> @lang('Preorder')
             </span>
         @endif
 
         {{-- Discount Badge --}}
-        @if ($discountPercent > 0)
+        @if (($item['discountPercent'] ?? 0) > 0)
             <span class="m-cart__item-discount-badge">
-                -{{ number_format($discountPercent, 0) }}%
+                -{{ number_format($item['discountPercent'], 0) }}%
             </span>
         @endif
 
         {{-- Mobile Price --}}
         <div class="m-cart__item-price-mobile">
-            {{ monetaryUnit()->convertAndFormat($unitPrice) }}
+            {{ monetaryUnit()->convertAndFormat($item['effective_price'] ?? $item['unit_price'] ?? 0) }}
         </div>
     </div>
 
     {{-- Unit Price (Desktop) --}}
     <div class="m-cart__item-price">
-        {{ monetaryUnit()->convertAndFormat($unitPrice) }}
+        {{ monetaryUnit()->convertAndFormat($item['effective_price'] ?? $item['unit_price'] ?? 0) }}
     </div>
 
     {{-- Quantity Controls --}}
@@ -197,32 +122,32 @@
             <button type="button"
                     class="m-cart__qty-btn m-cart__qty-btn--decrease"
                     data-action="decrease"
-                    data-cart-key="{{ $key }}"
-                    {{ $qty <= $minQty ? 'disabled' : '' }}>
+                    data-cart-key="{{ $item['key'] ?? '' }}"
+                    {{ ($item['qty'] ?? 1) <= ($item['min_qty'] ?? 1) ? 'disabled' : '' }}>
                 <i class="fas fa-minus"></i>
             </button>
             <input type="number"
                    class="m-cart__qty-input"
-                   value="{{ $qty }}"
-                   min="{{ $minQty }}"
-                   max="{{ $preordered || $stock <= 0 ? 9999 : $stock }}"
-                   data-cart-key="{{ $key }}"
+                   value="{{ $item['qty'] ?? 1 }}"
+                   min="{{ $item['min_qty'] ?? 1 }}"
+                   max="{{ ($item['preordered'] ?? false) || ($item['stock'] ?? 0) <= 0 ? 9999 : $item['stock'] }}"
+                   data-cart-key="{{ $item['key'] ?? '' }}"
                    readonly>
             <button type="button"
                     class="m-cart__qty-btn m-cart__qty-btn--increase"
                     data-action="increase"
-                    data-cart-key="{{ $key }}"
-                    {{ !$preordered && $stock > 0 && $qty >= $stock ? 'disabled' : '' }}>
+                    data-cart-key="{{ $item['key'] ?? '' }}"
+                    {{ !($item['preordered'] ?? false) && ($item['stock'] ?? 0) > 0 && ($item['qty'] ?? 1) >= ($item['stock'] ?? 0) ? 'disabled' : '' }}>
                 <i class="fas fa-plus"></i>
             </button>
         </div>
 
         {{-- Stock Info --}}
-        @if (!$preordered && $stock > 0)
-            <div class="m-cart__stock-info {{ $stock <= 5 ? 'm-cart__stock-info--low' : '' }}">
-                @if ($stock <= 5)
+        @if (!($item['preordered'] ?? false) && ($item['stock'] ?? 0) > 0)
+            <div class="m-cart__stock-info {{ ($item['stock'] ?? 0) <= 5 ? 'm-cart__stock-info--low' : '' }}">
+                @if (($item['stock'] ?? 0) <= 5)
                     <i class="fas fa-exclamation-circle"></i>
-                    @lang('Only') {{ $stock }} @lang('left')
+                    @lang('Only') {{ $item['stock'] }} @lang('left')
                 @else
                     <i class="fas fa-check-circle"></i>
                     @lang('In Stock')
@@ -233,8 +158,8 @@
 
     {{-- Total Price --}}
     <div class="m-cart__item-total">
-        <span class="m-cart__item-total-value" data-unit-price="{{ $unitPrice }}">
-            {{ monetaryUnit()->convertAndFormat($totalPrice) }}
+        <span class="m-cart__item-total-value" data-unit-price="{{ $item['effective_price'] ?? $item['unit_price'] ?? 0 }}">
+            {{ monetaryUnit()->convertAndFormat($item['total_price'] ?? 0) }}
         </span>
     </div>
 
@@ -243,7 +168,7 @@
         <button type="button"
                 class="m-cart__remove-btn"
                 data-action="remove"
-                data-cart-key="{{ $key }}"
+                data-cart-key="{{ $item['key'] ?? '' }}"
                 title="@lang('Remove')">
             <i class="fas fa-trash-alt"></i>
         </button>

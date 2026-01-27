@@ -170,7 +170,7 @@
                             </thead>
                             <tbody>
                                 @forelse($shipments as $shipment)
-                                    @php $statusColors = ['created' => 'info', 'picked_up' => 'primary', 'in_transit' => 'warning', 'out_for_delivery' => 'warning', 'delivered' => 'success', 'failed' => 'danger', 'returned' => 'secondary', 'cancelled' => 'dark']; $color = $statusColors[$shipment->status] ?? 'info'; @endphp
+                                    {{-- Status color pre-computed in Controller --}}
                                     <tr>
                                         <td>
                                             <a href="{{ route('operator.shipments.show', $shipment->tracking_number) }}"
@@ -191,7 +191,7 @@
                                         <td>{{ $shipment->purchase->customer_name ?? 'N/A' }}</td>
                                         <td>{{ $shipment->company_name }}</td>
                                         <td>
-                                            <span class="badge badge-{{ $color }}">
+                                            <span class="badge badge-{{ $shipment->status_color }}">
                                                 {{ $shipment->status_ar }}
                                             </span>
                                         </td>

@@ -1,8 +1,5 @@
-﻿
-@if (Session::has('admin_cart'))
-    @php
-        $cart = Session::get('admin_cart');
-    @endphp
+{{-- Data pre-computed in PurchaseCreateController (DATA_FLOW_POLICY) --}}
+@if (!empty($adminCart))
 
 <div class="mr-table allproduct">
 
@@ -22,19 +19,15 @@
            </tr>
         </thead>
         <tbody>
-           @foreach($cart->items as $key1 => $catalogItem)
-          
+           @foreach($adminCart->items as $key1 => $catalogItem)
+
            <tr>
               <td><input type="hidden" value="{{$key1}}">{{ $catalogItem['item']['id'] }}</td>
               <td>
                 <img src="{{ filter_var($catalogItem['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $catalogItem['item']['photo'] : ($catalogItem['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                 <br>
-                 @php
-                    $prodAddTableUrl = !empty($catalogItem['item']['part_number'])
-                        ? route('front.part-result', $catalogItem['item']['part_number'])
-                        : '#';
-                 @endphp
-                <a target="_blank" href="{{ $prodAddTableUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
+                {{-- URL pre-computed in controller (DATA_FLOW_POLICY) --}}
+                <a target="_blank" href="{{ $catalogItem['computed_url'] ?? '#' }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
               </td>
               <td class="catalogItem-price">
                  <span>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price'] ?? 0) }}

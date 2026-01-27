@@ -133,8 +133,19 @@ class FrontendController extends FrontBaseController
                 ->orderby('id', 'desc')
                 ->take(10)
                 ->get();
+
+            // PRE-COMPUTED: Suggest display data (DATA_FLOW_POLICY - no @php in view)
+            $suggestData = [];
+            foreach ($catalogItems as $item) {
+                $partNumber = $item->part_number;
+                $suggestData[$item->id] = [
+                    'url' => $partNumber ? route('front.part-result', $partNumber) : 'javascript:;',
+                    'name' => getLocalizedCatalogItemName($item),
+                ];
+            }
+
             // Note: 'prods' kept for backward compatibility in views
-            return view('load.suggest', ['prods' => $catalogItems, 'slug' => $slug]);
+            return view('load.suggest', ['prods' => $catalogItems, 'slug' => $slug, 'suggestData' => $suggestData]);
         }
         return "";
     }
@@ -291,10 +302,14 @@ class FrontendController extends FrontBaseController
         // Build tracking data using service (id can be purchase_number or tracking_number)
         $trackingData = $this->trackingDataBuilder->build($id);
 
+        // PRE-COMPUTED: Group logs by tracking number (DATA_FLOW_POLICY)
+        $groupedLogs = ($trackingData['shipmentLogs'] ?? collect())->groupBy('tracking_number');
+
         return view('load.track-load', [
             'purchase' => $trackingData['purchase'],
             'tracking' => $trackingData['tracking'],
             'shipmentLogs' => $trackingData['shipmentLogs'],
+            'groupedLogs' => $groupedLogs,
             'datas' => $trackingData['statuses'],
         ]);
     }

@@ -126,11 +126,7 @@ html {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                        $subtotal = 0;
-                                        $tax = 0;
-                                        $data = 0;
-                                        @endphp
+                                        {{-- All calculations pre-computed in Controller (DATA_FLOW_POLICY) --}}
                                         @foreach($cart['items'] as $catalogItem)
                                         @if($catalogItem['item']['user_id'] != 0)
                                             @if($catalogItem['item']['user_id'] == $user->id)
@@ -165,10 +161,6 @@ html {
                                             <td>
                                                 {{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
-                                            @php
-                                            $subtotal += round($catalogItem['price'] * $purchase->currency_value, 2);
-                                            @endphp
-
                                         </tr>
 
                                         @endif
@@ -180,51 +172,33 @@ html {
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice($subtotal,$purchase->currency_sign) }}
+                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['subtotal'],$purchase->currency_sign) }}
                                             </td>
-
                                         </tr>
-                                        @if(Auth::user()->id == $purchase->merchant_shipping_id)
-                                            @if($purchase->shipping_cost != 0)
+                                        @if($printCalculations['showShippingCost'])
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
                                                 <td><strong>{{ __('Shipping Cost') }}({{$purchase->currency_sign}})</strong></td>
                                                 <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign) }}
-
-
+                                                {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['shippingCost'],$purchase->currency_sign) }}
                                                 </td>
                                             </tr>
-                                            @php 
-                                                $data +=  round($purchase->shipping_cost , 2);
-                                            @endphp
-                                            @endif
                                         @endif
-                                        @if($purchase->tax != 0)
+                                        @if($printCalculations['showTax'])
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('TAX') }}({{$purchase->currency_sign}})</strong></td>
-
-                                            @php
-                                                $tax = ($subtotal / 100) * $purchase->tax;
-                                                $subtotal =  $subtotal + $tax;
-                                            @endphp
-                                            
-
                                             <td>
-
-                                            {{ \PriceHelper::showOrderCurrencyPrice($tax,$purchase->currency_sign) }}
-
+                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['tax'],$purchase->currency_sign) }}
                                             </td>
                                         </tr>
-
                                         @endif
 
                                         <tr class="final-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Total') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice(($subtotal + $data),$purchase->currency_sign) }}
+                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['total'],$purchase->currency_sign) }}
                                             </td>
                                         </tr>
 

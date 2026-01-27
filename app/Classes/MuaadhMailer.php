@@ -69,7 +69,18 @@ class MuaadhMailer
             // dd(['__fn__' => __FUNCTION__, 'dirExists' => is_dir($dir), 'dir' => $dir]); // فحص سريع
             $fileName = $dir . DIRECTORY_SEPARATOR . Str::random(4) . time() . '.pdf';
 
-            $pdf = PDF::loadView('pdf.purchase', compact('purchase', 'cart'))->save($fileName);
+            // Pre-compute shipping names for view (DATA_FLOW_POLICY)
+            $shippingNamesFormatted = $purchase->getFormattedShippingNames();
+
+            // PRE-COMPUTED: PDF calculations (DATA_FLOW_POLICY - no @php in view)
+            $pdfCalculations = $this->calculatePdfTotals($purchase, $cart);
+
+            $pdf = PDF::loadView('pdf.purchase', [
+                'purchase' => $purchase,
+                'cart' => $cart,
+                'shippingNamesFormatted' => $shippingNamesFormatted,
+                'pdfCalculations' => $pdfCalculations,
+            ])->save($fileName);
 
             //Recipients
             $this->mail->setFrom($this->settings->get('from_email'), $this->settings->get('from_name'));
@@ -159,5 +170,43 @@ class MuaadhMailer
         }
 
         return true;
+    }
+
+    /**
+     * Calculate totals for PDF purchase
+     * PRE-COMPUTED: All values to avoid @php in view (DATA_FLOW_POLICY)
+     */
+    private function calculatePdfTotals($purchase, array $cart): array
+    {
+        $subtotal = 0;
+        $items = $cart['items'] ?? [];
+
+        // Sum all item prices
+        foreach ($items as $item) {
+            $subtotal += round(($item['price'] ?? 0) * $purchase->currency_value, 2);
+        }
+
+        // Tax calculation
+        $tax = 0;
+        $showTax = false;
+        if ($purchase->tax != 0) {
+            $tax = ($subtotal / 100) * $purchase->tax;
+            $showTax = true;
+        }
+
+        // Total with tax
+        $total = $subtotal + $tax;
+
+        // Add shipping if applicable
+        if ($purchase->shipping_cost > 0) {
+            $total += $purchase->shipping_cost;
+        }
+
+        return [
+            'subtotal' => $subtotal,
+            'tax' => $tax,
+            'showTax' => $showTax,
+            'total' => $total,
+        ];
     }
 }

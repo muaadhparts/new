@@ -1,11 +1,7 @@
 {{-- AJAX Response for Category Products --}}
-@php
-    $view = request()->input('view_check', session('view', 'grid-view'));
-    $catalogItems = $cards ?? $prods;
-    $total = $prods->total();
-@endphp
+{{-- Variables pre-computed in CatalogController (DATA_FLOW_POLICY): $view, $catalogItems, $total --}}
 
-@if ($total > 0)
+@if (($total ?? 0) > 0)
 {{-- Products Content --}}
 <div id="ajax-catalogItems-content">
     <div class="tab-content" id="myTabContent">

@@ -327,12 +327,9 @@
                                         <td class="text-start">
                                                 @if ($catalogItem['item']['user_id'] != 0)
                                                     {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
-                                                    @php
-                                                        $itemMerchant = $merchantsLookup[$catalogItem['item']['user_id']] ?? null;
-                                                    @endphp
-                                                    @if ($itemMerchant)
+                                                    @if ($cartItemsDisplay[$key]['merchant'])
                                                         <a class="name-hover-color content" target="_blank"
-                                                            href="{{ route('operator-merchant-show', $itemMerchant['id']) }}">{{ $itemMerchant['shop_name'] }}</a>
+                                                            href="{{ route('operator-merchant-show', $cartItemsDisplay[$key]['merchant']['id']) }}">{{ $cartItemsDisplay[$key]['merchant']['shop_name'] }}</a>
                                                     @else
                                                         {{ __('Merchant Removed') }}
                                                     @endif
@@ -342,20 +339,17 @@
                                         <td>
                                             @if ($catalogItem['item']['user_id'] != 0)
                                                 {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
-                                                @php
-                                                    $itemMerchantPurchase = $merchantPurchasesLookup[$catalogItem['item']['user_id']] ?? null;
-                                                @endphp
-                                                @if ($itemMerchantPurchase)
-                                                    @if ($itemMerchantPurchase['status'] == 'pending')
-                                                        <span class="m-badge m-badge--pending">{{ ucwords($itemMerchantPurchase['status']) }}</span>
-                                                    @elseif($itemMerchantPurchase['status'] == 'processing')
-                                                        <span class="m-badge m-badge--processing">{{ ucwords($itemMerchantPurchase['status']) }}</span>
-                                                    @elseif($itemMerchantPurchase['status'] == 'on delivery')
-                                                        <span class="m-badge m-badge--shipped">{{ ucwords($itemMerchantPurchase['status']) }}</span>
-                                                    @elseif($itemMerchantPurchase['status'] == 'completed')
-                                                        <span class="m-badge m-badge--completed">{{ ucwords($itemMerchantPurchase['status']) }}</span>
-                                                    @elseif($itemMerchantPurchase['status'] == 'declined')
-                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($itemMerchantPurchase['status']) }}</span>
+                                                @if ($cartItemsDisplay[$key]['merchantPurchase'])
+                                                    @if ($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'pending')
+                                                        <span class="m-badge m-badge--pending">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'processing')
+                                                        <span class="m-badge m-badge--processing">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'on delivery')
+                                                        <span class="m-badge m-badge--shipped">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'completed')
+                                                        <span class="m-badge m-badge--completed">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'declined')
+                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
                                                     @endif
                                                 @endif
                                             @endif
@@ -364,14 +358,9 @@
                                         <!-- CatalogItem Name -->
                                         <td>
                                             @if ($catalogItem['item']['user_id'] != 0)
-                                            {{-- ✅ URL الرابط يُحسب بدون query - البيانات موجودة في الـ cart --}}
-                                            @php
-                                                $merchantOrderProductUrl = !empty($catalogItem['item']['part_number'])
-                                                    ? route('front.part-result', $catalogItem['item']['part_number'])
-                                                    : '#';
-                                            @endphp
+                                            {{-- ✅ URL الرابط يُحسب في Controller - البيانات موجودة في cartItemsDisplay --}}
                                             <a class="name-hover-color content catalogItem-name d-inline-block" target="_blank"
-                                                href="{{ $merchantOrderProductUrl }}">
+                                                href="{{ $cartItemsDisplay[$key]['productUrl'] }}">
                                                 {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                             </a>
                                             <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>

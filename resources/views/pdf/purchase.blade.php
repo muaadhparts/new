@@ -1386,14 +1386,14 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                        $subtotal = 0;
-                                        $tax = 0;
-                                        @endphp
+                                        {{-- All calculations pre-computed in MuaadhMailer (DATA_FLOW_POLICY) --}}
                                         @foreach($cart['items'] as $catalogItem)
                                         <tr>
                                             <td width="50%">
-                                                <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id'] ?? 0" />
+                                                <x-catalog-item-name
+                                                    :name="getLocalizedCatalogItemName($catalogItem['item'])"
+                                                    :part-number="$catalogItem['item']['part_number'] ?? null"
+                                                    :url="null" />
                                             </td>
 
                                             <td>
@@ -1407,10 +1407,6 @@ table.dataTable thead .sorting_desc_disabled::after {
 
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
-                                            @php
-                                            $subtotal += round($catalogItem['price'] * $purchase->currency_value, 2);
-                                            @endphp
-
                                         </tr>
 
                                         @endforeach
@@ -1418,32 +1414,14 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         <tr class="semi-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($subtotal,$purchase->currency_sign) }}</td>
-
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($pdfCalculations['subtotal'],$purchase->currency_sign) }}</td>
                                         </tr>
                                         @if($purchase->shipping_cost != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td>
                                                 <strong>
-                                                    @if($purchase->shipping_name)
-                                                        @php
-                                                            $shippingNames = is_string($purchase->shipping_name) ? json_decode($purchase->shipping_name, true) : $purchase->shipping_name;
-                                                        @endphp
-                                                        @if(is_array($shippingNames))
-                                                            @foreach($shippingNames as $merchantId => $shippingId)
-                                                                @php
-                                                                    $shipping = \App\Domain\Shipping\Models\Shipping::find($shippingId);
-                                                                @endphp
-                                                                {{ $shipping ? $shipping->name : __('Shipping') }}
-                                                                @if(!$loop->last), @endif
-                                                            @endforeach
-                                                        @else
-                                                            {{ $purchase->shipping_name }}
-                                                        @endif
-                                                    @else
-                                                        {{ __('Shipping Cost') }}
-                                                    @endif
+                                                    {{ $shippingNamesFormatted ?? __('Shipping Cost') }}
                                                     ({{$purchase->currency_sign}})
                                                 </strong>
                                             </td>
@@ -1451,18 +1429,12 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         </tr>
                                         @endif
 
-                                        @if($purchase->tax != 0)
+                                        @if($pdfCalculations['showTax'])
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('TAX') }}({{$purchase->currency_sign}})</strong></td>
-
-                                            @php
-                                            $tax = ($subtotal / 100) * $purchase->tax;
-                                            @endphp
-
-                                            <td>{{  \PriceHelper::showOrderCurrencyPrice($tax,$purchase->currency_sign)  }}</td>
+                                            <td>{{  \PriceHelper::showOrderCurrencyPrice($pdfCalculations['tax'],$purchase->currency_sign)  }}</td>
                                         </tr>
-
                                         @endif
                                         @if($purchase->discount_amount != null)
                                         <tr class="no-border">

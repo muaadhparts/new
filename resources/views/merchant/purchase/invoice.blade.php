@@ -72,15 +72,7 @@
             <div class="purchase-address-wrapper">
 
 
-                @php
-                    // جميع القيم المالية تأتي من الـ Controller - لا queries هنا
-                    $price = $merchantInvoiceData['price'];
-                    $commissionAmount = $merchantInvoiceData['commission_amount'];
-                    $netAmount = $merchantInvoiceData['net_amount'];
-                    $paymentType = $merchantInvoiceData['payment_type'];
-                    $shippingType = $merchantInvoiceData['shipping_type'];
-                    $moneyReceivedBy = $merchantInvoiceData['money_received_by'];
-                @endphp
+                {{-- All financial values come from Controller - no @php processing --}}
 
 
 
@@ -169,7 +161,7 @@
                         {{-- Payment Receiver Info --}}
                         <li>
                             <span class="fw-semibold">@lang('Payment Received By :')</span>
-                            @if($moneyReceivedBy === 'merchant')
+                            @if($merchantInvoiceData['money_received_by'] === 'merchant')
                                 <span class="m-badge m-badge--success">@lang('Merchant')</span>
                             @else
                                 <span class="m-badge m-badge--info">@lang('Platform')</span>
@@ -178,7 +170,7 @@
                         {{-- Delivery Type --}}
                         <li>
                             <span class="fw-semibold">@lang('Delivery Type :')</span>
-                            @if($shippingType === 'courier' || $shippingType === 'local_courier')
+                            @if($merchantInvoiceData['shipping_type'] === 'courier' || $merchantInvoiceData['shipping_type'] === 'local_courier')
                                 <span class="m-badge m-badge--warning">@lang('Local Courier')</span>
                             @else
                                 <span class="m-badge m-badge--primary">@lang('Shipping')</span>
@@ -386,64 +378,40 @@
                             </tr>
                         </thead>
                         <tbody>
-
-                            @php
-                                $subtotal = 0;
-                                $data = 0;
-                                $tax = 0;
-
-                            @endphp
-
                             @foreach ($cart['items'] as $key => $catalogItem)
                                 @if ($catalogItem['item']['user_id'] != 0)
                                     @if ($catalogItem['item']['user_id'] == $user->id)
                                         <tr>
-
                                             <td>
                                                 @if ($catalogItem['item']['user_id'] != 0)
-                                                    {{-- ✅ URL يُحسب من بيانات الـ cart - لا query --}}
-                                                    @php
-                                                        $merchantInvoiceProductUrl = !empty($catalogItem['item']['part_number'])
-                                                            ? route('front.part-result', $catalogItem['item']['part_number'])
-                                                            : '#';
-                                                    @endphp
+                                                    {{-- ✅ URL pre-computed in Controller --}}
                                                     <span class="content catalogItem-name d-inline-block">
-                                                        <a target="_blank" href="{{ $merchantInvoiceProductUrl }}">
+                                                        <a target="_blank" href="{{ $cartItemsDisplay[$key]['productUrl'] }}">
                                                             {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                                         </a>
                                                     </span>
                                                     <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                                 @endif
-
-
-
                                             </td>
                                             <!-- Details -->
                                             <td class="text-start">
                                                 <div class="courier">
-
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Price :')</span>
-                                                        <span
-                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                                        <span class="value">{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                                     </div>
-
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Qty :')</span>
                                                         <span class="value">{{ $catalogItem['qty'] ?? 1 }}</span>
                                                     </div>
-
                                                     @if (!empty($catalogItem['keys']))
-                                                        @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
+                                                        @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $attrKey => $attrValue)
                                                             <div class="d-flex align-items-center gap-2">
-                                                                <span
-                                                                    class="key">{{ ucwords(str_replace('_', ' ', $key)) }}
-                                                                    :</span>
-                                                                <span class="value">{{ $value }}</span>
+                                                                <span class="key">{{ ucwords(str_replace('_', ' ', $attrKey)) }}:</span>
+                                                                <span class="value">{{ $attrValue }}</span>
                                                             </div>
                                                         @endforeach
                                                     @endif
-
                                                 </div>
                                             </td>
                                             <!-- Total Price -->
@@ -453,10 +421,6 @@
                                                     <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                                 </span>
                                             </td>
-
-                                            @php
-                                                $subtotal += round($catalogItem['price'] * $purchase->currency_value, 2);
-                                            @endphp
                                         </tr>
                                     @endif
                                 @endif
@@ -465,77 +429,58 @@
                     </table>
                 </div>
             </div>
-            <!-- orders calculation  -->
+            <!-- orders calculation (all values pre-computed in Controller) -->
             <ul class="calculation-list">
                 <li class="calculation-list-item">
-                    <span class="amount-type">@lang('Subtotal')</span> <span
-                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal, $purchase->currency_sign) }}</span>
+                    <span class="amount-type">@lang('Subtotal')</span>
+                    <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['subtotal'], $purchase->currency_sign) }}</span>
                 </li>
 
-
-                @if (Auth::user()->id == $purchase->merchant_shipping_id)
-                    @if ($purchase->shipping_cost != 0)
-                        <li class="calculation-list-item">
-                            <span class="amount-type">@lang('Shipping Cost')</span> <span
-                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost, $purchase->currency_sign) }}</span>
-                        </li>
-
-                        @php
-                            $data += round($purchase->shipping_cost, 2);
-                        @endphp
-                    @endif
+                @if($invoiceCalculations['showShippingCost'])
+                    <li class="calculation-list-item">
+                        <span class="amount-type">@lang('Shipping Cost')</span>
+                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['shippingCost'], $purchase->currency_sign) }}</span>
+                    </li>
                 @endif
 
-                {{-- Local Courier Delivery Fee (Pure DTO) --}}
-                @if($trackingData['hasDelivery'] && $trackingData['deliveryFee'] > 0)
+                {{-- Local Courier Delivery Fee --}}
+                @if($invoiceCalculations['showDeliveryFee'])
                     <li class="calculation-list-item">
                         <span class="amount-type">
                             <i class="fas fa-motorcycle"></i>
                             @lang('Courier Delivery Fee')
                         </span>
-                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['deliveryFee'], $purchase->currency_sign) }}</span>
                     </li>
-                    @php
-                        $data += round($trackingData['deliveryFee'] * $purchase->currency_value, 2);
-                    @endphp
                 @endif
 
-                @if ($purchase->tax != 0)
-                    @php
-                        $tax = ($subtotal / 100) * $purchase->tax;
-                        $subtotal = $subtotal + $tax;
-                    @endphp
-
+                @if($invoiceCalculations['showTax'])
                     <li class="calculation-list-item">
-                        <span class="amount-type">@lang('TAX')({{ $purchase->currency_sign }})</span> <span
-                            class="amount">{{ \PriceHelper::showOrderCurrencyPrice($tax, $purchase->currency_sign) }}</span>
+                        <span class="amount-type">@lang('TAX')({{ $purchase->currency_sign }})</span>
+                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['tax'], $purchase->currency_sign) }}</span>
                     </li>
                 @endif
-
-
-
-
 
                 <li class="calculation-list-item">
-                    <span class="amount-type">@lang('Total')</span> <span
-                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal + $data, $purchase->currency_sign) }}</span>
+                    <span class="amount-type">@lang('Total')</span>
+                    <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['total'], $purchase->currency_sign) }}</span>
                 </li>
 
                 {{-- Commission & Net Amount Section --}}
-                @if($commissionAmount > 0)
+                @if($merchantInvoiceData['commission_amount'] > 0)
                     <li class="calculation-list-item" style="background-color: rgba(var(--theme-danger-rgb, 220, 53, 69), 0.1);">
                         <span class="amount-type text-danger">@lang('Platform Commission')</span>
-                        <span class="amount text-danger">-{{ \PriceHelper::showOrderCurrencyPrice($commissionAmount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                        <span class="amount text-danger">-{{ \PriceHelper::showOrderCurrencyPrice($merchantInvoiceData['commission_amount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                     </li>
                 @endif
 
                 <li class="calculation-list-item" style="background-color: rgba(var(--theme-success-rgb, 25, 135, 84), 0.1); font-weight: bold;">
                     <span class="amount-type text-success">@lang('Your Net Earnings')</span>
-                    <span class="amount text-success">{{ \PriceHelper::showOrderCurrencyPrice($netAmount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                    <span class="amount text-success">{{ \PriceHelper::showOrderCurrencyPrice($merchantInvoiceData['net_amount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                 </li>
 
                 {{-- Payment Status Note --}}
-                @if($moneyReceivedBy === 'platform')
+                @if($merchantInvoiceData['money_received_by'] === 'platform')
                     <li class="calculation-list-item" style="background-color: rgba(var(--theme-info-rgb, 13, 202, 240), 0.1);">
                         <small class="text-info">
                             <i class="fas fa-info-circle"></i>

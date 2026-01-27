@@ -3,25 +3,14 @@
 
     Required variables:
     - $catalog: Catalog model
-    - $filters: Array of filter specifications
+    - $filters: Array of filter specifications (with pre-computed selectedLabel, hasValue)
     - $selectedFilters: Currently selected filters from session
     - $isVinMode: Boolean - whether VIN mode is active
+
+    All display values pre-computed in VehicleCatalogController (DATA_FLOW_POLICY)
 --}}
 
-@php
-    $catalogCode = $catalog->code ?? '';
-    $catalogName = $catalog->name ?? $catalog->shortName ?? $catalogCode;
-    $catalogYears = formatYearRange($catalog->beginYear ?? null, $catalog->endYear ?? null);
-    $specsRedirectUrl = $specsRedirectUrl ?? null;
-@endphp
-
-{{-- Specifications Button --}}
-@php
-    $selectedCount = collect($selectedFilters)->filter(fn($v) =>
-        is_array($v) ? !empty($v['value_id']) : !empty($v)
-    )->count();
-@endphp
-
+{{-- Specifications Button - using pre-computed selectedCount from filters._meta --}}
 <button type="button"
         class="btn btn-primary position-relative specs-btn-mobile"
         data-bs-toggle="modal"
@@ -29,9 +18,9 @@
     <i class="fas fa-filter me-1"></i>
     {{ __('catalog.specifications') }}
 
-    @if($selectedCount > 0)
+    @if(($filters['_meta']['selectedCount'] ?? 0) > 0)
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
-            {{ $selectedCount }}
+            {{ $filters['_meta']['selectedCount'] }}
         </span>
     @endif
 </button>
@@ -63,7 +52,7 @@
 
                 {{-- Filters Form --}}
                 <form id="specsForm">
-                    <input type="hidden" name="catalog_code" value="{{ $catalogCode }}">
+                    <input type="hidden" name="catalog_code" value="{{ $filters['_meta']['catalogCode'] ?? $catalog->code ?? '' }}">
 
                     {{-- Date Filters (Year & Month) --}}
                     @if(isset($filters['year']) || isset($filters['month']))
@@ -76,33 +65,22 @@
                                 @endif
                             </label>
                             <div class="row g-2">
-                                {{-- Month --}}
+                                {{-- Month (using pre-computed selectedLabel) --}}
                                 @if(isset($filters['month']))
-                                    @php
-                                        $monthReadonly = $filters['month']['readonly'] ?? false;
-                                        $monthSelected = $filters['month']['selected'] ?? '';
-                                        $monthLabel = __('catalog.month');
-                                        foreach($filters['month']['items'] as $item) {
-                                            if ($item['value_id'] == $monthSelected) {
-                                                $monthLabel = $item['label'];
-                                                break;
-                                            }
-                                        }
-                                    @endphp
                                     <div class="col-6">
-                                        <div class="specs-select {{ $monthReadonly ? 'specs-select--readonly' : '' }}">
-                                            <input type="hidden" name="filters[month]" value="{{ $monthSelected }}">
-                                            <button type="button" class="specs-select__trigger" {{ $monthReadonly ? 'disabled' : '' }}>
-                                                <span class="specs-select__text">{{ $monthLabel }}</span>
+                                        <div class="specs-select {{ $filters['month']['readonly'] ? 'specs-select--readonly' : '' }}">
+                                            <input type="hidden" name="filters[month]" value="{{ $filters['month']['selected'] ?? '' }}">
+                                            <button type="button" class="specs-select__trigger" {{ $filters['month']['readonly'] ? 'disabled' : '' }}>
+                                                <span class="specs-select__text">{{ $filters['month']['selectedLabel'] }}</span>
                                                 <i class="fas fa-chevron-down specs-select__arrow"></i>
                                             </button>
-                                            @if(!$monthReadonly)
+                                            @if(!$filters['month']['readonly'])
                                                 <div class="specs-select__list">
-                                                    <div class="specs-select__item {{ empty($monthSelected) ? 'specs-select__item--active' : '' }}" data-value="">
+                                                    <div class="specs-select__item {{ empty($filters['month']['selected']) ? 'specs-select__item--active' : '' }}" data-value="">
                                                         {{ __('catalog.month') }}
                                                     </div>
                                                     @foreach($filters['month']['items'] as $item)
-                                                        <div class="specs-select__item {{ $monthSelected == $item['value_id'] ? 'specs-select__item--active' : '' }}"
+                                                        <div class="specs-select__item {{ ($filters['month']['selected'] ?? '') == $item['value_id'] ? 'specs-select__item--active' : '' }}"
                                                              data-value="{{ $item['value_id'] }}">
                                                             {{ $item['label'] }}
                                                         </div>
@@ -113,33 +91,22 @@
                                     </div>
                                 @endif
 
-                                {{-- Year --}}
+                                {{-- Year (using pre-computed selectedLabel) --}}
                                 @if(isset($filters['year']))
-                                    @php
-                                        $yearReadonly = $filters['year']['readonly'] ?? false;
-                                        $yearSelected = $filters['year']['selected'] ?? '';
-                                        $yearLabel = __('catalog.year');
-                                        foreach($filters['year']['items'] as $item) {
-                                            if ($item['value_id'] == $yearSelected) {
-                                                $yearLabel = $item['label'];
-                                                break;
-                                            }
-                                        }
-                                    @endphp
                                     <div class="col-6">
-                                        <div class="specs-select {{ $yearReadonly ? 'specs-select--readonly' : '' }}">
-                                            <input type="hidden" name="filters[year]" value="{{ $yearSelected }}">
-                                            <button type="button" class="specs-select__trigger" {{ $yearReadonly ? 'disabled' : '' }}>
-                                                <span class="specs-select__text">{{ $yearLabel }}</span>
+                                        <div class="specs-select {{ $filters['year']['readonly'] ? 'specs-select--readonly' : '' }}">
+                                            <input type="hidden" name="filters[year]" value="{{ $filters['year']['selected'] ?? '' }}">
+                                            <button type="button" class="specs-select__trigger" {{ $filters['year']['readonly'] ? 'disabled' : '' }}>
+                                                <span class="specs-select__text">{{ $filters['year']['selectedLabel'] }}</span>
                                                 <i class="fas fa-chevron-down specs-select__arrow"></i>
                                             </button>
-                                            @if(!$yearReadonly)
+                                            @if(!$filters['year']['readonly'])
                                                 <div class="specs-select__list">
-                                                    <div class="specs-select__item {{ empty($yearSelected) ? 'specs-select__item--active' : '' }}" data-value="">
+                                                    <div class="specs-select__item {{ empty($filters['year']['selected']) ? 'specs-select__item--active' : '' }}" data-value="">
                                                         {{ __('catalog.year') }}
                                                     </div>
                                                     @foreach($filters['year']['items'] as $item)
-                                                        <div class="specs-select__item {{ $yearSelected == $item['value_id'] ? 'specs-select__item--active' : '' }}"
+                                                        <div class="specs-select__item {{ ($filters['year']['selected'] ?? '') == $item['value_id'] ? 'specs-select__item--active' : '' }}"
                                                              data-value="{{ $item['value_id'] }}">
                                                             {{ $item['label'] }}
                                                         </div>
@@ -154,45 +121,32 @@
                         <hr class="my-3">
                     @endif
 
-                    {{-- Other Specification Filters --}}
+                    {{-- Other Specification Filters (using pre-computed selectedLabel, hasValue) --}}
                     @foreach($filters as $key => $filter)
-                        @if(!in_array($key, ['year', 'month']))
-                            @php
-                                $isReadonly = $filter['readonly'] ?? false;
-                                $currentValue = $filter['selected'] ?? '';
-                                $hasValue = !empty($currentValue);
-                                $displayLabel = '-- ' . __('catalog.select') . ' --';
-                                foreach($filter['items'] as $item) {
-                                    if ($item['value_id'] == $currentValue) {
-                                        $displayLabel = $item['label'];
-                                        break;
-                                    }
-                                }
-                            @endphp
-
+                        @if(!in_array($key, ['year', 'month', '_meta']))
                             <div class="mb-3">
                                 <label class="form-label">
                                     <span>{{ $filter['label'] }}</span>
-                                    @if($isReadonly)
+                                    @if($filter['readonly'] ?? false)
                                         <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
-                                    @elseif($hasValue)
+                                    @elseif($filter['hasValue'] ?? false)
                                         <span class="catalog-specs-badge catalog-specs-badge-set">SET</span>
                                     @endif
                                 </label>
 
-                                <div class="specs-select {{ $isReadonly ? 'specs-select--readonly' : '' }}">
-                                    <input type="hidden" name="filters[{{ $key }}]" value="{{ $currentValue }}">
-                                    <button type="button" class="specs-select__trigger" {{ $isReadonly ? 'disabled' : '' }}>
-                                        <span class="specs-select__text">{{ $displayLabel }}</span>
+                                <div class="specs-select {{ ($filter['readonly'] ?? false) ? 'specs-select--readonly' : '' }}">
+                                    <input type="hidden" name="filters[{{ $key }}]" value="{{ $filter['selected'] ?? '' }}">
+                                    <button type="button" class="specs-select__trigger" {{ ($filter['readonly'] ?? false) ? 'disabled' : '' }}>
+                                        <span class="specs-select__text">{{ $filter['selectedLabel'] }}</span>
                                         <i class="fas fa-chevron-down specs-select__arrow"></i>
                                     </button>
-                                    @if(!$isReadonly)
+                                    @if(!($filter['readonly'] ?? false))
                                         <div class="specs-select__list">
-                                            <div class="specs-select__item {{ empty($currentValue) ? 'specs-select__item--active' : '' }}" data-value="">
+                                            <div class="specs-select__item {{ empty($filter['selected']) ? 'specs-select__item--active' : '' }}" data-value="">
                                                 -- {{ __('catalog.select') }} --
                                             </div>
                                             @foreach($filter['items'] as $item)
-                                                <div class="specs-select__item {{ $currentValue == $item['value_id'] ? 'specs-select__item--active' : '' }}"
+                                                <div class="specs-select__item {{ ($filter['selected'] ?? '') == $item['value_id'] ? 'specs-select__item--active' : '' }}"
                                                      data-value="{{ $item['value_id'] }}">
                                                     {{ $item['label'] }}
                                                 </div>
@@ -204,7 +158,7 @@
                         @endif
                     @endforeach
 
-                    @if(empty($filters))
+                    @if(empty($filters) || (count($filters) <= 1 && isset($filters['_meta'])))
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle me-1"></i>
                             {{ __('catalog.no_specifications') }}
@@ -243,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnApply = document.getElementById('btnApplySpecs');
     const btnClear = document.getElementById('btnClearSpecs');
     const modalEl = document.getElementById('specsModal');
-    const redirectUrl = @json($specsRedirectUrl);
+    const redirectUrl = @json($specsRedirectUrl ?? null);
 
     if (!modalEl) return;
 

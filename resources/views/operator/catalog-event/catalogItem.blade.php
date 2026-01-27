@@ -8,16 +8,10 @@
 			@php
 				$catalogItem = $data->catalogItem;
 				$catalogItemName = $catalogItem ? getLocalizedCatalogItemName($catalogItem, 30) : __('N/A');
-
-				// المخزون من merchant_items
-				$totalStock = 0;
-				if ($catalogItem) {
-					$totalStock = $catalogItem->merchantItems()->where('status', 1)->sum('stock');
-				}
 			@endphp
 			<li>
 				<a href="{{ route('operator-catalog-item-edit', $catalogItem->id ?? 0) }}"> <i class="icofont-cart"></i> {{ $catalogItemName }}</a>
-				<a class="clear">{{ __('Stock') }} : {{ $totalStock }}</a>
+				<a class="clear">{{ __('Stock') }} : {{ $data->total_stock ?? 0 }}</a>
 			</li>
 		@endforeach
 

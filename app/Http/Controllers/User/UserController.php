@@ -21,7 +21,25 @@ class UserController extends UserBaseController
             'pendingPurchases' => $user->purchases()->where('status', 'pending')->count(),
         ];
 
-        return view('user.dashboard', compact('user', 'dashboardStats'));
+        // ✅ Pre-compute recent purchases for the view
+        $recentPurchases = $user->purchases()
+            ->latest()
+            ->take(6)
+            ->get();
+
+        // PRE-COMPUTED: Status CSS class for each purchase (DATA_FLOW_POLICY - no @php in view)
+        $recentPurchases->transform(function ($purchase) {
+            $purchase->status_class = in_array($purchase->status, ['pending', 'processing'])
+                ? 'yellow-btn'
+                : ($purchase->status == 'completed'
+                    ? 'green-btn'
+                    : ($purchase->status == 'declined'
+                        ? 'red-btn'
+                        : 'black-btn'));
+            return $purchase;
+        });
+
+        return view('user.dashboard', compact('user', 'dashboardStats', 'recentPurchases'));
     }
 
     public function profile()
@@ -104,8 +122,20 @@ class UserController extends UserBaseController
     public function favorites()
     {
         $user = $this->user;
-        $favorites = FavoriteSeller::where('user_id', '=', $user->id)->paginate(12);
-        return view('user.favorite', compact('user', 'favorites'));
+        $favorites = FavoriteSeller::where('user_id', '=', $user->id)
+            ->with(['catalogItem', 'merchantItem', 'effective_merchant_item'])
+            ->paginate(12);
+
+        // PRE-COMPUTED: Display data for each favorite item (DATA_FLOW_POLICY - no @php in view)
+        $favoritesDisplay = [];
+        foreach ($favorites as $favoriteItem) {
+            $favoritesDisplay[$favoriteItem->id] = [
+                'catalogItem' => $favoriteItem->catalogItem,
+                'mp' => $favoriteItem->effective_merchant_item ?? $favoriteItem->merchantItem,
+            ];
+        }
+
+        return view('user.favorite', compact('user', 'favorites', 'favoritesDisplay'));
     }
 
     public function favdelete($id)

@@ -11,7 +11,27 @@ class NetworkPresenceController extends MerchantBaseController
     public function index()
     {
         $datas = $this->user->networkPresences()->latest('id')->get();
-        return view('merchant.network-presence.index', compact('datas'));
+
+        // PRE-COMPUTED: Status display data (no @php in view)
+        $datasDisplay = $datas->map(function ($data) {
+            return [
+                'id' => $data->id,
+                'link' => $data->link,
+                'status' => $data->status,
+                'statusClass' => $data->status == 1 ? 'active' : 'deactive',
+                'statusActiveSelected' => $data->status == 1 ? 'selected' : '',
+                'statusInactiveSelected' => $data->status == 0 ? 'selected' : '',
+                'statusActiveUrl' => route('merchant-network-presence-status', ['id1' => $data->id, 'id2' => 1]),
+                'statusInactiveUrl' => route('merchant-network-presence-status', ['id1' => $data->id, 'id2' => 0]),
+                'editUrl' => route('merchant-network-presence-edit', $data->id),
+                'deleteUrl' => route('merchant-network-presence-delete', $data->id),
+            ];
+        });
+
+        return view('merchant.network-presence.index', [
+            'datas' => $datas,
+            'datasDisplay' => $datasDisplay,
+        ]);
     }
 
     public function create()

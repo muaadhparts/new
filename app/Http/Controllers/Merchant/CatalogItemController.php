@@ -33,7 +33,44 @@ class CatalogItemController extends MerchantBaseController
             ->latest('id')
             ->paginate(10);
 
-        return view('merchant.catalog-item.index', compact('merchantItems'));
+        // ============================================================
+        // PRE-COMPUTED: Display data for each merchant item (no @php in view)
+        // ============================================================
+        $merchantItemsDisplay = $merchantItems->getCollection()->map(function ($item) {
+            $catalogItem = $item->catalogItem;
+            $fitments = $catalogItem?->fitments ?? collect();
+            $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+            $firstBrand = $brands->first();
+            $photo = $catalogItem?->photo;
+
+            return [
+                'id' => $item->id,
+                'item' => $item,
+                'catalogItem' => $catalogItem,
+                'partNumber' => $catalogItem?->part_number,
+                'name' => $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A'),
+                'brandName' => $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A'),
+                'qualityBrandName' => $item->qualityBrand?->display_name ?? __('N/A'),
+                'branchName' => $item->merchantBranch?->warehouse_name ?? __('N/A'),
+                'itemType' => ucfirst($item->item_type),
+                'stock' => $item->stock,
+                'price' => CatalogItem::convertPrice($item->price),
+                'status' => $item->status,
+                'photoUrl' => $photo
+                    ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
+                    : asset('assets/images/noimage.png'),
+                'editUrl' => route('merchant-catalog-item-edit', $item->id),
+                'deleteUrl' => route('merchant-catalog-item-delete', $item->id),
+                'viewUrl' => $catalogItem?->part_number ? route('front.part-result', $catalogItem->part_number) : '#',
+                'statusActiveUrl' => route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 1]),
+                'statusInactiveUrl' => route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 0]),
+            ];
+        });
+
+        return view('merchant.catalog-item.index', [
+            'merchantItems' => $merchantItems,
+            'merchantItemsDisplay' => $merchantItemsDisplay,
+        ]);
     }
 
     //*** GET Request - Create form
@@ -241,12 +278,51 @@ class CatalogItemController extends MerchantBaseController
         $qualityBrands = QualityBrand::where('is_active', 1)
             ->get(['id', 'name_en', 'name_ar']);
 
+        // ============================================================
+        // PRE-COMPUTED: Display data (no @php in view)
+        // ============================================================
+
+        // Photo URL
+        $photoUrl = asset('assets/images/noimage.png');
+        if ($data && $data->photo) {
+            if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
+                $photoUrl = $data->photo;
+            } else {
+                $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
+            }
+        }
+
+        // Wholesale data
+        $hasWholesale = !empty($merchantItem->whole_sell_qty);
+        $wholesaleQty = [];
+        $wholesaleDiscount = [];
+
+        if ($hasWholesale) {
+            $wholesaleQty = is_array($merchantItem->whole_sell_qty)
+                ? $merchantItem->whole_sell_qty
+                : explode(',', $merchantItem->whole_sell_qty);
+
+            if (!empty($merchantItem->whole_sell_discount)) {
+                $wholesaleDiscount = is_array($merchantItem->whole_sell_discount)
+                    ? $merchantItem->whole_sell_discount
+                    : explode(',', $merchantItem->whole_sell_discount);
+            }
+        }
+
+        $displayData = [
+            'photoUrl' => $photoUrl,
+            'hasWholesale' => $hasWholesale,
+            'wholesaleQty' => $wholesaleQty,
+            'wholesaleDiscount' => $wholesaleDiscount,
+        ];
+
         return view('merchant.catalog-item.edit.items', [
             'data' => $data,
             'merchantItem' => $merchantItem,
             'sign' => $sign,
             'branches' => $branches,
             'qualityBrands' => $qualityBrands,
+            'displayData' => $displayData,
         ]);
     }
 

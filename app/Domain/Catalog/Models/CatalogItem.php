@@ -57,6 +57,16 @@ class CatalogItem extends Model
     protected $casts = [
         'weight' => 'decimal:2',
         'views' => 'integer',
+        'attributes' => 'array',
+    ];
+
+    /**
+     * Accessors to include in array/JSON serialization.
+     */
+    protected $appends = [
+        'localized_name',
+        'photo_url',
+        'thumbnail_url',
     ];
 
     /**
@@ -436,6 +446,33 @@ class CatalogItem extends Model
             return $this->thumbnail;
         }
         return asset($this->thumbnail);
+    }
+
+    /**
+     * Get first brand from fitments (for display purposes).
+     * Requires fitments to be eager loaded with brand relation.
+     */
+    public function getFirstFitmentBrandAttribute(): ?Brand
+    {
+        if ($this->relationLoaded('fitments')) {
+            return $this->fitments
+                ->map(fn($f) => $f->brand)
+                ->filter()
+                ->unique('id')
+                ->first();
+        }
+
+        // Fallback query if not eager loaded
+        $fitment = $this->fitments()->with('brand')->first();
+        return $fitment?->brand;
+    }
+
+    /**
+     * Get first brand name from fitments (convenience accessor).
+     */
+    public function getFirstBrandNameAttribute(): string
+    {
+        return $this->first_fitment_brand?->localized_name ?? 'N/A';
     }
 
     /* =========================================================================

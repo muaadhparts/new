@@ -45,20 +45,15 @@
                     <div class="row align-items-center">
                         {{-- Image --}}
                         <div class="col-md-3 col-lg-2 text-center mb-3 mb-md-0">
-                            @php
-                                $photo = $catalogItem->photo
-                                    ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : Storage::url($catalogItem->photo))
-                                    : asset('assets/images/noimage.png');
-                            @endphp
-                            <img src="{{ $photo }}"
-                                 alt="{{ $catalogItem->showName() }}"
+                            <img src="{{ $catalogItem->photo_url }}"
+                                 alt="{{ $catalogItem->localized_name }}"
                                  class="part-result-image img-fluid rounded"
                                  style="max-height: 150px; object-fit: contain;">
                         </div>
 
                         {{-- Info --}}
                         <div class="col-md-9 col-lg-10">
-                            <h1 class="part-result-title h4 mb-2">{{ $catalogItem->showName() }}</h1>
+                            <h1 class="part-result-title h4 mb-2">{{ $catalogItem->localized_name }}</h1>
 
                             <div class="part-result-meta d-flex flex-wrap gap-2 mb-3">
                                 <span class="badge bg-dark">
@@ -187,19 +182,14 @@
                                     @foreach($alternatives as $alt)
                                         <tr>
                                             <td>
-                                                @php
-                                                    $altPhoto = $alt->photo
-                                                        ? (filter_var($alt->photo, FILTER_VALIDATE_URL) ? $alt->photo : \Storage::url($alt->photo))
-                                                        : asset('assets/images/noimage.png');
-                                                @endphp
-                                                <img src="{{ $altPhoto }}" alt="{{ $alt->part_number }}"
+                                                <img src="{{ $alt->photo_url }}" alt="{{ $alt->part_number }}"
                                                      class="img-fluid rounded" style="max-width: 50px; max-height: 50px; object-fit: contain;">
                                             </td>
                                             <td>
                                                 <strong>{{ $alt->part_number }}</strong>
                                             </td>
                                             <td>
-                                                {{ $alt->showName() ?? '-' }}
+                                                {{ $alt->localized_name ?: '-' }}
                                             </td>
                                             <td class="text-center">
                                                 @if($alt->offers_count > 0)

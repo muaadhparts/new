@@ -131,22 +131,17 @@
 
         {{-- Categories Tab - Multi-Step Selector --}}
         <div class="muaadh-mobile-tab-pane" id="menu-categories">
-            @php
-                $currentBrandSlug = Request::segment(2);
-                $currentCatalogSlug = Request::segment(3);
-
-                $selectedBrand = $brands->firstWhere('slug', $currentBrandSlug);
-                $selectedCatalog = $selectedBrand && $selectedBrand->catalogs ? $selectedBrand->catalogs->firstWhere('slug', $currentCatalogSlug) : null;
-            @endphp
+            {{-- $currentBrandSlug, $currentCatalogSlug pre-computed in HeaderComposer (DATA_FLOW_POLICY) --}}
+            {{-- $selectedBrand/$selectedCatalog computed inline with null safety --}}
 
             <div class="muaadh-mobile-category-selector">
                 {{-- Current Selection Breadcrumb --}}
-                @if($selectedBrand)
+                @if(($selectedBrand = ($brands ?? collect())->firstWhere('slug', $currentBrandSlug ?? '')))
                 <div class="muaadh-mobile-selection-breadcrumb">
                     <span class="muaadh-selection-label">@lang('Selected'):</span>
                     <div class="muaadh-selection-tags">
                         <span class="muaadh-selection-tag primary">{{ app()->getLocale() == 'ar' ? ($selectedBrand->name_ar ?: $selectedBrand->name) : $selectedBrand->name }}</span>
-                        @if($selectedCatalog)
+                        @if(($selectedCatalog = ($selectedBrand->catalogs ?? collect())->firstWhere('slug', $currentCatalogSlug ?? '')))
                             <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
                             <span class="muaadh-selection-tag secondary">{{ app()->getLocale() == 'ar' ? ($selectedCatalog->name_ar ?: $selectedCatalog->name) : $selectedCatalog->name }}</span>
                         @endif
@@ -167,16 +162,16 @@
                         <option value="">-- @lang('Select Brand') --</option>
                         @foreach ($brands as $brand)
                             <option value="{{ $brand->slug }}"
-                                data-has-subs="{{ $brand->catalogs && $brand->catalogs->count() > 0 ? '1' : '0' }}"
+                                data-has-subs="{{ $brand->has_catalogs ? '1' : '0' }}"
                                 {{ $currentBrandSlug === $brand->slug ? 'selected' : '' }}>
-                                {{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}
+                                {{ $brand->localized_name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 {{-- Step 2: Catalog --}}
-                <div class="muaadh-mobile-step {{ $selectedBrand && $selectedBrand->catalogs && $selectedBrand->catalogs->count() > 0 ? '' : 'd-none' }}" id="mobile-subcategory-step">
+                <div class="muaadh-mobile-step {{ $selectedBrand && $selectedBrand->has_catalogs ? '' : 'd-none' }}" id="mobile-subcategory-step">
                     <label class="muaadh-mobile-step-label">
                         <i class="fas fa-book"></i>
                         @lang('Catalog')
@@ -187,7 +182,7 @@
                             @foreach ($selectedBrand->catalogs as $catalog)
                                 <option value="{{ $catalog->slug }}"
                                     {{ $currentCatalogSlug === $catalog->slug ? 'selected' : '' }}>
-                                    {{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
+                                    {{ $catalog->localized_name }}
                                 </option>
                             @endforeach
                         @endif

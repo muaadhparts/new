@@ -30,17 +30,30 @@ class CourierController extends CourierBaseController
             ->with(['purchase.merchantPurchases', 'merchantBranch'])
             ->orderby('id', 'desc')->take(8)->get();
 
+        // PRE-COMPUTED: Total amount for each delivery (DATA_FLOW_POLICY - no @php in view)
+        $purchases->transform(function ($purchase) {
+            $purchase->display_total_amount = (float)($purchase->purchase_amount ?? 0);
+            return $purchase;
+        });
+
         // Get accounting report
         $report = $this->accountingService->getCourierReport($this->courier->id);
         $currency = monetaryUnit()->getDefault();
 
-        return view('courier.dashbaord', compact('purchases', 'user', 'report', 'currency'));
+        return view('courier.dashbaord', [
+            'purchases' => $purchases,
+            'user' => $user,
+            'report' => $report,
+            'currency' => $currency,
+        ]);
     }
 
     public function profile()
     {
         $user = $this->courier;
-        return view('courier.profile', compact('user'));
+        return view('courier.profile', [
+            'user' => $user,
+        ]);
     }
 
     public function profileupdate(Request $request)
@@ -109,7 +122,10 @@ class CourierController extends CourierBaseController
         $cities = City::whereStatus(1)->get();
         $courier = $this->courier;
         $service_area = CourierServiceArea::where('courier_id', $courier->id)->paginate(10);
-        return view('courier.service-area', compact('service_area', 'cities'));
+        return view('courier.service-area', [
+            'service_area' => $service_area,
+            'cities' => $cities,
+        ]);
     }
 
     public function serviceAreaCreate()
@@ -117,7 +133,9 @@ class CourierController extends CourierBaseController
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
-        return view('courier.add_service', compact('countries'));
+        return view('courier.add_service', [
+            'countries' => $countries,
+        ]);
     }
 
     /**
@@ -225,7 +243,12 @@ class CourierController extends CourierBaseController
             ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
             : collect();
 
-        return view('courier.edit_service', compact('countries', 'cities', 'service_area', 'selectedCountryId'));
+        return view('courier.edit_service', [
+            'countries' => $countries,
+            'cities' => $cities,
+            'service_area' => $service_area,
+            'selectedCountryId' => $selectedCountryId,
+        ]);
     }
 
     public function serviceAreaUpdate(Request $request, $id)
@@ -385,7 +408,11 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         }
 
-        return view('courier.orders', compact('purchases', 'type', 'tabCounts'));
+        return view('courier.orders', [
+            'purchases' => $purchases,
+            'type' => $type,
+            'tabCounts' => $tabCounts,
+        ]);
     }
 
     public function orderDetails($id)
@@ -401,7 +428,96 @@ class CourierController extends CourierBaseController
             return redirect()->route('courier-purchases')->with('unsuccess', __('Purchase not found'));
         }
 
-        return view('courier.purchase_details', compact('data'));
+        // PRE-COMPUTED: Purchase from relationship (DATA_FLOW_POLICY - no @php in view)
+        $purchase = $data->purchase;
+
+        // PRE-COMPUTED: Delivery DTO for workflow display (DATA_FLOW_POLICY)
+        $deliveryDto = $this->buildDeliveryDto($data);
+
+        return view('courier.purchase_details', [
+            'data' => $data,
+            'purchase' => $purchase,
+            'deliveryDto' => $deliveryDto,
+        ]);
+    }
+
+    /**
+     * Build delivery DTO for workflow display (DATA_FLOW_POLICY)
+     */
+    private function buildDeliveryDto(DeliveryCourier $delivery): array
+    {
+        $nextAction = $delivery->next_action ?? ['actor' => 'none', 'action' => ''];
+        $step = $delivery->workflow_step ?? 1;
+
+        return [
+            'isRejected' => $delivery->isRejected(),
+            'rejectionReason' => $delivery->rejection_reason ?? null,
+            'workflowStep' => $step,
+            'progressPercent' => $this->calculateWorkflowProgress($step),
+            'stepsDisplay' => $this->buildWorkflowStepsDisplay($step),
+            'approvedAt' => $delivery->approved_at?->format('d/m H:i'),
+            'readyAt' => $delivery->ready_at?->format('d/m H:i'),
+            'pickedUpAt' => $delivery->picked_up_at?->format('d/m H:i'),
+            'deliveredAtShort' => $delivery->delivered_at?->format('d/m H:i'),
+            'confirmedAtShort' => $delivery->confirmed_at?->format('d/m H:i'),
+            'isCod' => $delivery->isCod(),
+            'codAmount' => (float)($delivery->cod_amount ?? $delivery->purchase_amount ?? 0),
+            'hasNextAction' => ($nextAction['actor'] ?? 'none') !== 'none',
+            'nextActionActor' => $nextAction['actor'] ?? 'none',
+            'nextActionText' => $nextAction['action'] ?? '',
+        ];
+    }
+
+    /**
+     * Calculate workflow progress percent (DATA_FLOW_POLICY)
+     */
+    private function calculateWorkflowProgress(int $step): int
+    {
+        return match (true) {
+            $step >= 6 => 100,
+            $step >= 5 => 80,
+            $step >= 4 => 60,
+            $step >= 3 => 40,
+            $step >= 2 => 20,
+            default => 0,
+        };
+    }
+
+    /**
+     * Build workflow steps display array (DATA_FLOW_POLICY)
+     */
+    private function buildWorkflowStepsDisplay(int $currentStep): array
+    {
+        $stepDefinitions = [
+            ['key' => 'pending_approval', 'label' => __('Approval'), 'icon' => 'fa-clock', 'description' => __('Courier Approval'), 'step' => 1],
+            ['key' => 'approved', 'label' => __('Preparing'), 'icon' => 'fa-box-open', 'description' => __('Merchant Preparing'), 'step' => 2],
+            ['key' => 'ready_for_pickup', 'label' => __('Ready'), 'icon' => 'fa-box', 'description' => __('Ready for Pickup'), 'step' => 3],
+            ['key' => 'picked_up', 'label' => __('Picked Up'), 'icon' => 'fa-handshake', 'description' => __('Courier Picked Up'), 'step' => 4],
+            ['key' => 'delivered', 'label' => __('Delivered'), 'icon' => 'fa-truck', 'description' => __('Delivered to Customer'), 'step' => 5],
+            ['key' => 'confirmed', 'label' => __('Confirmed'), 'icon' => 'fa-check-double', 'description' => __('Customer Confirmed'), 'step' => 6],
+        ];
+
+        $result = [];
+        foreach ($stepDefinitions as $s) {
+            $isActive = $currentStep >= $s['step'];
+            $isCurrent = $currentStep == $s['step'];
+
+            $result[] = [
+                'key' => $s['key'],
+                'label' => $s['label'],
+                'icon' => $s['icon'],
+                'description' => $s['description'],
+                'step' => $s['step'],
+                'isActive' => $isActive,
+                'isCurrent' => $isCurrent,
+                'circleBackground' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--surface-secondary, #f3f4f6)'),
+                'circleColor' => $isActive ? '#fff' : 'var(--text-tertiary, #9ca3af)',
+                'circleBorder' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--border-default, #e5e7eb)'),
+                'labelColor' => $isActive ? 'var(--text-primary, #111827)' : 'var(--text-tertiary, #9ca3af)',
+            ];
+        }
+
+        return $result;
     }
 
     /**
@@ -483,7 +599,11 @@ class CourierController extends CourierBaseController
         $currency = monetaryUnit()->getDefault();
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        return view('courier.transactions', compact('deliveries', 'currency', 'report'));
+        return view('courier.transactions', [
+            'deliveries' => $deliveries,
+            'currency' => $currency,
+            'report' => $report,
+        ]);
     }
 
     /**
@@ -496,7 +616,16 @@ class CourierController extends CourierBaseController
         $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        return view('courier.settlements', compact('currency', 'settlementCalc', 'unsettledDeliveries', 'report'));
+        // PRE-COMPUTED: Net amount for display (DATA_FLOW_POLICY - no @php in view)
+        $netAmount = $settlementCalc['net_amount'] ?? 0;
+
+        return view('courier.settlements', [
+            'currency' => $currency,
+            'settlementCalc' => $settlementCalc,
+            'unsettledDeliveries' => $unsettledDeliveries,
+            'report' => $report,
+            'netAmount' => $netAmount,
+        ]);
     }
 
     /**
@@ -510,6 +639,11 @@ class CourierController extends CourierBaseController
         $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
         $currency = monetaryUnit()->getDefault();
 
-        return view('courier.financial_report', compact('report', 'currency', 'startDate', 'endDate'));
+        return view('courier.financial_report', [
+            'report' => $report,
+            'currency' => $currency,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+        ]);
     }
 }

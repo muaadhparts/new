@@ -146,18 +146,13 @@
     <script src="{{ asset('assets/merchant') }}/js/myscript.js"></script>
 
 
-    @php
-        if (Session::has('success')) {
-            echo '<script>
-                toastr.success("'.Session::get('success').'")
-            </script>';
-        }
-        if (Session::has('unsuccess')) {
-            echo '<script>
-                toastr.error("'.Session::get('unsuccess').'")
-            </script>';
-        }
-    @endphp
+    {{-- Session Flash Messages (DATA_FLOW_POLICY - no echo in view) --}}
+    @if(Session::has('success'))
+        <script>toastr.success("{{ Session::get('success') }}")</script>
+    @endif
+    @if(Session::has('unsuccess'))
+        <script>toastr.error("{{ Session::get('unsuccess') }}")</script>
+    @endif
 
 @livewireScripts
 

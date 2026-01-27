@@ -180,22 +180,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($companiesPerformance as $company => $statuses)
-                                        @php $delivered = $statuses->where('status', 'delivered')->first()->count ?? 0; $failed = $statuses->where('status', 'failed')->first()->count ?? 0; @endphp
-                                        @php $returned = $statuses->where('status', 'returned')->first()->count ?? 0; $companyTotal = $statuses->sum('count'); $companySuccess = $companyTotal > 0 ? round(($delivered / $companyTotal) * 100) : 0; @endphp
+                                    {{-- Company stats pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                    @foreach($companiesPerformance as $companyData)
                                         <tr>
-                                            <td>{{ $company ?? 'Unknown' }}</td>
+                                            <td>{{ $companyData['name'] }}</td>
                                             <td class="text-center">
-                                                <span class="badge badge-success">{{ $delivered }}</span>
+                                                <span class="badge badge-success">{{ $companyData['delivered'] }}</span>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge badge-danger">{{ $failed + $returned }}</span>
+                                                <span class="badge badge-danger">{{ $companyData['failed'] + $companyData['returned'] }}</span>
                                             </td>
                                             <td class="text-center">
                                                 <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar bg-{{ $companySuccess >= 80 ? 'success' : ($companySuccess >= 60 ? 'warning' : 'danger') }}"
-                                                         role="progressbar" style="width: {{ $companySuccess }}%">
-                                                        {{ $companySuccess }}%
+                                                    <div class="progress-bar bg-{{ $companyData['success_rate'] >= 80 ? 'success' : ($companyData['success_rate'] >= 60 ? 'warning' : 'danger') }}"
+                                                         role="progressbar" style="width: {{ $companyData['success_rate'] }}%">
+                                                        {{ $companyData['success_rate'] }}%
                                                     </div>
                                                 </div>
                                             </td>
@@ -222,18 +221,7 @@
         </div>
         <div class="card-body">
             <div class="row">
-                @php
-                    $statusLabels = [
-                        'created' => ['label' => __('Created'), 'color' => 'info', 'icon' => 'fa-box'],
-                        'picked_up' => ['label' => __('Picked Up'), 'color' => 'primary', 'icon' => 'fa-truck-loading'],
-                        'in_transit' => ['label' => __('In Transit'), 'color' => 'warning', 'icon' => 'fa-truck'],
-                        'out_for_delivery' => ['label' => __('Out for Delivery'), 'color' => 'warning', 'icon' => 'fa-motorcycle'],
-                        'delivered' => ['label' => __('Delivered'), 'color' => 'success', 'icon' => 'fa-check-circle'],
-                        'failed' => ['label' => __('Failed'), 'color' => 'danger', 'icon' => 'fa-exclamation-circle'],
-                        'returned' => ['label' => __('Returned'), 'color' => 'secondary', 'icon' => 'fa-undo'],
-                        'cancelled' => ['label' => __('Cancelled'), 'color' => 'dark', 'icon' => 'fa-times-circle'],
-                    ];
-                @endphp
+                {{-- Status labels pre-computed in Controller (DATA_FLOW_POLICY) --}}
                 @foreach($statusLabels as $status => $info)
                     <div class="col-md-3 mb-3">
                         <div class="d-flex align-items-center p-3 border rounded">

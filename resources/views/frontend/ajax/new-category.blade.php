@@ -1,7 +1,5 @@
 {{-- AJAX response for new unified catalog category tree --}}
-@php
-    $view = request()->input('view_check', 'list-view');
-@endphp
+{{-- $view pre-computed in CatalogController::newCategory (DATA_FLOW_POLICY) --}}
 
 {{-- Products Content Container for AJAX replacement --}}
 <div id="ajax-catalogItems-content">

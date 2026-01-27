@@ -197,6 +197,9 @@ class TrackingViewService
                 'confirmedAtShort' => $delivery->confirmed_at?->format('d/m H:i'),
                 'isCod' => $delivery->isCod(),
                 'codAmount' => (float)($delivery->cod_amount ?? $delivery->purchase_amount ?? 0),
+                // Pre-computed workflow display (DATA_FLOW_POLICY - no @php in view)
+                'progressPercent' => $this->calculateProgressPercent($delivery->workflow_step ?? 1),
+                'stepsDisplay' => $this->buildStepsDisplay($delivery->workflow_step ?? 1),
 
                 // Next action info
                 'nextActionActor' => $nextAction['actor'] ?? 'none',
@@ -329,5 +332,59 @@ class TrackingViewService
         }
 
         return 'info';
+    }
+
+    /**
+     * Calculate progress percent from workflow step (DATA_FLOW_POLICY)
+     */
+    private function calculateProgressPercent(int $step): int
+    {
+        return match (true) {
+            $step >= 6 => 100,
+            $step >= 5 => 80,
+            $step >= 4 => 60,
+            $step >= 3 => 40,
+            $step >= 2 => 20,
+            default => 0,
+        };
+    }
+
+    /**
+     * Build steps display array with isActive/isCurrent pre-computed (DATA_FLOW_POLICY)
+     * Returns array with all display values for each step - view only renders
+     */
+    private function buildStepsDisplay(int $currentStep): array
+    {
+        $stepDefinitions = [
+            ['key' => 'pending_approval', 'label' => __('Approval'), 'icon' => 'fa-clock', 'description' => __('Courier Approval'), 'step' => 1],
+            ['key' => 'approved', 'label' => __('Preparing'), 'icon' => 'fa-box-open', 'description' => __('Merchant Preparing'), 'step' => 2],
+            ['key' => 'ready_for_pickup', 'label' => __('Ready'), 'icon' => 'fa-box', 'description' => __('Ready for Pickup'), 'step' => 3],
+            ['key' => 'picked_up', 'label' => __('Picked Up'), 'icon' => 'fa-handshake', 'description' => __('Courier Picked Up'), 'step' => 4],
+            ['key' => 'delivered', 'label' => __('Delivered'), 'icon' => 'fa-truck', 'description' => __('Delivered to Customer'), 'step' => 5],
+            ['key' => 'confirmed', 'label' => __('Confirmed'), 'icon' => 'fa-check-double', 'description' => __('Customer Confirmed'), 'step' => 6],
+        ];
+
+        $result = [];
+        foreach ($stepDefinitions as $s) {
+            $isActive = $currentStep >= $s['step'];
+            $isCurrent = $currentStep == $s['step'];
+
+            $result[] = [
+                'key' => $s['key'],
+                'label' => $s['label'],
+                'icon' => $s['icon'],
+                'description' => $s['description'],
+                'step' => $s['step'],
+                'isActive' => $isActive,
+                'isCurrent' => $isCurrent,
+                // Pre-computed style values for view (no ternary in Blade)
+                'circleBackground' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--surface-secondary, #f3f4f6)'),
+                'circleColor' => $isActive ? '#fff' : 'var(--text-tertiary, #9ca3af)',
+                'circleBorder' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--border-default, #e5e7eb)'),
+                'labelColor' => $isActive ? 'var(--text-primary, #111827)' : 'var(--text-tertiary, #9ca3af)',
+            ];
+        }
+
+        return $result;
     }
 }

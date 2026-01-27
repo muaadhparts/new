@@ -55,27 +55,22 @@ html {
    <div class="container-fluid">
    <div class="row">
    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-      <!-- Invoice Header - Based on payment_owner_id -->
-      @php
-          $firstSeller = isset($sellersInfoLookup) && count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
-          // Show platform if: no seller found, multiple sellers, or first seller is platform
-          $showPlatform = !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true);
-      @endphp
+      <!-- Invoice Header - Based on payment_owner_id (pre-computed in Controller) -->
       <div class="invoice__logo" style="margin-bottom: 20px; padding: 10px;">
-         @if($showPlatform)
+         @if($printDisplayData['showPlatform'])
              @if($gs->invoice_logo)
                  <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="{{ $gs->site_name }}" style="width: 150px; height: auto; object-fit: contain;">
              @endif
              <div style="margin-top: 5px;"><strong>{{ $gs->site_name }}</strong></div>
          @else
              {{-- Merchant is the seller --}}
-             @if($firstSeller['logo_url'])
-                 <img src="{{ $firstSeller['logo_url'] }}" alt="{{ $firstSeller['name'] }}" style="width: 150px; height: auto; object-fit: contain;">
+             @if($printDisplayData['firstSeller']['logo_url'])
+                 <img src="{{ $printDisplayData['firstSeller']['logo_url'] }}" alt="{{ $printDisplayData['firstSeller']['name'] }}" style="width: 150px; height: auto; object-fit: contain;">
              @endif
              <div style="margin-top: 5px;">
-                 <strong>{{ $firstSeller['name'] }}</strong>
-                 @if($firstSeller['address'])
-                     <br><small>{{ $firstSeller['address'] }}</small>
+                 <strong>{{ $printDisplayData['firstSeller']['name'] }}</strong>
+                 @if($printDisplayData['firstSeller']['address'])
+                     <br><small>{{ $printDisplayData['firstSeller']['address'] }}</small>
                  @endif
              </div>
          @endif

@@ -62,9 +62,7 @@
                                     <hr>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-name"><strong>@lang('Net Amount')</strong></span>
-                                        @php
-                                            $netAmount = $settlementCalc['net_amount'] ?? 0;
-                                        @endphp
+                                        {{-- Net amount pre-computed in Controller (DATA_FLOW_POLICY) --}}
                                         <span class="{{ $netAmount >= 0 ? 'text-success' : 'text-danger' }}">
                                             <strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format(abs($netAmount), 2) }}</strong>
                                             @if($netAmount >= 0)

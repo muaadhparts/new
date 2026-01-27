@@ -11,33 +11,18 @@
     Usage with MerchantItem (requires eager loaded catalogItem):
     <x-shipping-quote-button :mp="$merchantItem" />
 
-    DATA FLOW POLICY: Values should be pre-computed in controller.
-    If using :mp, ensure catalogItem relationship is eager loaded.
+    DATA FLOW POLICY: All processing in ShippingQuoteButton component class.
 --}}
 
-@props([
-    'mp' => null,
-    'merchantId' => null,
-    'branchId' => null,
-    'weight' => null,
-    'itemName' => '',
-    'class' => ''
-])
-
-@php $mId = $merchantId ?? ($mp->user_id ?? null); $bId = $branchId ?? ($mp->merchant_branch_id ?? null); @endphp
-@php $w = $weight ?? ($mp && $mp->relationLoaded('catalogItem') ? $mp->catalogItem?->weight : null); @endphp
-@php $name = $itemName ?: ($mp && $mp->relationLoaded('catalogItem') ? getLocalizedCatalogItemName($mp->catalogItem) : ''); $canRender = $mId && $bId && $w && $w > 0; @endphp
-
-@if($canRender)
+{{-- Component renders only if canRender is true (handled by shouldRender) --}}
 <button type="button"
     class="m-shipping-quote-btn {{ $class }}"
     data-shipping-quote
-    data-merchant-id="{{ $mId }}"
-    data-branch-id="{{ $bId }}"
-    data-weight="{{ $w }}"
-    data-catalog-item-name="{{ $name }}"
+    data-merchant-id="{{ $merchantId }}"
+    data-branch-id="{{ $branchId }}"
+    data-weight="{{ $weight }}"
+    data-catalog-item-name="{{ $itemName }}"
     title="@lang('احسب الشحن')">
     <i class="fas fa-truck"></i>
     <span>@lang('احسب الشحن')</span>
 </button>
-@endif

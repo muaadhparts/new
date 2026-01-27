@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Classes\MuaadhMailer;
-use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 use App\Http\Resources\PurchaseTrackResource;
@@ -59,14 +58,6 @@ class FrontendController extends Controller
                 }]);
 
             $prods = $query->get();
-
-            // Inject merchant context for each catalog item
-            $prods->each(function($catalogItem) {
-                $mp = $catalogItem->merchantItems->first();
-                if ($mp) {
-                    CatalogItemContextHelper::apply($catalogItem, $mp);
-                }
-            });
 
             return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
         } catch (\Exception $e) {

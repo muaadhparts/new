@@ -58,6 +58,9 @@ class MerchantController extends FrontBaseController
             $defaultPerPage
         );
 
+        // PRE-COMPUTED: View mode for AJAX partial (DATA_FLOW_POLICY)
+        $data['view'] = $request->input('view_check', 'list-view');
+
         if ($request->ajax()) {
             $data['ajax_check'] = 1;
             return view('frontend.ajax.merchant', $data);

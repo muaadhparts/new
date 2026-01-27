@@ -87,6 +87,7 @@
                                 $delivery = $pData['delivery'] ?? null;
                                 $shipment = $pData['shipment'] ?? null;
                                 $customerChoice = $pData['customerChoice'] ?? null;
+                                $customerChoiceDisplay = $pData['customerChoiceDisplay'] ?? null;
                                 $price = $pData['price'] ?? 0;
                             @endphp
                             <tr>
@@ -124,31 +125,19 @@
 
                                 <!-- Shipping Status -->
                                 <td>
-                                    {{-- ✅ Show Customer's Shipping Choice --}}
-                                    @if ($customerChoice && !$shipment && !$delivery)
-                                        @php
-                                            $isFreeShipping = $customerChoice['is_free_shipping'] ?? false;
-                                            $originalPrice = $customerChoice['original_price'] ?? $customerChoice['price'] ?? 0;
-                                            $actualPrice = $customerChoice['price'] ?? 0;
-                                        @endphp
+                                    {{-- ✅ Show Customer's Shipping Choice (pre-computed in Controller) --}}
+                                    @if ($customerChoiceDisplay)
                                         <div class="mb-1">
                                             <small class="text-primary fw-bold">
                                                 <i class="fas fa-user-check"></i> @lang('Customer Selected:')
                                             </small>
                                             <br>
-                                            {{-- ✅ عرض اسم الشركة حسب نوع الشحن --}}
-                                            @php
-                                                $shippingName = $customerChoice['company_name']
-                                                    ?? $customerChoice['name']
-                                                    ?? $customerChoice['courier_name']
-                                                    ?? __('N/A');
-                                            @endphp
-                                            <span class="badge bg-primary">{{ $shippingName }}</span>
+                                            <span class="badge bg-primary">{{ $customerChoiceDisplay['shippingName'] }}</span>
                                             <br>
-                                            @if($isFreeShipping)
+                                            @if($customerChoiceDisplay['isFreeShipping'])
                                                 {{-- ✅ Free Shipping Alert --}}
                                                 <span class="text-decoration-line-through text-muted">
-                                                    {{ $data->currency_sign }}{{ number_format($originalPrice, 2) }}
+                                                    {{ $data->currency_sign }}{{ number_format($customerChoiceDisplay['originalPrice'], 2) }}
                                                 </span>
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-gift"></i> @lang('Free!')
@@ -159,7 +148,7 @@
                                                     @lang('Merchant pays shipping')
                                                 </small>
                                             @else
-                                                <small>{{ $data->currency_sign }}{{ number_format($actualPrice, 2) }}</small>
+                                                <small>{{ $data->currency_sign }}{{ number_format($customerChoiceDisplay['actualPrice'], 2) }}</small>
                                             @endif
                                         </div>
                                         <span class="badge bg-warning text-dark">@lang('Not Assigned')</span>

@@ -19,7 +19,7 @@
             <div class="mycard bg1">
                 <div class="left">
                     <h5 class="name">{{ __('Purchases Pending!') }} </h5>
-                    <span class="number">{{count($pending)}}</span>
+                    <span class="number">{{ $pending }}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=pending" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -33,7 +33,7 @@
             <div class="mycard bg2">
                 <div class="left">
                     <h5 class="name">{{ __('Purchases Processing!') }}</h5>
-                    <span class="number">{{count($processing)}}</span>
+                    <span class="number">{{ $processing }}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=processing" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -47,7 +47,7 @@
             <div class="mycard bg3">
                 <div class="left">
                     <h5 class="name">{{ __('Purchases Completed!') }}</h5>
-                    <span class="number">{{count($completed)}}</span>
+                    <span class="number">{{ $completed }}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=completed" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -226,24 +226,16 @@
                                         </thead>
                                         <tbody>
                                             @foreach($popularCatalogItems as $catalogItem)
-                                            @php
-                                                $merchantItem = $catalogItem->merchantItems->first();
-                                            @endphp
                                             <tr>
-                                            <td><img src="{{filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                            <td>{{ getLocalizedCatalogItemName($catalogItem, 50) }}</td>
-                                            @php
-                                                $fitments = $catalogItem->fitments ?? collect();
-                                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                                $firstBrand = $brands->first();
-                                            @endphp
-                                            <td>{{ $firstBrand ? $firstBrand->localized_name : 'N/A' }}</td>
+                                            <td><img src="{{ $catalogItem->photo_url }}"></td>
+                                            <td>{{ $catalogItem->localized_name }}</td>
+                                            <td>{{ $catalogItem->first_brand_name }}</td>
                                                 <td>{{ $catalogItem->views ?? 0 }}</td>
 
-                                                <td>{{ $merchantItem ? $merchantItem->showPrice() : 'N/A' }}</td>
+                                                <td>{{ $catalogItem->best_merchant_item?->showPrice() ?? 'N/A' }}</td>
 
                                                 <td>
-                                                    <div class="action-list"><a href="{{ $merchantItem ? route('operator-catalog-item-edit', $merchantItem->id) : '#' }}"><i
+                                                    <div class="action-list"><a href="{{ $catalogItem->best_merchant_item ? route('operator-catalog-item-edit', $catalogItem->best_merchant_item->id) : '#' }}"><i
                                                                 class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                     </div>
                                                 </td>
@@ -281,22 +273,14 @@
                                                 </thead>
                                                 <tbody>
                                                     @foreach($latestCatalogItems as $catalogItem)
-                                                    @php
-                                                        $merchantItem = $catalogItem->merchantItems->first();
-                                                    @endphp
                                                     <tr>
-                                                    <td><img src="{{filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                                    <td>{{ getLocalizedCatalogItemName($catalogItem, 50) }}</td>
-                                                    @php
-                                                        $fitments2 = $catalogItem->fitments ?? collect();
-                                                        $brands2 = $fitments2->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                                        $firstBrand2 = $brands2->first();
-                                                    @endphp
-                                                    <td>{{ $firstBrand2 ? $firstBrand2->localized_name : 'N/A' }}</td>
+                                                    <td><img src="{{ $catalogItem->photo_url }}"></td>
+                                                    <td>{{ $catalogItem->localized_name }}</td>
+                                                    <td>{{ $catalogItem->first_brand_name }}</td>
                                                         <td>{{ $catalogItem->part_number ?? 'N/A' }}</td>
-                                                        <td>{{ $merchantItem ? $merchantItem->showPrice() : 'N/A' }}</td>
+                                                        <td>{{ $catalogItem->best_merchant_item?->showPrice() ?? 'N/A' }}</td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ $merchantItem ? route('operator-catalog-item-edit', $merchantItem->id) : '#' }}"><i
+                                                            <div class="action-list"><a href="{{ $catalogItem->best_merchant_item ? route('operator-catalog-item-edit', $catalogItem->best_merchant_item->id) : '#' }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>

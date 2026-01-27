@@ -230,4 +230,59 @@ class CartItemDTO
     {
         return !empty($this->wholeSellQty) && !empty($this->wholeSellDiscount);
     }
+
+    /**
+     * Convert to display array (pre-computed for views - no @php in Blade)
+     *
+     * All locale-aware processing and URL generation done here.
+     */
+    public function toDisplayArray(): array
+    {
+        $key = $this->key;
+        $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $key);
+
+        // Photo URL
+        $photo = $this->photo;
+        $photoUrl = $photo
+            ? (\Illuminate\Support\Facades\Storage::url($photo))
+            : asset('assets/images/noimage.png');
+
+        // Calculate discount percent from wholesale tiers
+        $discountPercent = 0.0;
+        if (!empty($this->wholeSellQty) && !empty($this->wholeSellDiscount)) {
+            foreach ($this->wholeSellQty as $i => $threshold) {
+                if ($this->qty >= (int) $threshold && isset($this->wholeSellDiscount[$i])) {
+                    $discountPercent = (float) $this->wholeSellDiscount[$i];
+                }
+            }
+        }
+
+        // Item URL
+        $itemUrl = $this->partNumber
+            ? route('front.part-result', $this->partNumber)
+            : '#';
+
+        return array_merge($this->toArray(), [
+            // Keys
+            'domKey' => $domKey,
+
+            // Localized names (pre-computed)
+            'localizedName' => $this->getLocalizedName(),
+            'localizedBrandName' => $this->getLocalizedBrandName(),
+            'localizedQualityBrandName' => $this->getLocalizedQualityBrandName(),
+            'localizedMerchantName' => app()->getLocale() === 'ar' && $this->merchantNameAr
+                ? $this->merchantNameAr
+                : $this->merchantName,
+
+            // URLs
+            'photoUrl' => $photoUrl,
+            'itemUrl' => $itemUrl,
+
+            // Computed values
+            'discountPercent' => $discountPercent,
+            'isLowStock' => $this->stock > 0 && $this->stock <= 5,
+            'isInStock' => $this->isInStock(),
+            'maxQty' => $this->preordered || $this->stock <= 0 ? 9999 : $this->stock,
+        ]);
+    }
 }

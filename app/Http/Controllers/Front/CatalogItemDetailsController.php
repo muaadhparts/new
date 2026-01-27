@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Helpers\CatalogItemContextHelper;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\DTOs\QuickViewDTO;
 use App\Domain\Merchant\Models\MerchantItem;
@@ -38,9 +37,6 @@ class CatalogItemDetailsController extends FrontBaseController
                 ->where('user_id', $merchantId)
                 ->first();
 
-            if ($mp) {
-                CatalogItemContextHelper::apply($catalogItem, $mp);
-            }
         }
 
         // Build QuickViewDTO with pre-computed data
@@ -48,9 +44,6 @@ class CatalogItemDetailsController extends FrontBaseController
 
         return response()->view('partials.catalog-item', [
             'quickView' => $quickView,
-            // Legacy support
-            'catalogItem' => $catalogItem,
-            'mp' => $mp,
         ]);
     }
 

@@ -8,15 +8,13 @@
 
 <div id="specsChipsBar">
     @if(!empty($chips) && count($chips) > 0)
-        @php
-            $hasVinSource = collect($chips)->contains(fn($c) => ($c['source'] ?? '') === 'vin');
-        @endphp
+        {{-- $hasVinSource pre-computed in VehicleCatalogController (DATA_FLOW_POLICY) --}}
 
         <div class="catalog-chips-bar">
             <div class="catalog-chips-header">
                 <strong class="catalog-chips-name">
-                    <i class="fas {{ $hasVinSource ? 'fa-car' : 'fa-filter' }}"></i>
-                    {{ $hasVinSource ? __('catalog.vin_specs') : __('catalog.selected_specs') }}
+                    <i class="fas {{ ($hasVinSource ?? false) ? 'fa-car' : 'fa-filter' }}"></i>
+                    {{ ($hasVinSource ?? false) ? __('catalog.vin_specs') : __('catalog.selected_specs') }}
                 </strong>
                 <span class="catalog-chips-count">{{ count($chips) }}</span>
             </div>

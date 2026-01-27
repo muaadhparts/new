@@ -17,12 +17,7 @@
 
     @include('alerts.operator.form-both')
 
-    {{-- Summary --}}
-    @php
-        $totalReceivable = collect($report)->sum(fn($r) => $r['summary']['total_receivable'] ?? 0);
-        $totalPayable = collect($report)->sum(fn($r) => $r['summary']['total_payable'] ?? 0);
-        $netBalance = $totalReceivable - $totalPayable;
-    @endphp
+    {{-- Summary - values pre-computed in AccountLedgerController (DATA_FLOW_POLICY) --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-warning text-dark">
@@ -80,26 +75,23 @@
                     </thead>
                     <tbody>
                         @forelse($report as $item)
-                        @php
-                            $party = $item['party'];
-                            $summary = $item['summary'];
-                        @endphp
+                        {{-- Direct array access - no @php extraction (DATA_FLOW_POLICY) --}}
                         <tr>
                             <td>
                                 <i class="fas fa-truck me-1"></i>
-                                <strong>{{ $party->name }}</strong>
+                                <strong>{{ $item['party']->name }}</strong>
                             </td>
-                            <td><code>{{ $party->code }}</code></td>
+                            <td><code>{{ $item['party']->code }}</code></td>
                             <td class="text-end text-success fw-bold">
-                                {{ $currency->sign }}{{ number_format($summary['total_receivable'], 2) }}
+                                {{ $currency->sign }}{{ number_format($item['summary']['total_receivable'], 2) }}
                             </td>
                             <td class="text-end text-danger fw-bold">
-                                {{ $currency->sign }}{{ number_format($summary['total_payable'], 2) }}
+                                {{ $currency->sign }}{{ number_format($item['summary']['total_payable'], 2) }}
                             </td>
                             <td class="text-end">
-                                <span class="fw-bold {{ $summary['is_net_positive'] ? 'text-success' : 'text-danger' }}">
-                                    {{ $currency->sign }}{{ number_format(abs($summary['net_balance']), 2) }}
-                                    @if($summary['is_net_positive'])
+                                <span class="fw-bold {{ $item['summary']['is_net_positive'] ? 'text-success' : 'text-danger' }}">
+                                    {{ $currency->sign }}{{ number_format(abs($item['summary']['net_balance']), 2) }}
+                                    @if($item['summary']['is_net_positive'])
                                         <i class="fas fa-arrow-up"></i>
                                     @else
                                         <i class="fas fa-arrow-down"></i>
@@ -107,7 +99,7 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                @if($party->is_active)
+                                @if($item['party']->is_active)
                                     <span class="badge bg-success">{{ __('Active') }}</span>
                                 @else
                                     <span class="badge bg-secondary">{{ __('Inactive') }}</span>
@@ -115,11 +107,11 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('operator.accounts.party.statement', $party) }}" class="btn btn-outline-primary" name="{{ __('Statement') }}">
+                                    <a href="{{ route('operator.accounts.party.statement', $item['party']) }}" class="btn btn-outline-primary" name="{{ __('Statement') }}">
                                         <i class="fas fa-file-invoice"></i>
                                     </a>
-                                    @if($summary['total_payable'] > 0)
-                                    <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $party->id]) }}" class="btn btn-outline-success" name="{{ __('Settle') }}">
+                                    @if($item['summary']['total_payable'] > 0)
+                                    <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $item['party']->id]) }}" class="btn btn-outline-success" name="{{ __('Settle') }}">
                                         <i class="fas fa-money-check"></i>
                                     </a>
                                     @endif

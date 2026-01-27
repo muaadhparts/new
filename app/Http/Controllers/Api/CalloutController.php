@@ -736,10 +736,165 @@ class CalloutController extends Controller
             ]);
         }
 
+        // Pre-process catalogItems for view (DATA_FLOW_POLICY)
+        $catalogItems = $this->preprocessCatalogItemsForView($data['catalogItems'] ?? []);
+
+        // Pre-process pagination (DATA_FLOW_POLICY)
+        $pagination = $data['pagination'] ?? null;
+        $paginationData = $this->preprocessPaginationForView($pagination);
+
         return view('partials.api.part-details', [
-            'catalogItems' => $data['catalogItems'] ?? [],
-            'pagination' => $data['pagination'] ?? null,
+            'catalogItems' => $catalogItems,
+            'pagination' => $pagination,
+            'paginationData' => $paginationData,
         ]);
+    }
+
+    /**
+     * Pre-process pagination data for view rendering (DATA_FLOW_POLICY)
+     */
+    private function preprocessPaginationForView(?array $pagination): array
+    {
+        if (!$pagination || ($pagination['last_page'] ?? 1) <= 1) {
+            return ['show' => false];
+        }
+
+        $currentPage = $pagination['current_page'] ?? 1;
+        $lastPage = $pagination['last_page'] ?? 1;
+
+        // Calculate page range (show max 5 pages)
+        $startPage = 1;
+        $endPage = $lastPage;
+
+        if ($lastPage > 5) {
+            if ($currentPage <= 3) {
+                $startPage = 1;
+                $endPage = 5;
+            } elseif ($currentPage >= $lastPage - 2) {
+                $startPage = $lastPage - 4;
+                $endPage = $lastPage;
+            } else {
+                $startPage = $currentPage - 2;
+                $endPage = $currentPage + 2;
+            }
+        }
+
+        return [
+            'show' => true,
+            'currentPage' => $currentPage,
+            'lastPage' => $lastPage,
+            'total' => $pagination['total'] ?? 0,
+            'from' => $pagination['from'] ?? 0,
+            'to' => $pagination['to'] ?? 0,
+            'hasPrev' => $currentPage > 1,
+            'hasNext' => $currentPage < $lastPage,
+            'prevPage' => $currentPage - 1,
+            'nextPage' => $currentPage + 1,
+            'startPage' => $startPage,
+            'endPage' => $endPage,
+            'pageRange' => range($startPage, $endPage),
+        ];
+    }
+
+    /**
+     * Pre-process catalog items data for view rendering (DATA_FLOW_POLICY)
+     * Pre-computes ALL display values to eliminate @php blocks in view
+     */
+    private function preprocessCatalogItemsForView(array $catalogItems): array
+    {
+        $isArabic = str_starts_with(app()->getLocale(), 'ar');
+
+        foreach ($catalogItems as &$item) {
+            // Pre-process extensions
+            $item['extensions_parsed'] = $this->parseExtensions($item['extensions'] ?? []);
+
+            // Pre-compute localized name
+            $en = $item['part_label_en'] ?? '';
+            $ar = $item['part_label_ar'] ?? '';
+            $item['localized_name'] = $isArabic ? ($ar ?: $en ?: '—') : ($en ?: $ar ?: '—');
+
+            // Pre-compute qty and callout (with empty check)
+            $item['display_qty'] = isset($item['part_qty']) && trim((string)$item['part_qty']) !== '' ? $item['part_qty'] : '';
+            $item['display_callout'] = isset($item['part_callout']) && trim((string)$item['part_callout']) !== '' ? $item['part_callout'] : '';
+
+            // Pre-compute match values as array
+            $matchValues = $item['match_values'] ?? [];
+            if (is_string($matchValues)) {
+                $matchValues = array_filter(array_map('trim', explode(',', $matchValues)));
+            }
+            $item['match_values_array'] = $matchValues;
+            $item['is_generic'] = empty($matchValues);
+
+            // Pre-compute period dates
+            $item['period_from'] = $this->formatYearMonth($item['part_begin'] ?? null);
+            $item['period_to'] = $this->formatYearMonth($item['part_end'] ?? null);
+
+            // Pre-compute offers
+            $selfOffers = $item['self_offers'] ?? 0;
+            $altOffers = $item['alt_offers'] ?? 0;
+            $item['total_offers'] = $selfOffers + $altOffers;
+            $item['has_self_and_alt'] = $selfOffers > 0 && $altOffers > 0;
+            $item['has_self_only'] = $selfOffers > 0 && $altOffers == 0;
+            $item['has_alt_only'] = $selfOffers == 0 && $altOffers > 0;
+        }
+        return $catalogItems;
+    }
+
+    /**
+     * Format year-month from various string formats
+     */
+    private function formatYearMonth($s): string
+    {
+        if (empty($s)) return '';
+        $raw = trim((string) $s);
+        if (!$raw) return '';
+        $d = preg_replace('/[^0-9]/', '', $raw);
+        if (strlen($d) >= 6) {
+            $y = substr($d, 0, 4);
+            $m = substr($d, 4, 2);
+            if (preg_match('/^(19|20)\d{2}$/', $y) && preg_match('/^(0[1-9]|1[0-2])$/', $m)) {
+                return "{$y}-{$m}";
+            }
+        }
+        if (strlen($d) === 4) return $d;
+        return $raw;
+    }
+
+    /**
+     * Parse extensions from various formats to a consistent array
+     */
+    private function parseExtensions($ext): array
+    {
+        if (empty($ext)) return [];
+
+        // Decode JSON string if needed
+        if (is_string($ext)) {
+            $ext = json_decode($ext, true);
+            if (!is_array($ext)) return [];
+        }
+
+        if (!is_array($ext)) return [];
+
+        $result = [];
+        // Check if associative array
+        if (array_keys($ext) !== range(0, count($ext) - 1)) {
+            // Associative array
+            foreach ($ext as $key => $value) {
+                if (!empty($value)) {
+                    $result[] = ['key' => $key, 'value' => $value];
+                }
+            }
+        } else {
+            // Sequential array
+            foreach ($ext as $item) {
+                $k = $item['extension_key'] ?? $item['key'] ?? '';
+                $v = $item['extension_value'] ?? $item['value'] ?? '';
+                if ($k && $v) {
+                    $result[] = ['key' => $k, 'value' => $v];
+                }
+            }
+        }
+        return $result;
     }
 }
 

@@ -17,6 +17,17 @@ class WithdrawController extends CourierBaseController
     {
         $withdraws = Withdraw::where('user_id', '=', $this->courier->id)->where('type', '=', 'courier')->latest('id')->paginate(12);
         $sign = monetaryUnit()->getDefault();
+
+        // PRE-COMPUTED: Status CSS class for each withdraw (DATA_FLOW_POLICY - no @php in view)
+        $withdraws->getCollection()->transform(function ($withdraw) {
+            $withdraw->status_class = $withdraw->status == 'pending'
+                ? 'yellow-btn'
+                : ($withdraw->status == 'completed'
+                    ? 'green-btn'
+                    : 'red-btn');
+            return $withdraw;
+        });
+
         return view('courier.withdraw.index', compact('withdraws', 'sign'));
     }
 

@@ -24,7 +24,32 @@ class MerchantBranchController extends MerchantBaseController
     public function index()
     {
         $datas = MerchantBranch::with(['city', 'country'])->where('user_id', $this->user->id)->get();
-        return view('merchant.branch.index', compact('datas'));
+
+        // PRE-COMPUTED: Status display data (no @php in view)
+        $datasDisplay = $datas->map(function ($data) {
+            return [
+                'id' => $data->id,
+                'item' => $data,
+                'countryName' => $data->country?->country_name ?? '-',
+                'cityName' => $data->city?->city_name ?? '-',
+                'location' => $data->location,
+                'latitude' => $data->latitude,
+                'longitude' => $data->longitude,
+                'status' => $data->status,
+                'statusClass' => $data->status == 1 ? 'active' : 'deactive',
+                'statusActiveSelected' => $data->status == 1 ? 'selected' : '',
+                'statusInactiveSelected' => $data->status == 0 ? 'selected' : '',
+                'statusActiveUrl' => route('merchant-branch-status', ['id' => $data->id, 'status' => 1]),
+                'statusInactiveUrl' => route('merchant-branch-status', ['id' => $data->id, 'status' => 0]),
+                'editUrl' => route('merchant-branch-edit', $data->id),
+                'deleteUrl' => route('merchant-branch-delete', $data->id),
+            ];
+        });
+
+        return view('merchant.branch.index', [
+            'datas' => $datas,
+            'datasDisplay' => $datasDisplay,
+        ]);
     }
 
     //*** GET Request

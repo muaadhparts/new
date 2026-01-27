@@ -202,7 +202,7 @@
                                 <th><span class="header-name">@lang('Purchase Status')</span></th>
                                 <th><span class="header-name">@lang('View')</span></th>
                             </tr>
-                            @foreach (Auth::user()->purchases()->latest()->take(6)->get() as $purchase)
+                            @foreach ($recentPurchases as $purchase)
                                 <tr>
                                     <td><span class="content">{{ $purchase->purchase_number }}</span></td>
                                     <td><span class="content">{{ date('d M Y', strtotime($purchase->created_at)) }}</span>
@@ -211,8 +211,8 @@
                                             class="content">{{ \PriceHelper::showAdminCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                     </td>
                                     <td>
-                                        @php $class = in_array($purchase->status, ['pending', 'processing']) ? 'yellow-btn' : ($purchase->status == 'completed' ? 'green-btn' : ($purchase->status == 'declined' ? 'red-btn' : 'black-btn')); @endphp
-                                        <button type="button" disabled class="template-btn md-btn {{ $class }}">
+                                        {{-- Status class pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                        <button type="button" disabled class="template-btn md-btn {{ $purchase->status_class }}">
                                             {{ ucwords($purchase->status) }}
                                         </button>
                                     </td>

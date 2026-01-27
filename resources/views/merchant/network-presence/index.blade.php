@@ -51,28 +51,21 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($datas as $data)
+                            @forelse ($datasDisplay as $itemData)
                                 <tr>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->link }}
-                                        </span>
+                                        <span class="content">{{ $itemData['link'] }}</span>
                                     </td>
 
                                     <td>
-                                        @php $active = $data->status == 1 ? 'selected' : ''; $deactivated = $data->status == 0 ? 'selected' : ''; $activeClass = $data->status == 1 ? 'active' : 'deactive'; @endphp
                                         <div class="status position-relative">
                                             <div class="dropdown-container">
-                                                <select class="form-control nice-select form__control {{ $activeClass }}"
+                                                <select class="form-control nice-select form__control {{ $itemData['statusClass'] }}"
                                                     id="network_presence">
-                                                    <option
-                                                        value="{{ route('merchant-network-presence-status', ['id1' => $data->id, 'id2' => 1]) }}"
-                                                        {{ $active }}> {{ __('Activated') }} </option>
-                                                    <option
-                                                        value="{{ route('merchant-network-presence-status', ['id1' => $data->id, 'id2' => 0]) }}"
-                                                        {{ $deactivated }}> {{ __('Deactivated') }} </option>
-
-                                                    <!-- Add more options here if needed -->
+                                                    <option value="{{ $itemData['statusActiveUrl'] }}"
+                                                        {{ $itemData['statusActiveSelected'] }}> {{ __('Activated') }} </option>
+                                                    <option value="{{ $itemData['statusInactiveUrl'] }}"
+                                                        {{ $itemData['statusInactiveSelected'] }}> {{ __('Deactivated') }} </option>
                                                 </select>
                                             </div>
                                         </div>
@@ -80,7 +73,7 @@
 
                                     <td>
                                         <div class="table-icon-btns-wrapper">
-                                            <a href="{{ route('merchant-network-presence-edit', $data->id) }}"
+                                            <a href="{{ $itemData['editUrl'] }}"
                                                 class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
@@ -103,7 +96,7 @@
                                                 </svg>
                                             </a>
 
-                                            <a data-href="{{ route('merchant-network-presence-delete', $data->id) }}"
+                                            <a data-href="{{ $itemData['deleteUrl'] }}"
                                                 class="view-btn delete-btn delete_button" data-bs-toggle="modal"
                                                 data-bs-target="#confirm-detete-modal">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"

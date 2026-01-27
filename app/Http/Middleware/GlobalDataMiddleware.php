@@ -52,6 +52,12 @@ class GlobalDataMiddleware
         }
         Session::put('popup', 1);
 
+        // 5. PRE-COMPUTED: Page type flags (DATA_FLOW_POLICY - no @php in view)
+        $url = $request->url();
+        $explodeUrl = explode('/', $url);
+        view()->share('isUserPage', in_array('user', $explodeUrl));
+        view()->share('isCourierPage', in_array('courier', $explodeUrl));
+
         return $next($request);
     }
 }

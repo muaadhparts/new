@@ -17,11 +17,7 @@
 
     @include('alerts.operator.form-both')
 
-    {{-- Summary Totals --}}
-    @php $totalShipments = collect($companies)->sum('shipment_count'); $totalFees = collect($companies)->sum('total_shipping_fees'); @endphp
-    @php $totalCod = collect($companies)->sum('total_cod_collected'); $totalOwesToPlatform = collect($companies)->sum('owes_platform'); @endphp
-    @php $totalOwesToMerchant = collect($companies)->sum('owes_merchant'); $totalPending = collect($companies)->sum('pending_count'); @endphp
-
+    {{-- Summary Totals (pre-computed in controller - DATA_FLOW_POLICY) --}}
     <div class="row mb-4">
         <div class="col-md-2">
             <div class="card bg-primary text-white">

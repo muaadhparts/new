@@ -560,6 +560,7 @@ class MerchantCheckoutService
             if (!isset($grouped[$provider])) {
                 $grouped[$provider] = [
                     'provider' => $provider,
+                    'providerSlug' => \Str::slug($provider, '_'),
                     'label' => $this->getProviderLabel($provider),
                     'icon' => $this->getProviderIcon($provider),
                     'is_api' => $isApiProvider,

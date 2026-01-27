@@ -64,10 +64,25 @@ class DeliveryController extends MerchantBaseController
             // Calculate price from eager-loaded merchantPurchases
             $price = $purchase->merchantPurchases->sum('price');
 
+            // PRE-COMPUTED: Display data for customerChoice (no @php in view)
+            $customerChoiceDisplay = null;
+            if ($customerChoice && !$shipment && !$delivery) {
+                $customerChoiceDisplay = [
+                    'isFreeShipping' => $customerChoice['is_free_shipping'] ?? false,
+                    'originalPrice' => $customerChoice['original_price'] ?? $customerChoice['price'] ?? 0,
+                    'actualPrice' => $customerChoice['price'] ?? 0,
+                    'shippingName' => $customerChoice['company_name']
+                        ?? $customerChoice['name']
+                        ?? $customerChoice['courier_name']
+                        ?? __('N/A'),
+                ];
+            }
+
             $purchaseData[$purchase->id] = [
                 'delivery' => $delivery,
                 'shipment' => $shipment,
                 'customerChoice' => $customerChoice,
+                'customerChoiceDisplay' => $customerChoiceDisplay,
                 'price' => $price,
             ];
         }

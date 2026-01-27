@@ -71,11 +71,15 @@ class AccountLedgerController extends OperatorBaseController
             ->limit(10)
             ->get();
 
+        // PRE-COMPUTED: Net balance for view (DATA_FLOW_POLICY - no @php in view)
+        $netBalance = ($dashboard['platform_summary']['total_receivable'] ?? 0) - ($dashboard['platform_summary']['total_payable'] ?? 0);
+
         return view('operator.accounts.index', [
             'dashboard' => $dashboard,
             'summary' => $summary,
             'currency' => $currency,
             'recentTransactions' => $recentTransactions,
+            'netBalance' => $netBalance,
         ]);
     }
 
@@ -567,9 +571,18 @@ class AccountLedgerController extends OperatorBaseController
 
         $currency = monetaryUnit()->getDefault();
 
+        // PRE-COMPUTED: Summary totals (DATA_FLOW_POLICY - no @php in view)
+        $reportCollection = collect($report);
+        $totalReceivable = $reportCollection->sum(fn($r) => $r['summary']['total_receivable'] ?? 0);
+        $totalPayable = $reportCollection->sum(fn($r) => $r['summary']['total_payable'] ?? 0);
+        $netBalance = $totalReceivable - $totalPayable;
+
         return view('operator.accounts.reports.shipping', [
             'report' => $report,
             'currency' => $currency,
+            'totalReceivable' => $totalReceivable,
+            'totalPayable' => $totalPayable,
+            'netBalance' => $netBalance,
         ]);
     }
 
@@ -593,9 +606,18 @@ class AccountLedgerController extends OperatorBaseController
 
         $currency = monetaryUnit()->getDefault();
 
+        // PRE-COMPUTED: Summary totals (DATA_FLOW_POLICY - no @php in view)
+        $reportCollection = collect($report);
+        $totalReceivable = $reportCollection->sum(fn($r) => $r['summary']['total_receivable'] ?? 0);
+        $totalPayable = $reportCollection->sum(fn($r) => $r['summary']['total_payable'] ?? 0);
+        $netBalance = $totalReceivable - $totalPayable;
+
         return view('operator.accounts.reports.payment', [
             'report' => $report,
             'currency' => $currency,
+            'totalReceivable' => $totalReceivable,
+            'totalPayable' => $totalPayable,
+            'netBalance' => $netBalance,
         ]);
     }
 
@@ -1009,10 +1031,21 @@ class AccountLedgerController extends OperatorBaseController
         // ترتيب حسب عدد الشحنات
         usort($companies, fn($a, $b) => $b['shipment_count'] <=> $a['shipment_count']);
 
-        return view('operator.accounts.shipping-company-list', [
+        // PRE-COMPUTED: Summary totals (DATA_FLOW_POLICY - no @php in view)
+        $companiesCollection = collect($companies);
+        $summaryTotals = [
+            'totalShipments' => $companiesCollection->sum('shipment_count'),
+            'totalFees' => $companiesCollection->sum('total_shipping_fees'),
+            'totalCod' => $companiesCollection->sum('total_cod_collected'),
+            'totalOwesToPlatform' => $companiesCollection->sum('owes_platform'),
+            'totalOwesToMerchant' => $companiesCollection->sum('owes_merchant'),
+            'totalPending' => $companiesCollection->sum('pending_count'),
+        ];
+
+        return view('operator.accounts.shipping-company-list', array_merge([
             'companies' => $companies,
             'currency' => $currency,
-        ]);
+        ], $summaryTotals));
     }
 
     /**

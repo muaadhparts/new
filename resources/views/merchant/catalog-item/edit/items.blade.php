@@ -46,17 +46,7 @@
                     <div class="card mb-3">
                         <div class="card-body">
                             <div class="d-flex gap-3 align-items-start">
-                                @php
-                                    $photoUrl = asset('assets/images/noimage.png');
-                                    if ($data->photo) {
-                                        if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
-                                            $photoUrl = $data->photo;
-                                        } else {
-                                            $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
-                                        }
-                                    }
-                                @endphp
-                                <img src="{{ $photoUrl }}" alt="{{ $data->name }}" class="rounded" width="100">
+                                <img src="{{ $displayData['photoUrl'] }}" alt="{{ $data->name }}" class="rounded" width="100">
                                 <div>
                                     <h6 class="mb-1">{{ $data->name }}</h6>
                                     <p class="mb-2 text-muted"><strong>@lang('Part Number'):</strong> {{ $data->part_number }}</p>
@@ -175,13 +165,8 @@
                     </div>
 
                     <!-- Wholesale -->
-                    @php
-                        $hasWholesale = !empty($merchantItem->whole_sell_qty);
-                        $wholesaleQty = $hasWholesale ? (is_array($merchantItem->whole_sell_qty) ? $merchantItem->whole_sell_qty : explode(',', $merchantItem->whole_sell_qty)) : [];
-                        $wholesaleDiscount = !empty($merchantItem->whole_sell_discount) ? (is_array($merchantItem->whole_sell_discount) ? $merchantItem->whole_sell_discount : explode(',', $merchantItem->whole_sell_discount)) : [];
-                    @endphp
                     <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_wholesale">
-                        <input type="checkbox" name="whole_check" id="allow-wholesale" value="1" {{ $hasWholesale ? 'checked' : '' }}>
+                        <input type="checkbox" name="whole_check" id="allow-wholesale" value="1" {{ $displayData['hasWholesale'] ? 'checked' : '' }}>
                         <label class="icon-label check-box-label" for="allow-wholesale">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
@@ -189,17 +174,17 @@
                         </label>
                         <label class="check-box-label" for="allow-wholesale">@lang('Allow Wholesale')</label>
                     </div>
-                    <div class="input-label-wrapper collapse {{ $hasWholesale ? 'show' : '' }}" id="show_wholesale">
+                    <div class="input-label-wrapper collapse {{ $displayData['hasWholesale'] ? 'show' : '' }}" id="show_wholesale">
                         <label>@lang('Wholesale Settings')</label>
                         <div class="d-flex flex-column g-4 gap-4" id="wholesale-section">
-                            @if($hasWholesale && count($wholesaleQty) > 0)
-                                @foreach($wholesaleQty as $key => $qty)
+                            @if($displayData['hasWholesale'] && count($displayData['wholesaleQty']) > 0)
+                                @foreach($displayData['wholesaleQty'] as $key => $qty)
                                     <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
                                         <div class="col">
                                             <input type="number" class="form-control" name="whole_sell_qty[]" value="{{ $qty }}" placeholder="@lang('Enter Quantity')">
                                         </div>
                                         <div class="col position-relative">
-                                            <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" value="{{ $wholesaleDiscount[$key] ?? '' }}" placeholder="@lang('Discount Percentage')">
+                                            <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" value="{{ $displayData['wholesaleDiscount'][$key] ?? '' }}" placeholder="@lang('Discount Percentage')">
                                             <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
                                                 <i class="fa-solid fa-xmark"></i>
                                             </button>

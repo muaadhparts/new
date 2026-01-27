@@ -25,73 +25,32 @@
         <div class="col-lg-8">
             <!-- Current Status -->
             <div class="card mb-4">
+                {{-- statusColor, statusIcon, progressPercent, stepsDisplay pre-computed in controller (DATA_FLOW_POLICY) --}}
                 <div class="card-body">
-                    @php
-                        $statusColors = [
-                            'created' => 'info',
-                            'picked_up' => 'primary',
-                            'in_transit' => 'warning',
-                            'out_for_delivery' => 'warning',
-                            'delivered' => 'success',
-                            'failed' => 'danger',
-                            'returned' => 'secondary',
-                            'cancelled' => 'dark',
-                        ];
-                        $statusIcons = [
-                            'created' => 'fa-box',
-                            'picked_up' => 'fa-truck-loading',
-                            'in_transit' => 'fa-truck',
-                            'out_for_delivery' => 'fa-motorcycle',
-                            'delivered' => 'fa-check-circle',
-                            'failed' => 'fa-exclamation-circle',
-                            'returned' => 'fa-undo',
-                            'cancelled' => 'fa-times-circle',
-                        ];
-                        $color = $statusColors[$shipment->status] ?? 'info';
-                        $icon = $statusIcons[$shipment->status] ?? 'fa-box';
-                    @endphp
-
                     <div class="d-flex align-items-center mb-4">
-                        <div class="bg-{{ $color }} text-white rounded-circle p-3 mr-3 d-flex align-items-center justify-content-center"
+                        <div class="bg-{{ $statusColor }} text-white rounded-circle p-3 mr-3 d-flex align-items-center justify-content-center"
                              style="width: 70px; height: 70px;">
-                            <i class="fas {{ $icon }} fa-2x"></i>
+                            <i class="fas {{ $statusIcon }} fa-2x"></i>
                         </div>
                         <div>
-                            <h4 class="mb-1 text-{{ $color }}">{{ $shipment->status_ar }}</h4>
+                            <h4 class="mb-1 text-{{ $statusColor }}">{{ $shipment->status_ar }}</h4>
                             <p class="mb-0 text-muted">{{ $shipment->message_ar }}</p>
                         </div>
                     </div>
 
                     <!-- Progress Bar -->
-                    @php
-                        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
-                        $currentIndex = array_search($shipment->status, $steps);
-                        if ($currentIndex === false) $currentIndex = 0;
-                        $progress = (($currentIndex + 1) / count($steps)) * 100;
-                    @endphp
-
                     <div class="progress mb-3" style="height: 8px;">
-                        <div class="progress-bar bg-{{ $color }}" role="progressbar" style="width: {{ $progress }}%"></div>
+                        <div class="progress-bar bg-{{ $statusColor }}" role="progressbar" style="width: {{ $progressPercent }}%"></div>
                     </div>
 
                     <div class="d-flex justify-content-between">
-                        @foreach($steps as $index => $step)
-                            @php
-                                $isActive = $index <= $currentIndex;
-                                $stepNames = [
-                                    'created' => __('Created'),
-                                    'picked_up' => __('Picked Up'),
-                                    'in_transit' => __('In Transit'),
-                                    'out_for_delivery' => __('Out for Delivery'),
-                                    'delivered' => __('Delivered'),
-                                ];
-                            @endphp
+                        @foreach($stepsDisplay as $step)
                             <div class="text-center">
-                                <div class="{{ $isActive ? 'bg-'.$color.' text-white' : 'bg-light' }} rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
+                                <div class="{{ $step['bgClass'] }} rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center"
                                      style="width: 35px; height: 35px;">
-                                    <i class="fas {{ $statusIcons[$step] ?? 'fa-box' }} small"></i>
+                                    <i class="fas {{ $step['icon'] }} small"></i>
                                 </div>
-                                <small class="{{ $isActive ? 'font-weight-bold' : 'text-muted' }}">{{ $stepNames[$step] }}</small>
+                                <small class="{{ $step['textClass'] }}">{{ $step['name'] }}</small>
                             </div>
                         @endforeach
                     </div>

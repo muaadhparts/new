@@ -81,13 +81,7 @@
     @include('includes.frontend.header')
 
     <!-- Mobile Menus based on page type -->
-    @php
-        $url = url()->current();
-        $explodeUrl = explode('/',$url);
-        $isUserPage = in_array('user', $explodeUrl);
-        $isCourierPage = in_array('courier', $explodeUrl);
-    @endphp
-
+    {{-- Page type flags pre-computed in GlobalDataMiddleware (DATA_FLOW_POLICY) --}}
     @if($isUserPage)
         {{-- User pages need BOTH menus: Store menu + Dashboard menu --}}
         {{-- Store Mobile Menu (for shopping) --}}
@@ -194,18 +188,13 @@
 
 
 
-    @php
-        if (Session::has('success')) {
-            echo '<script>
-                toastr.success("'.Session::get('success').'")
-            </script>';
-        }
-        if (Session::has('unsuccess')) {
-            echo '<script>
-                toastr.error("'.Session::get('unsuccess').'")
-            </script>';
-        }
-    @endphp
+    {{-- Session Flash Messages (DATA_FLOW_POLICY - no echo in view) --}}
+    @if(Session::has('success'))
+        <script>toastr.success("{{ Session::get('success') }}")</script>
+    @endif
+    @if(Session::has('unsuccess'))
+        <script>toastr.error("{{ Session::get('unsuccess') }}")</script>
+    @endif
 
     {{-- Global Map Picker Modal - Available on all pages --}}
     @include('components.global-map-picker-modal')

@@ -26,12 +26,7 @@
             <div class="invoice__name">
                 <div class="row">
                     <div class="col-sm-6">
-                        @php
-                            // Get first seller info for header (or platform if multiple)
-                            $firstSeller = count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
-                            // Show platform if: no seller found, multiple sellers, or first seller is platform
-                            $showPlatform = !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true);
-                        @endphp
+                        {{-- Seller display info pre-computed in DataBuilder (DATA_FLOW_POLICY) --}}
                         <div class="invoice__logo text-left">
                            @if($showPlatform)
                                <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="{{ $gs->site_name }}" style="width: 150px; height: auto; object-fit: contain;">
@@ -123,7 +118,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php $subtotal = 0; @endphp
+                                        {{-- Subtotal pre-computed in DataBuilder (DATA_FLOW_POLICY) --}}
                                         @foreach($cartItemsWithData as $catalogItem)
                                         <tr>
                                             <td width="40%">
@@ -174,9 +169,6 @@
 
                                             <td>{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value)  }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
-                                            @php
-                                            $subtotal += round(($catalogItem['price'] / $purchase->currency_value) * $purchase->currency_value, 2);
-                                            @endphp
                                         </tr>
                                         @endforeach
                                     </tbody>

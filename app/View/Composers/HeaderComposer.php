@@ -41,11 +41,31 @@ class HeaderComposer
         // Cart count from MerchantCartManager (Single Source of Truth)
         $merchantCartCount = $this->cartManager->getHeaderCount();
 
+        // Cart data for header dropdown (DATA_FLOW_POLICY - pre-computed)
+        $headerCartData = $this->cartManager->getHeaderCartData();
+
+        // PRE-COMPUTED: Dashboard detection (DATA_FLOW_POLICY - no @php in header)
+        $isUserDashboard = request()->routeIs('user-*') || request()->is('user/*');
+        $isCourierDashboard = request()->routeIs('courier.*') || request()->is('courier/*');
+        $isDashboardPage = $isUserDashboard || $isCourierDashboard;
+
+        // PRE-COMPUTED: Current brand/catalog from URL (DATA_FLOW_POLICY - no @php in mobile_menu)
+        $currentBrandSlug = request()->segment(2);
+        $currentCatalogSlug = request()->segment(3);
+
         $view->with([
             'authUser' => $authUser,
             'courierUser' => $courierUser,
             'favoriteCount' => $favoriteCount,
             'merchantCartCount' => $merchantCartCount,
+            'headerCartData' => $headerCartData,
+            // Dashboard detection
+            'isUserDashboard' => $isUserDashboard,
+            'isCourierDashboard' => $isCourierDashboard,
+            'isDashboardPage' => $isDashboardPage,
+            // URL segments for category selector
+            'currentBrandSlug' => $currentBrandSlug,
+            'currentCatalogSlug' => $currentCatalogSlug,
         ]);
     }
 

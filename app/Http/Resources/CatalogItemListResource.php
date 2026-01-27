@@ -3,7 +3,14 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
+/**
+ * CatalogItemListResource
+ *
+ * API Resource for catalog item listing.
+ * Gets merchant data from eager-loaded merchantItems relation.
+ */
 class CatalogItemListResource extends JsonResource
 {
     /**
@@ -14,39 +21,38 @@ class CatalogItemListResource extends JsonResource
      */
     public function toArray($request)
     {
-        // Get merchant context from request or catalog item attribute
-        $merchantId = (int) ($request->get('user') ?? $this->getAttribute('merchant_user_id') ?? 0);
-
-        // Get merchant-aware pricing using the merchant_items system
-        $currentPrice = method_exists($this, 'ApishowPrice')
-            ? (string) $this->ApishowPrice($merchantId ?: null)
-            : (string) 0;
-
-        $previousPrice = method_exists($this, 'ApishowPreviousPrice')
-            ? (string) $this->ApishowPreviousPrice($merchantId ?: null)
-            : (string) 0;
-
-        // Get active merchant item for additional data
-        $mp = method_exists($this, 'activeMerchant')
-            ? $this->activeMerchant($merchantId ?: null)
+        // Get first merchant item from eager-loaded relation
+        $mp = $this->relationLoaded('merchantItems')
+            ? $this->merchantItems->first()
             : null;
+
+        $merchantId = $mp?->user_id ?? 0;
+
+        // Price from merchant item
+        $currentPrice = $mp
+            ? (string) $this->ApishowPrice($merchantId)
+            : '0';
+
+        $previousPrice = ($mp && $mp->previous_price > 0)
+            ? (string) $this->ApishowPreviousPrice($merchantId)
+            : '0';
+
+        // Rating - use pre-computed if available
+        $rating = $this->catalog_reviews_avg_rating ?? 0;
 
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'thumbnail' => \Illuminate\Support\Facades\Storage::url($this->thumbnail) ?? asset('assets/images/noimage.png'),
-            'rating' =>  $this->catalogReviews()->avg('rating') > 0 ? (string) round($this->catalogReviews()->avg('rating'), 2) : (string) round(0.00, 2),
+            'name' => $this->localized_name,
+            'thumbnail' => $this->thumbnail_url,
+            'rating' => (string) round($rating, 2),
             'current_price' => $currentPrice,
             'previous_price' => $previousPrice,
-
-            // Add merchant context for API consumers
             'merchant' => $mp ? [
                 'user_id' => $mp->user_id,
                 'merchant_item_id' => $mp->id,
                 'stock' => (int) $mp->stock,
                 'status' => (int) $mp->status,
             ] : null,
-
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -42,6 +42,15 @@ class Brand extends Model
         'is_featured' => 'boolean',
     ];
 
+    /**
+     * Accessors to include in array/JSON serialization
+     */
+    protected $appends = [
+        'localized_name',
+        'photo_url',
+        'has_catalogs',
+    ];
+
     /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */
@@ -188,5 +197,41 @@ class Brand extends Model
             return $this->catalogs->where('status', 1)->values();
         }
         return $this->catalogs()->where('status', 1)->get();
+    }
+
+    /**
+     * Check if brand has any catalogs.
+     * Uses pre-loaded count if available, otherwise checks relationship.
+     */
+    public function getHasCatalogsAttribute(): bool
+    {
+        // Use withCatalogsCount() result if available
+        if (isset($this->attributes['catalogs_count'])) {
+            return (int) $this->attributes['catalogs_count'] > 0;
+        }
+
+        // Use loaded relationship if available
+        if ($this->relationLoaded('catalogs')) {
+            return $this->catalogs->count() > 0;
+        }
+
+        // Fallback: check existence
+        return $this->catalogs()->exists();
+    }
+
+    /**
+     * Get catalogs count (pre-computed or calculated).
+     */
+    public function getCatalogsCountAttribute(): int
+    {
+        if (isset($this->attributes['catalogs_count'])) {
+            return (int) $this->attributes['catalogs_count'];
+        }
+
+        if ($this->relationLoaded('catalogs')) {
+            return $this->catalogs->count();
+        }
+
+        return $this->catalogs()->count();
     }
 }

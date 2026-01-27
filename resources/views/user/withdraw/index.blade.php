@@ -66,10 +66,9 @@
 
 
                                         <td>
-
-                                            @php $class = $withdraw->status == 'pending' ? 'yellow-btn' : ($withdraw->status == 'completed' ? 'green-btn' : 'red-btn'); @endphp
+                                            {{-- Status class pre-computed in Controller (DATA_FLOW_POLICY) --}}
                                             <button type="button" disabled
-                                                class="template-btn md-btn {{ $class }}">
+                                                class="template-btn md-btn {{ $withdraw->status_class }}">
                                                 {{ ucfirst($withdraw->status) }}
                                             </button>
                                         </td>

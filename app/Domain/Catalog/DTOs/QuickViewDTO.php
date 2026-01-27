@@ -17,6 +17,7 @@ class QuickViewDTO
     public int $catalogItemId;
     public ?string $catalogItemName;
     public ?string $partNumber;
+    public ?string $catalogItemUrl;  // Pre-computed URL for catalog item
     public string $mainPhoto;
     public int $merchantUserId;
 
@@ -49,6 +50,9 @@ class QuickViewDTO
     public array $fitmentBrands;
     public int $fitmentCount;
 
+    // Merchant galleries (pre-computed)
+    public array $merchantGalleries;
+
     // Original models (for methods not covered by DTO)
     public CatalogItem $catalogItem;
     public ?MerchantItem $merchantItem;
@@ -69,8 +73,11 @@ class QuickViewDTO
 
         // Basic info
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = $catalogItem->name ?? $catalogItem->showName();
+        $dto->catalogItemName = getLocalizedCatalogItemName($catalogItem);
         $dto->partNumber = $catalogItem->part_number;
+        $dto->catalogItemUrl = !empty($catalogItem->part_number)
+            ? route('front.part-result', $catalogItem->part_number)
+            : null;
 
         // Merchant user ID (priority: forced > merchantItem > 0)
         $dto->merchantUserId = $forceMerchantId
@@ -127,14 +134,9 @@ class QuickViewDTO
         $dto->fitmentBrands = $uniqueBrands->toArray();
         $dto->fitmentCount = $uniqueBrands->count();
 
-        return $dto;
-    }
+        // Pre-compute merchant galleries
+        $dto->merchantGalleries = $catalogItem->merchantPhotosForMerchant($dto->merchantUserId, 4)->toArray();
 
-    /**
-     * Get merchant photos (lazy-loaded to avoid query if not needed)
-     */
-    public function getMerchantPhotos(int $limit = 4)
-    {
-        return $this->catalogItem->merchantPhotosForMerchant($this->merchantUserId, $limit);
+        return $dto;
     }
 }

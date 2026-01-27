@@ -264,6 +264,13 @@ class CatalogItemOffersService
                 'branch_id' => $branchKey,
                 'branch_name' => $branchName,
                 'offer' => $offer,
+                // Pre-computed for view convenience (DATA_FLOW_POLICY)
+                'canBuy' => $offer['can_buy'],
+                'inStock' => $offer['in_stock'],
+                'preordered' => $offer['preordered'],
+                'stock' => $offer['stock'],
+                'minQty' => $offer['minimum_qty'],
+                'uniqueId' => 'offer_' . $offer['merchant_item_id'],
             ];
             $grouped[$qualityKey]['merchants'][$merchantKey]['offers_count']++;
             $grouped[$qualityKey]['offers_count']++;

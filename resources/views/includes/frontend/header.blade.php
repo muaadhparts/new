@@ -22,14 +22,9 @@
                 <div class="muaadh-header-left">
                     {{-- Mobile Toggle (hidden in merchant/admin where they have their own toggle) --}}
                     @if (!($hideMobileToggle ?? false))
-                        @php
-                            // Use route pattern matching instead of URL string manipulation
-                            $isUserDashboard = request()->routeIs('user-*') || request()->is('user/*');
-                            $isCourierDashboard = request()->routeIs('courier.*') || request()->is('courier/*');
-                            $isDashboardPage = $isUserDashboard || $isCourierDashboard;
-                        @endphp
+                        {{-- $isDashboardPage, $isUserDashboard, $isCourierDashboard pre-computed in HeaderComposer (DATA_FLOW_POLICY) --}}
 
-                        @if($isDashboardPage)
+                        @if($isDashboardPage ?? false)
                             {{-- Dashboard pages: Show TWO toggle buttons --}}
                             <div class="d-flex align-items-center gap-2 d-xl-none">
                                 {{-- Store Menu Toggle --}}
@@ -145,25 +140,25 @@
                     </button>
                     <div class="muaadh-categories-menu">
                         @foreach ($brands as $brand)
-                            <div class="muaadh-category-item {{ $brand->catalogs && $brand->catalogs->count() > 0 ? 'has-children' : '' }}">
+                            <div class="muaadh-category-item {{ $brand->has_catalogs ? 'has-children' : '' }}">
                                 <a href="{{ route('front.catalog', [$brand->slug]) }}">
                                     @if($brand->photo)
-                                        <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}">
+                                        <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="{{ $brand->localized_name }}">
                                     @else
                                         <i class="fas fa-car"></i>
                                     @endif
-                                    <span>{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</span>
-                                    @if ($brand->catalogs && $brand->catalogs->count() > 0)
+                                    <span>{{ $brand->localized_name }}</span>
+                                    @if ($brand->has_catalogs)
                                         <i class="fas fa-chevron-right muaadh-category-arrow"></i>
                                     @endif
                                 </a>
-                                @if ($brand->catalogs && $brand->catalogs->count() > 0)
+                                @if ($brand->has_catalogs)
                                     <div class="muaadh-subcategory-panel">
                                         <div class="muaadh-subcategory-grid">
                                             @foreach ($brand->catalogs as $catalog)
                                                 <div class="muaadh-subcategory-group">
                                                     <a href="{{ route('front.catalog', [$brand->slug, $catalog->slug]) }}" class="muaadh-subcategory-name">
-                                                        {{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
+                                                        {{ $catalog->localized_name }}
                                                     </a>
                                                 </div>
                                             @endforeach

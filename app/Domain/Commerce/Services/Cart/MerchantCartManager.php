@@ -3,6 +3,7 @@
 namespace App\Domain\Commerce\Services\Cart;
 
 use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Commerce\DTOs\CartItemDTO;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -267,21 +268,21 @@ class MerchantCartManager
         $this->validateBranchId($branchId);
 
         $cart = $this->getStorage();
-        $branchItems = [];
+        $branchItemsRaw = [];
 
         foreach ($cart['items'] as $key => $item) {
             if ((int) ($item['branch_id'] ?? 0) === $branchId) {
-                $branchItems[$key] = $item;
+                $branchItemsRaw[$key] = $item;
             }
         }
 
-        $totals = $this->calculateTotals($branchItems);
+        $totals = $this->calculateTotals($branchItemsRaw);
 
         $branchName = '';
         $merchantId = 0;
         $merchantName = '';
-        if (!empty($branchItems)) {
-            $first = reset($branchItems);
+        if (!empty($branchItemsRaw)) {
+            $first = reset($branchItemsRaw);
             $branchName = $first['branch_name'] ?? '';
             $merchantId = (int) ($first['merchant_id'] ?? 0);
             $merchantName = $first['merchant_name'] ?? '';
@@ -293,6 +294,12 @@ class MerchantCartManager
                 $hasOthers = true;
                 break;
             }
+        }
+
+        // PRE-COMPUTED: Convert to display arrays (no @php in Blade)
+        $branchItems = [];
+        foreach ($branchItemsRaw as $key => $item) {
+            $branchItems[$key] = CartItemDTO::fromArray($item)->toDisplayArray();
         }
 
         return [
@@ -746,5 +753,57 @@ class MerchantCartManager
     {
         $cart = $this->getStorage();
         return !empty($cart['items']);
+    }
+
+    /**
+     * Get cart data for header dropdown (DATA_FLOW_POLICY)
+     *
+     * Returns pre-computed display values for the cart dropdown
+     */
+    public function getHeaderCartData(): array
+    {
+        $cart = $this->getStorage();
+        $items = $cart['items'] ?? [];
+        $totalPrice = 0.0;
+        $displayItems = [];
+
+        foreach ($items as $key => $item) {
+            $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', (string) $key);
+            $partNumber = $item['part_number'] ?? '';
+            $qty = (int) ($item['qty'] ?? 1);
+            $unitPrice = (float) ($item['effective_unit_price'] ?? $item['unit_price'] ?? $item['effective_price'] ?? 0);
+            $discountPercent = (float) ($item['discount_percent'] ?? 0);
+            $photo = $item['photo'] ?? '';
+
+            $itemTotal = (float) ($item['total_price'] ?? ($unitPrice * $qty));
+            $totalPrice += $itemTotal;
+
+            $displayItems[$key] = [
+                'key' => $key,
+                'dom_key' => $domKey,
+                'name' => app()->getLocale() === 'ar' && !empty($item['name_ar'])
+                    ? $item['name_ar']
+                    : ($item['name'] ?? ''),
+                'photo_url' => $photo
+                    ? \Illuminate\Support\Facades\Storage::url($photo)
+                    : asset('assets/images/noimage.png'),
+                'item_url' => $partNumber
+                    ? route('front.part-result', $partNumber)
+                    : '#',
+                'qty' => $qty,
+                'unit_price' => $unitPrice,
+                'unit_price_formatted' => monetaryUnit()->convertAndFormat($unitPrice),
+                'discount_percent' => $discountPercent,
+                'has_discount' => $discountPercent > 0,
+            ];
+        }
+
+        return [
+            'items' => $displayItems,
+            'total_price' => $totalPrice,
+            'total_price_formatted' => monetaryUnit()->convertAndFormat($totalPrice),
+            'has_items' => !empty($displayItems),
+            'items_count' => count($displayItems),
+        ];
     }
 }

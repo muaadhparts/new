@@ -31,17 +31,30 @@ class PurchaseController extends MerchantBaseController
         ->orderby('id', 'desc')
         ->paginate(15);
 
-        // Pre-compute totals for each purchase (avoids queries in Blade)
-        $purchaseTotals = [];
-        foreach ($purchases as $purchase) {
+        // PRE-COMPUTED: Display data for each purchase (no @php in view)
+        $purchasesDisplay = $purchases->map(function ($purchase) {
             $merchantItems = $purchase->merchantPurchases;
-            $purchaseTotals[$purchase->id] = [
-                'price' => $merchantItems->sum('price'),
-                'qty' => $merchantItems->sum('qty'),
+            return [
+                'id' => $purchase->id,
+                'purchase' => $purchase,
+                'purchase_number' => $purchase->purchase_number,
+                'totalQty' => $merchantItems->sum('qty'),
+                'totalPrice' => $merchantItems->sum('price'),
+                'formattedPrice' => \PriceHelper::showOrderCurrencyPrice($merchantItems->sum('price'), $purchase->currency_sign),
+                'method' => $purchase->method,
+                'status' => $purchase->status,
+                'statusClass' => match($purchase->status) {
+                    'pending' => 'bg-pending',
+                    'processing' => 'bg-processing',
+                    'completed' => 'bg-complete',
+                    'declined' => 'bg-declined',
+                    default => 'bg-secondary',
+                },
+                'viewUrl' => route('merchant-purchase-show', $purchase->purchase_number),
             ];
-        }
+        });
 
-        return view('merchant.purchase.index', compact('purchases', 'user', 'purchaseTotals'));
+        return view('merchant.purchase.index', compact('purchases', 'user', 'purchasesDisplay'));
     }
 
     public function show($slug)
@@ -121,14 +134,28 @@ class PurchaseController extends MerchantBaseController
             ->keyBy('user_id')
             ->toArray();
 
+        // ============================================================
+        // PRE-COMPUTED: Cart items display data (no @php URL generation in view)
+        // ============================================================
+        $cartItemsDisplay = [];
+        foreach ($cartItems as $key => $catalogItem) {
+            $itemUserId = $catalogItem['item']['user_id'] ?? 0;
+            $partNumber = $catalogItem['item']['part_number'] ?? '';
+
+            $cartItemsDisplay[$key] = [
+                'productUrl' => !empty($partNumber) ? route('front.part-result', $partNumber) : '#',
+                'merchant' => $merchantsLookup[$itemUserId] ?? null,
+                'merchantPurchase' => $merchantPurchasesLookup[$itemUserId] ?? null,
+            ];
+        }
+
         return view('merchant.purchase.details', compact(
             'user',
             'purchase',
             'cart',
             'trackingData',
             'purchaseStats',
-            'merchantsLookup',
-            'merchantPurchasesLookup',
+            'cartItemsDisplay',
             'branchData'
         ));
     }
@@ -182,7 +209,74 @@ class PurchaseController extends MerchantBaseController
             ? app(InvoiceSellerService::class)->getSellerInfo($merchantPurchase)
             : app(InvoiceSellerService::class)->getSellerInfo(new MerchantPurchase(['payment_owner_id' => 0, 'shipping_owner_id' => 0]));
 
-        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData', 'branchData', 'sellerInfo'));
+        // ============================================================
+        // PRE-COMPUTED: Invoice calculations (no @php in view)
+        // ============================================================
+        $cartItems = $cart['items'] ?? [];
+        $subtotal = 0;
+        $cartItemsDisplay = [];
+
+        foreach ($cartItems as $key => $catalogItem) {
+            $itemUserId = $catalogItem['item']['user_id'] ?? 0;
+
+            // Only count items belonging to this merchant
+            if ($itemUserId == $user->id) {
+                $subtotal += round(($catalogItem['price'] ?? 0) * $purchase->currency_value, 2);
+            }
+
+            // Pre-compute URL for each item
+            $partNumber = $catalogItem['item']['part_number'] ?? '';
+            $cartItemsDisplay[$key] = [
+                'productUrl' => !empty($partNumber) ? route('front.part-result', $partNumber) : '#',
+            ];
+        }
+
+        // Shipping cost (only if merchant is shipping owner)
+        $shippingCostForThisMerchant = 0;
+        if (\Illuminate\Support\Facades\Auth::user()->id == $purchase->merchant_shipping_id && $purchase->shipping_cost != 0) {
+            $shippingCostForThisMerchant = round($purchase->shipping_cost, 2);
+        }
+
+        // Delivery fee from tracking data
+        $deliveryFee = 0;
+        if ($trackingData['hasDelivery'] && ($trackingData['deliveryFee'] ?? 0) > 0) {
+            $deliveryFee = round($trackingData['deliveryFee'] * $purchase->currency_value, 2);
+        }
+
+        // Tax calculation
+        $tax = 0;
+        $subtotalAfterTax = $subtotal;
+        if ($purchase->tax != 0) {
+            $tax = ($subtotal / 100) * $purchase->tax;
+            $subtotalAfterTax = $subtotal + $tax;
+        }
+
+        // Total
+        $total = $subtotalAfterTax + $shippingCostForThisMerchant + $deliveryFee;
+
+        $invoiceCalculations = [
+            'subtotal' => $subtotal,
+            'subtotalAfterTax' => $subtotalAfterTax,
+            'shippingCost' => $shippingCostForThisMerchant,
+            'deliveryFee' => $deliveryFee,
+            'tax' => $tax,
+            'total' => $total,
+            'showShippingCost' => $shippingCostForThisMerchant > 0,
+            'showDeliveryFee' => $deliveryFee > 0,
+            'showTax' => $purchase->tax != 0,
+        ];
+
+        return view('merchant.purchase.invoice', compact(
+            'user',
+            'purchase',
+            'cart',
+            'trackingData',
+            'merchantInvoiceData',
+            'branchData',
+            'sellerInfo',
+            'cartItemsDisplay',
+            'invoiceCalculations'
+        ));
     }
 
     public function printpage($slug)
@@ -221,7 +315,56 @@ class PurchaseController extends MerchantBaseController
             ? app(InvoiceSellerService::class)->getSellerInfo($merchantPurchase)
             : app(InvoiceSellerService::class)->getSellerInfo(new MerchantPurchase(['payment_owner_id' => 0, 'shipping_owner_id' => 0]));
 
-        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData', 'sellerInfo'));
+        // PRE-COMPUTED: Print calculations (DATA_FLOW_POLICY - no @php in view)
+        $printCalculations = $this->calculatePrintTotals($purchase, $cart, $user->id);
+
+        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData', 'sellerInfo', 'printCalculations'));
+    }
+
+    /**
+     * Calculate totals for merchant print page
+     * PRE-COMPUTED: All values to avoid @php in view (DATA_FLOW_POLICY)
+     */
+    private function calculatePrintTotals(Purchase $purchase, array $cart, int $merchantId): array
+    {
+        $subtotal = 0;
+        $items = $cart['items'] ?? [];
+
+        // Sum prices of merchant's items only
+        foreach ($items as $item) {
+            $itemUserId = $item['item']['user_id'] ?? 0;
+            if ($itemUserId != 0 && $itemUserId == $merchantId) {
+                $subtotal += round(($item['price'] ?? 0) * $purchase->currency_value, 2);
+            }
+        }
+
+        // Shipping cost only if merchant is shipping owner
+        $shippingCost = 0;
+        $showShippingCost = false;
+        if ($merchantId == $purchase->merchant_shipping_id && $purchase->shipping_cost != 0) {
+            $shippingCost = round($purchase->shipping_cost, 2);
+            $showShippingCost = true;
+        }
+
+        // Tax calculation
+        $tax = 0;
+        $showTax = false;
+        if ($purchase->tax != 0) {
+            $tax = ($subtotal / 100) * $purchase->tax;
+            $showTax = true;
+        }
+
+        // Total with tax and shipping
+        $total = $subtotal + $tax + $shippingCost;
+
+        return [
+            'subtotal' => $subtotal,
+            'shippingCost' => $shippingCost,
+            'showShippingCost' => $showShippingCost,
+            'tax' => $tax,
+            'showTax' => $showTax,
+            'total' => $total,
+        ];
     }
 
     /**

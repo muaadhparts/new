@@ -5,9 +5,7 @@
             <div class="d-flex">
                 <!-- sidebar -->
                 @include('includes.courier.sidebar')
-                @php
-                    $purchase = $data->purchase;
-                @endphp
+                {{-- $purchase pre-computed in Controller (DATA_FLOW_POLICY) --}}
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-name-box gap-4">
@@ -17,8 +15,8 @@
                         <h3 class="ud-page-name">@lang('Delivery Details')</h3>
                     </div>
 
-                    {{-- ✅ Delivery Workflow Progress Indicator (NEW WORKFLOW) --}}
-                    @include('includes.delivery-workflow', ['delivery' => $data])
+                    {{-- ✅ Delivery Workflow Progress Indicator (DTO version - DATA_FLOW_POLICY) --}}
+                    @include('includes.delivery-workflow-dto', ['delivery' => $deliveryDto])
 
                     {{-- ✅ Action Buttons (NEW WORKFLOW) --}}
                     <div class="my-4">

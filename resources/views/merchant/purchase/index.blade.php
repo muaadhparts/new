@@ -57,43 +57,33 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($purchases as $purchase)
-                    @php $totals = $purchaseTotals[$purchase->id] ?? ['price' => 0, 'qty' => 0]; @endphp
+                    @foreach ($purchasesDisplay as $itemData)
                     <tr>
                         <!-- Purchase Number -->
-                        <td><span class="content">{{ $purchase->purchase_number }}</span></td>
+                        <td><span class="content">{{ $itemData['purchase_number'] }}</span></td>
                         <!-- Total Qty -->
                         <td class="text-start">
-                            <span class="content">{{ $totals['qty'] }}</span>
+                            <span class="content">{{ $itemData['totalQty'] }}</span>
                         </td>
                         <!-- Total Cost -->
-                        <td><span class="content">{{ PriceHelper::showOrderCurrencyPrice($totals['price'], $purchase->currency_sign) }}</span>
+                        <td><span class="content">{{ $itemData['formattedPrice'] }}</span>
                         </td>
                         <!-- Payment Method -->
                         <td>
                             <span class="content">
-                                {{ $purchase->method }}
+                                {{ $itemData['method'] }}
                             </span>
                         </td>
                         <!-- Status -->
                         <td>
-
                             <span class="content">
-                                @if ($purchase->status == 'pending')
-                                <span class="bg-pending status-btn">{{ $purchase->status }}</span>
-                                @elseif ($purchase->status == 'processing')
-                                <span class="bg-processing status-btn">{{ $purchase->status }}</span>
-                                @elseif ($purchase->status == 'completed')
-                                <span class="bg-complete status-btn">{{ $purchase->status }}</span>
-                                @elseif ($purchase->status == 'declined')
-                                <span class="bg-declined status-btn">{{ $purchase->status }}</span>
-                                @endif
+                                <span class="{{ $itemData['statusClass'] }} status-btn">{{ $itemData['status'] }}</span>
                             </span>
                         </td>
                         <!-- Actions -->
                         <td>
                             <div class="table-icon-btns-wrapper">
-                                <a href="{{ route('merchant-purchase-show', $purchase->purchase_number) }}" class="view-btn">
+                                <a href="{{ $itemData['viewUrl'] }}" class="view-btn">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg">
                                         <g clip-path="url(#clip0_548_165891)">

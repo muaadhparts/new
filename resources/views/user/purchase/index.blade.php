@@ -47,8 +47,8 @@
                                         </td>
 
                                         <td>
-                                            @php $class = in_array($purchase->status, ['pending', 'processing']) ? 'yellow-btn' : ($purchase->status == 'completed' ? 'green-btn' : ($purchase->status == 'declined' ? 'red-btn' : 'black-btn')); @endphp
-                                            <button type="button" disabled class="template-btn md-btn {{ $class }}">
+                                            {{-- Status class pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                            <button type="button" disabled class="template-btn md-btn {{ $purchase->status_class }}">
                                                 {{ ucwords($purchase->status) }}
                                             </button>
                                         </td>

@@ -190,15 +190,20 @@ class TrackingDataBuilder
                 ->get();
 
             foreach ($trackings as $tracking) {
+                $status = $tracking->status;
                 $shipments[] = [
                     'purchase_number' => $purchase->purchase_number,
                     'tracking_number' => $tracking->tracking_number,
                     'company' => $tracking->company_name,
-                    'status' => $tracking->status,
+                    'status' => $status,
                     'status_ar' => $tracking->status_ar,
-                    'date' => $tracking->occurred_at?->format('Y-m-d H:i'),
+                    'date' => $tracking->occurred_at,
                     'purchase_id' => $purchase->id,
                     'integration_type' => $tracking->integration_type,
+                    // PRE-COMPUTED: Display values (DATA_FLOW_POLICY - no @php in view)
+                    'statusColor' => $this->getStatusColor($status),
+                    'statusIcon' => $this->getStatusIcon($status),
+                    'progressPercent' => $this->calculateShipmentProgress($status),
                 ];
             }
         }
@@ -299,5 +304,54 @@ class TrackingDataBuilder
             'returned' => __('Returned'),
             default => ucfirst(str_replace('_', ' ', $status)),
         };
+    }
+
+    /**
+     * Get status color class (DATA_FLOW_POLICY)
+     */
+    private function getStatusColor(string $status): string
+    {
+        return match ($status) {
+            'created' => 'info',
+            'picked_up' => 'primary',
+            'in_transit' => 'warning',
+            'out_for_delivery' => 'warning',
+            'delivered' => 'success',
+            'failed' => 'danger',
+            'returned' => 'secondary',
+            'cancelled' => 'dark',
+            default => 'info',
+        };
+    }
+
+    /**
+     * Get status icon class (DATA_FLOW_POLICY)
+     */
+    private function getStatusIcon(string $status): string
+    {
+        return match ($status) {
+            'created' => 'fa-box',
+            'picked_up' => 'fa-truck-loading',
+            'in_transit' => 'fa-truck',
+            'out_for_delivery' => 'fa-motorcycle',
+            'delivered' => 'fa-check-circle',
+            'failed' => 'fa-exclamation-circle',
+            'returned' => 'fa-undo',
+            'cancelled' => 'fa-times-circle',
+            default => 'fa-box',
+        };
+    }
+
+    /**
+     * Calculate shipment progress percent (DATA_FLOW_POLICY)
+     */
+    private function calculateShipmentProgress(string $status): int
+    {
+        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+        $currentIndex = array_search($status, $steps);
+        if ($currentIndex === false) {
+            $currentIndex = 0;
+        }
+        return (int) round((($currentIndex + 1) / count($steps)) * 100);
     }
 }

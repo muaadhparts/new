@@ -77,32 +77,9 @@
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.catalog.category', ['brand_slug' => $brand_slug, 'catalog_slug' => $catalog_slug]) }}">{{ $brand->name ?? __('Catalog') }}</a></li>
-                        @php
-                            $breadcrumbCat1 = null;
-                            $breadcrumbCat2 = null;
-                        @endphp
-                        @foreach($breadcrumb as $crumb)
-                            @php
-                                // Build cumulative breadcrumb URLs
-                                $crumbParams = [
-                                    'brand_slug' => $brand_slug,
-                                    'catalog_slug' => $catalog_slug,
-                                ];
-                                if ($crumb->level == 1) {
-                                    $breadcrumbCat1 = $crumb->slug;
-                                    $crumbParams['cat1'] = $crumb->slug;
-                                } elseif ($crumb->level == 2) {
-                                    $breadcrumbCat2 = $crumb->slug;
-                                    $crumbParams['cat1'] = $breadcrumbCat1;
-                                    $crumbParams['cat2'] = $crumb->slug;
-                                } elseif ($crumb->level == 3) {
-                                    $crumbParams['cat1'] = $breadcrumbCat1;
-                                    $crumbParams['cat2'] = $breadcrumbCat2;
-                                    $crumbParams['cat3'] = $crumb->slug;
-                                }
-                                $crumbLabel = app()->getLocale() == 'ar' ? ($crumb->label_ar ?: $crumb->label_en) : $crumb->label_en;
-                            @endphp
-                            <li><a href="{{ route('front.catalog.category', $crumbParams) }}">{{ $crumbLabel }}</a></li>
+                        {{-- Breadcrumb items (pre-computed in controller - DATA_FLOW_POLICY) --}}
+                        @foreach($breadcrumbWithUrls as $crumb)
+                            <li><a href="{{ $crumb['url'] }}">{{ $crumb['label'] }}</a></li>
                         @endforeach
                     </ul>
                 </div>
@@ -217,17 +194,13 @@
 
                 <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper catalogItems-column">
 
-                    @php
-                        $view = request()->input('view_check', 'list-view');
-                    @endphp
-
                     <!-- catalogItem nav wrapper -->
                     <div class="catalogItem-nav-wrapper">
                         <h5>@lang('Total Items Found:') {{ $cards->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
-                                @php $currentSort = request('sort', 'price_asc'); @endphp
+                                {{-- $currentSort pre-computed in controller (DATA_FLOW_POLICY) --}}
                                 <select class="nice-select" id="sortby" name="sort">
                                     <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
                                     <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
@@ -237,20 +210,20 @@
                             </div>
                             <!-- list and grid view tab btns -->
                             <div class="view-toggle-btns d-flex gap-2" role="tablist">
-                                <button class="list-btn check_view {{ $view == 'list-view' ? 'active' : '' }}"
+                                <button class="list-btn check_view {{ $viewMode == 'list-view' ? 'active' : '' }}"
                                     data-shopview="list-view" type="button" data-bs-toggle="tab"
                                     data-bs-target="#layout-list-pane" role="tab" aria-controls="layout-list-pane"
-                                    aria-selected="{{ $view == 'list-view' ? 'true' : 'false' }}" name="@lang('List View')">
+                                    aria-selected="{{ $viewMode == 'list-view' ? 'true' : 'false' }}" name="@lang('List View')">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 31 24" fill="none">
                                         <path fill-rule="evenodd" clip-rule="evenodd"
                                             d="M1.33331 18.7575H3.90917C4.64356 18.7575 5.24248 19.3564 5.24248 20.0908V22.6666C5.24248 23.401 4.64356 24 3.90917 24H1.33331C0.598918 24 0 23.4011 0 22.6666V20.0908C0 19.3564 0.598918 18.7575 1.33331 18.7575ZM10.7121 0H29.44C30.1744 0 30.7734 0.598986 30.7734 1.33331V3.90917C30.7734 4.64349 30.1744 5.24248 29.44 5.24248C15.6911 5.24248 24.461 5.24248 10.7121 5.24248C9.97775 5.24248 9.37876 4.64356 9.37876 3.90917V1.33331C9.37876 0.598918 9.97775 0 10.7121 0ZM1.33331 0H3.90917C4.64356 0 5.24248 0.598986 5.24248 1.33331V3.90917C5.24248 4.64356 4.64356 5.24248 3.90917 5.24248H1.33331C0.598918 5.24248 0 4.64356 0 3.90917V1.33331C0 0.598918 0.598918 0 1.33331 0ZM10.7121 9.37869H29.44C30.1744 9.37869 30.7734 9.97768 30.7734 10.712V13.2879C30.7734 14.0222 30.1744 14.6212 29.44 14.6212C15.6911 14.6212 24.461 14.6212 10.7121 14.6212C9.97775 14.6212 9.37876 14.0223 9.37876 13.2879V10.712C9.37876 9.97761 9.97775 9.37869 10.7121 9.37869ZM1.33331 9.37869H3.90917C4.64356 9.37869 5.24248 9.97768 5.24248 10.712V13.2879C5.24248 14.0223 4.64356 14.6212 3.90917 14.6212H1.33331C0.598918 14.6212 0 14.0223 0 13.2879V10.712C0 9.97761 0.598918 9.37869 1.33331 9.37869ZM10.7121 18.7575H29.44C30.1744 18.7575 30.7734 19.3564 30.7734 20.0908V22.6666C30.7734 23.4009 30.1744 23.9999 29.44 23.9999C15.6911 23.9999 24.461 23.9999 10.7121 23.9999C9.97775 23.9999 9.37876 23.401 9.37876 22.6666V20.0908C9.37876 19.3564 9.97775 18.7575 10.7121 18.7575Z"
                                             fill="currentColor" />
                                     </svg>
                                 </button>
-                                <button class="grid-btn check_view {{ $view == 'grid-view' ? 'active' : '' }}"
+                                <button class="grid-btn check_view {{ $viewMode == 'grid-view' ? 'active' : '' }}"
                                     type="button" data-shopview="grid-view" data-bs-toggle="tab"
                                     data-bs-target="#layout-grid-pane" role="tab" aria-controls="layout-grid-pane"
-                                    aria-selected="{{ $view == 'grid-view' ? 'true' : 'false' }}" name="@lang('Grid View')">
+                                    aria-selected="{{ $viewMode == 'grid-view' ? 'true' : 'false' }}" name="@lang('Grid View')">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 25 24" fill="none">
                                         <path d="M9.5685 0H2.8222C1.69252 0 0.773438 0.919078 0.773438 2.04877V8.79506C0.773438 9.92475 1.69252 10.8438 2.8222 10.8438H9.5685C10.6982 10.8438 11.6173 9.92475 11.6173 8.79506V2.04877C11.6173 0.919078 10.6982 0 9.5685 0Z" fill="currentColor" />
                                         <path d="M22.7248 0H15.9785C14.8488 0 13.9297 0.919078 13.9297 2.04877V8.79506C13.9297 9.92475 14.8488 10.8438 15.9785 10.8438H22.7248C23.8544 10.8438 24.7735 9.92475 24.7735 8.79506V2.04877C24.7735 0.919078 23.8544 0 22.7248 0Z" fill="currentColor" />
@@ -299,7 +272,7 @@
                             <div class="category-catalogItems-scroll">
                                 <div class="tab-content" id="myTabContent">
                                     <!-- catalogItem list view start -->
-                                    <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
+                                    <div class="tab-pane fade {{ $viewMode == 'list-view' ? 'show active' : '' }}"
                                         id="layout-list-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
                                             @foreach ($cards as $card)
@@ -308,7 +281,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
+                                    <div class="tab-pane fade {{ $viewMode == 'grid-view' ? 'show active' : '' }}"
                                         id="layout-grid-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
                                             @foreach ($cards as $card)

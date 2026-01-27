@@ -79,11 +79,26 @@ class CatalogEventController extends OperatorBaseController
      */
     public function showCatalogItemEvents()
     {
-        $datas = CatalogEvent::whereNotNull('catalog_item_id')->latest('id')->get();
+        $datas = CatalogEvent::whereNotNull('catalog_item_id')
+            ->with(['catalogItem.merchantItems' => function ($query) {
+                $query->where('status', 1);
+            }])
+            ->latest('id')
+            ->get();
+
+        // Pre-compute stock totals
         foreach ($datas as $data) {
             $data->is_read = 1;
             $data->save();
+
+            // Calculate total stock from active merchant items
+            if ($data->catalogItem) {
+                $data->total_stock = $data->catalogItem->merchantItems->sum('stock');
+            } else {
+                $data->total_stock = 0;
+            }
         }
+
         return view('operator.catalog-event.catalogItem', compact('datas'));
     }
 

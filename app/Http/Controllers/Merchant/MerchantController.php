@@ -101,6 +101,38 @@ class MerchantController extends MerchantBaseController
             $totalEarning = MerchantPurchase::where('user_id', $userId)->sum('price');
             $data['totalEarning'] = CatalogItem::merchantConvertWithoutCurrencyPrice($totalEarning);
 
+            // ============================================================
+            // PRE-COMPUTED: Verification status (no @php in view)
+            // ============================================================
+            $data['hasPendingVerification'] = $this->user->hasPendingTrustBadge();
+
+            // ============================================================
+            // PRE-COMPUTED: MerchantItems display data (no @php in view)
+            // ============================================================
+            $data['merchantItemsDisplay'] = $data['merchantItems']->map(function ($item) {
+                $catalogItem = $item->catalogItem;
+                $fitments = $catalogItem?->fitments ?? collect();
+                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $firstBrand = $brands->first();
+                $photo = $catalogItem?->photo;
+
+                return [
+                    'id' => $item->id,
+                    'item' => $item,
+                    'catalogItem' => $catalogItem,
+                    'partNumber' => $catalogItem?->part_number,
+                    'name' => $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A'),
+                    'brandName' => $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A'),
+                    'qualityBrandName' => $item->qualityBrand ? getLocalizedQualityName($item->qualityBrand) : __('N/A'),
+                    'branchName' => $item->merchantBranch?->warehouse_name ?? __('N/A'),
+                    'price' => CatalogItem::convertPrice($item->price),
+                    'photoUrl' => $photo
+                        ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
+                        : asset('assets/images/noimage.png'),
+                    'editUrl' => route('merchant-catalog-item-edit', $item->id),
+                ];
+            });
+
             return view('merchant.index', $data);
         } catch (\Exception $e) {
             \Log::error('MerchantController@index error: ' . $e->getMessage());

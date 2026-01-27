@@ -151,6 +151,12 @@ class OperatorPurchaseDataBuilder
         $merchantPurchases = $this->purchase->merchantPurchases()->with(['user', 'merchantBranch'])->get();
         $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
 
+        // PRE-COMPUTED: Seller display info for header (DATA_FLOW_POLICY - no @php in view)
+        $sellerDisplay = $this->getSellerDisplayInfo($sellersInfoLookup);
+
+        // PRE-COMPUTED: Subtotal calculation (DATA_FLOW_POLICY - no @php in view)
+        $subtotal = $this->calculateSubtotal();
+
         return [
             'purchase' => $this->purchase,
             'cart' => $this->cart,
@@ -161,6 +167,9 @@ class OperatorPurchaseDataBuilder
             'qualityBrandsLookup' => $this->qualityBrandsLookup,
             'sellersInfoLookup' => $sellersInfoLookup,
             'shippingMethodName' => $this->getShippingMethodNameByPrice(),
+            'showPlatform' => $sellerDisplay['showPlatform'],
+            'firstSeller' => $sellerDisplay['firstSeller'],
+            'subtotal' => $subtotal,
         ];
     }
 
@@ -173,6 +182,12 @@ class OperatorPurchaseDataBuilder
         $merchantPurchases = $this->purchase->merchantPurchases()->with(['user', 'merchantBranch'])->get();
         $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
 
+        // PRE-COMPUTED: Seller display info for header (DATA_FLOW_POLICY - no @php in view)
+        $sellerDisplay = $this->getSellerDisplayInfo($sellersInfoLookup);
+
+        // PRE-COMPUTED: Subtotal calculation (DATA_FLOW_POLICY - no @php in view)
+        $subtotal = $this->calculateSubtotal();
+
         return [
             'purchase' => $this->purchase,
             'cart' => $this->cart,
@@ -183,6 +198,9 @@ class OperatorPurchaseDataBuilder
             'qualityBrandsLookup' => $this->qualityBrandsLookup,
             'sellersInfoLookup' => $sellersInfoLookup,
             'shippingMethodName' => $this->getShippingMethodNameByPrice(),
+            'showPlatform' => $sellerDisplay['showPlatform'],
+            'firstSeller' => $sellerDisplay['firstSeller'],
+            'subtotal' => $subtotal,
         ];
     }
 
@@ -211,13 +229,16 @@ class OperatorPurchaseDataBuilder
             $userId = $item['item']['user_id'] ?? $item['user_id'] ?? 0;
 
             if (!isset($grouped[$userId])) {
+                $merchantData = $this->getMerchantData($userId);
                 $grouped[$userId] = [
-                    'merchant' => $this->getMerchantData($userId),
+                    'merchant' => $merchantData,
                     'merchantPurchase' => $this->getMerchantPurchaseData($userId),
                     'branch' => $this->branchesLookup[$userId] ?? null,
                     'shipping' => $this->getMerchantShipping($userId),
                     'items' => [],
                     'total' => 0,
+                    // PRE-COMPUTED: Merchant display name (DATA_FLOW_POLICY - no @php in view)
+                    '_merchantDisplayName' => $merchantData['shop_name'] ?? $merchantData['name'] ?? __('Unknown Merchant'),
                 ];
             }
 
@@ -269,6 +290,8 @@ class OperatorPurchaseDataBuilder
         // Merchant purchase data
         $merchantPurchase = $this->merchantPurchasesLookup[$userId] ?? null;
         $item['_merchantPurchase'] = $merchantPurchase;
+        // PRE-COMPUTED: Merchant purchase status (DATA_FLOW_POLICY - no @php in view)
+        $item['_mpStatus'] = $merchantPurchase['status'] ?? 'pending';
 
         // Branch data
         $item['_branch'] = $this->branchesLookup[$userId] ?? null;
@@ -401,5 +424,42 @@ class OperatorPurchaseDataBuilder
             return $qualityBrand['name_ar'];
         }
         return $qualityBrand['name'] ?? '';
+    }
+
+    /**
+     * Get seller display info for invoice/print header
+     * PRE-COMPUTED: Determines whether to show platform logo or merchant logo
+     */
+    private function getSellerDisplayInfo(array $sellersInfoLookup): array
+    {
+        // Get first seller info for header (or platform if multiple)
+        $firstSeller = count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
+
+        // Show platform if: no seller found, multiple sellers, or first seller is platform
+        $showPlatform = !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true);
+
+        return [
+            'firstSeller' => $firstSeller,
+            'showPlatform' => $showPlatform,
+        ];
+    }
+
+    /**
+     * Calculate subtotal for invoice/print
+     * PRE-COMPUTED: Sum of all cart item prices
+     */
+    private function calculateSubtotal(): float
+    {
+        $subtotal = 0;
+        $cartItems = $this->cart['items'] ?? [];
+
+        foreach ($cartItems as $item) {
+            $price = (float) ($item['price'] ?? 0);
+            // Match the original calculation: round((price / currency_value) * currency_value, 2)
+            // This essentially rounds the price to 2 decimal places
+            $subtotal += round($price, 2);
+        }
+
+        return $subtotal;
     }
 }

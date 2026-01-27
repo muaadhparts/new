@@ -67,65 +67,51 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($merchantItems as $item)
-                            @php
-                                $catalogItem = $item->catalogItem;
-                                $fitments = $catalogItem?->fitments ?? collect();
-                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                $firstBrand = $brands->first();
-                            @endphp
+                        @forelse ($merchantItemsDisplay as $itemData)
                             <tr>
                                 <td class="text-start">
                                     <div class="catalogItem-name">
-                                        @php
-                                            $photo = $catalogItem?->photo;
-                                            $photoUrl = $photo
-                                                ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
-                                                : asset('assets/images/noimage.png');
-                                        @endphp
-                                        <img src="{{ $photoUrl }}" alt="Image" class="img-thumbnail" style="width:80px">
+                                        <img src="{{ $itemData['photoUrl'] }}" alt="Image" class="img-thumbnail" style="width:80px">
                                     </div>
                                 </td>
-                                <td><span class="content"><code>{{ $catalogItem?->part_number ?? __('N/A') }}</code></span></td>
+                                <td><span class="content"><code>{{ $itemData['partNumber'] ?? __('N/A') }}</code></span></td>
                                 <td class="text-start">
                                     <div class="catalogItem-name">
-                                        <span class="content">
-                                            {{ $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A') }}
-                                        </span>
+                                        <span class="content">{{ $itemData['name'] }}</span>
                                     </div>
                                 </td>
-                                <td><span class="content">{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</span></td>
-                                <td><span class="content">{{ $item->qualityBrand?->display_name ?? __('N/A') }}</span></td>
-                                <td><span class="content">{{ $item->merchantBranch?->warehouse_name ?? __('N/A') }}</span></td>
-                                <td><span class="content">{{ ucfirst($item->item_type) }}</span></td>
+                                <td><span class="content">{{ $itemData['brandName'] }}</span></td>
+                                <td><span class="content">{{ $itemData['qualityBrandName'] }}</span></td>
+                                <td><span class="content">{{ $itemData['branchName'] }}</span></td>
+                                <td><span class="content">{{ $itemData['itemType'] }}</span></td>
                                 <td>
                                     <span class="content">
-                                        @if($item->stock === null || $item->stock === '')
+                                        @if($itemData['stock'] === null || $itemData['stock'] === '')
                                             {{ __('Unlimited') }}
-                                        @elseif($item->stock == 0)
+                                        @elseif($itemData['stock'] == 0)
                                             <span class="text-danger">{{ __('Out Of Stock') }}</span>
                                         @else
-                                            {{ $item->stock }}
+                                            {{ $itemData['stock'] }}
                                         @endif
                                     </span>
                                 </td>
-                                <td><span class="content">{{ \App\Domain\Catalog\Models\CatalogItem::convertPrice($item->price) }}</span></td>
+                                <td><span class="content">{{ $itemData['price'] }}</span></td>
                                 <td>
                                     <div class="status position-relative">
                                         <div class="dropdown-container">
-                                            <select class="form-control nice-select form__control {{ $item->status == 1 ? 'active' : 'deactive' }}"
+                                            <select class="form-control nice-select form__control {{ $itemData['status'] == 1 ? 'active' : 'deactive' }}"
                                                 id="item_status">
-                                                <option value="{{ route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 1]) }}"
-                                                    {{ $item->status == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                                                <option value="{{ route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 0]) }}"
-                                                    {{ $item->status == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
+                                                <option value="{{ $itemData['statusActiveUrl'] }}"
+                                                    {{ $itemData['status'] == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
+                                                <option value="{{ $itemData['statusInactiveUrl'] }}"
+                                                    {{ $itemData['status'] == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
                                             </select>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="table-icon-btns-wrapper">
-                                        <a href="{{ route('merchant-catalog-item-edit', $item->id) }}" class="view-btn edit-btn">
+                                        <a href="{{ $itemData['editUrl'] }}" class="view-btn edit-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                                 <g clip-path="url(#clip0_910_50031)">
                                                     <path d="M18.9999 12.0469C18.447 12.0469 18 12.495 18 13.0469V21.0469C18 21.5979 17.5519 22.0469 17.0001 22.0469H3C2.44794 22.0469 2.00006 21.5979 2.00006 21.0469V7.04688C2.00006 6.49591 2.44794 6.04694 3 6.04694H11.0001C11.553 6.04694 12 5.59888 12 5.047C12 4.49493 11.553 4.04688 11.0001 4.04688H3C1.34601 4.04688 0 5.39288 0 7.04688V21.0469C0 22.7009 1.34601 24.0469 3 24.0469H17.0001C18.6541 24.0469 20.0001 22.7009 20.0001 21.0469V13.0469C20.0001 12.4939 19.5529 12.0469 18.9999 12.0469Z" fill="white" />
@@ -135,7 +121,7 @@
                                                 <defs><clipPath id="clip0_910_50031"><rect width="24" height="24" fill="white" /></clipPath></defs>
                                             </svg>
                                         </a>
-                                        <a href="{{ $catalogItem?->part_number ? route('front.part-result', $catalogItem->part_number) : '#' }}" target="_blank" class="view-btn">
+                                        <a href="{{ $itemData['viewUrl'] }}" target="_blank" class="view-btn">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_165891)">
                                                     <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z" fill="white" />
@@ -143,7 +129,7 @@
                                                 <defs><clipPath id="clip0_548_165891"><rect width="24" height="24" fill="white" /></clipPath></defs>
                                             </svg>
                                         </a>
-                                        <a data-href="{{ route('merchant-catalog-item-delete', $item->id) }}" href="javascript:;"
+                                        <a data-href="{{ $itemData['deleteUrl'] }}" href="javascript:;"
                                             class="view-btn delete-btn delete_button" data-bs-toggle="modal" data-bs-target="#confirm-detete-modal">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                                 <path d="M16 6V5.2C16 4.0799 16 3.51984 15.782 3.09202C15.5903 2.71569 15.2843 2.40973 14.908 2.21799C14.4802 2 13.9201 2 12.8 2H11.2C10.0799 2 9.51984 2 9.09202 2.21799C8.71569 2.40973 8.40973 2.71569 8.21799 3.09202C8 3.51984 8 4.0799 8 5.2V6M10 11.5V16.5M14 11.5V16.5M3 6H21M19 6V17.2C19 18.8802 19 19.7202 18.673 20.362C18.3854 20.9265 17.9265 21.3854 17.362 21.673C16.7202 22 15.8802 22 14.2 22H9.8C8.11984 22 7.27976 22 6.63803 21.673C6.07354 21.3854 5.6146 20.9265 5.32698 20.362C5 19.7202 5 18.8802 5 17.2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />

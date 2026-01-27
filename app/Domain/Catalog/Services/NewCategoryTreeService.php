@@ -149,10 +149,16 @@ class NewCategoryTreeService
      *
      * @param int $catalogId Catalog ID
      * @param int|null $brandId Brand ID (optional filter)
+     * @param string|null $brandSlug Brand slug for URL building (DATA_FLOW_POLICY)
+     * @param string|null $catalogSlug Catalog slug for URL building (DATA_FLOW_POLICY)
      * @return Collection Hierarchical category tree
      */
-    public function buildCategoryTree(int $catalogId, ?int $brandId = null): Collection
-    {
+    public function buildCategoryTree(
+        int $catalogId,
+        ?int $brandId = null,
+        ?string $brandSlug = null,
+        ?string $catalogSlug = null
+    ): Collection {
         $query = NewCategory::query()
             ->where('catalog_id', $catalogId)
             ->orderBy('level')
@@ -174,7 +180,7 @@ class NewCategoryTreeService
             $category->children_items = collect();
         }
 
-        // Second pass: build hierarchy
+        // Second pass: build hierarchy and compute URLs
         foreach ($allCategories as $category) {
             if ($category->parent_id && isset($categoryMap[$category->parent_id])) {
                 $categoryMap[$category->parent_id]->children_items->push($category);
@@ -183,7 +189,81 @@ class NewCategoryTreeService
             }
         }
 
+        // Third pass: Pre-compute URLs and display values (DATA_FLOW_POLICY)
+        if ($brandSlug && $catalogSlug) {
+            $locale = app()->getLocale();
+            $this->computeCategoryUrls($tree, $brandSlug, $catalogSlug, $locale, $categoryMap);
+        }
+
         return $tree;
+    }
+
+    /**
+     * Recursively compute URLs for category tree (DATA_FLOW_POLICY)
+     *
+     * @param Collection $categories
+     * @param string $brandSlug
+     * @param string $catalogSlug
+     * @param string $locale
+     * @param array $categoryMap
+     * @param string|null $parentCat1Slug
+     * @param string|null $parentCat2Slug
+     */
+    private function computeCategoryUrls(
+        Collection $categories,
+        string $brandSlug,
+        string $catalogSlug,
+        string $locale,
+        array $categoryMap,
+        ?string $parentCat1Slug = null,
+        ?string $parentCat2Slug = null
+    ): void {
+        foreach ($categories as $category) {
+            // Build URL params based on level
+            $params = [
+                'brand_slug' => $brandSlug,
+                'catalog_slug' => $catalogSlug,
+            ];
+
+            if ($category->level == 1) {
+                $params['cat1'] = $category->slug;
+                $category->computed_parent_cat1_slug = $category->slug;
+                $category->computed_parent_cat2_slug = null;
+            } elseif ($category->level == 2) {
+                $params['cat1'] = $parentCat1Slug;
+                $params['cat2'] = $category->slug;
+                $category->computed_parent_cat1_slug = $parentCat1Slug;
+                $category->computed_parent_cat2_slug = $category->slug;
+            } elseif ($category->level == 3) {
+                $params['cat1'] = $parentCat1Slug;
+                $params['cat2'] = $parentCat2Slug;
+                $params['cat3'] = $category->slug;
+            }
+
+            // Pre-computed URL (DATA_FLOW_POLICY)
+            $category->computed_url = route('front.catalog.category', $params);
+
+            // Pre-computed label (DATA_FLOW_POLICY)
+            $category->computed_label = $locale === 'ar'
+                ? ($category->label_ar ?: $category->label_en)
+                : $category->label_en;
+
+            // Pre-computed display values (DATA_FLOW_POLICY)
+            $category->has_children = $category->children_items && $category->children_items->count() > 0;
+
+            // Recurse for children
+            if ($category->has_children) {
+                $this->computeCategoryUrls(
+                    $category->children_items,
+                    $brandSlug,
+                    $catalogSlug,
+                    $locale,
+                    $categoryMap,
+                    $category->level == 1 ? $category->slug : $parentCat1Slug,
+                    $category->level == 2 ? $category->slug : $parentCat2Slug
+                );
+            }
+        }
     }
 
     /**

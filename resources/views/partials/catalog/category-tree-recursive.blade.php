@@ -1,48 +1,16 @@
 {{-- Recursive category tree component --}}
-@php
-    $locale = app()->getLocale();
-    $breadcrumb = $breadcrumb ?? collect();
-@endphp
-
+{{-- computed_url, computed_label, has_children pre-computed in NewCategoryTreeService (DATA_FLOW_POLICY) --}}
 <ul class="tree-list" style="{{ $level > 1 ? 'display: none;' : '' }}">
     @foreach($categories as $category)
-        @php
-            $isSelected = $selectedCategory && $selectedCategory->id === $category->id;
-            $isAncestor = $selectedCategory && $breadcrumb->contains('id', $category->id);
-            $hasChildren = $category->children_items && $category->children_items->count() > 0;
-            $label = $locale === 'ar' ? ($category->label_ar ?: $category->label_en) : $category->label_en;
-
-            // Build URL for this category based on its actual parent chain
-            $catParams = [
-                'brand_slug' => $brand_slug,
-                'catalog_slug' => $catalog_slug,
-            ];
-
-            if ($category->level == 1) {
-                $catParams['cat1'] = $category->slug;
-            } elseif ($category->level == 2) {
-                // Use parent slug passed from recursion
-                $catParams['cat1'] = $parentCat1Slug ?? null;
-                $catParams['cat2'] = $category->slug;
-            } elseif ($category->level == 3) {
-                // Use parent slugs passed from recursion
-                $catParams['cat1'] = $parentCat1Slug ?? null;
-                $catParams['cat2'] = $parentCat2Slug ?? null;
-                $catParams['cat3'] = $category->slug;
-            }
-
-            $categoryUrl = route('front.catalog.category', $catParams);
-        @endphp
-
         <li class="tree-item-wrapper">
-            <div class="tree-item d-flex align-items-center {{ $isSelected ? 'active' : '' }} {{ $isAncestor ? 'ancestor' : '' }}"
+            <div class="tree-item d-flex align-items-center {{ ($selectedCategory && $selectedCategory->id === $category->id) ? 'active' : '' }} {{ ($selectedCategory && $breadcrumb->contains('id', $category->id)) ? 'ancestor' : '' }}"
                  data-id="{{ $category->id }}"
                  data-level="{{ $category->level }}">
 
-                @if($hasChildren)
-                    <span class="tree-toggle {{ $isAncestor || $isSelected ? 'expanded' : '' }}"
+                @if($category->has_children)
+                    <span class="tree-toggle {{ (($selectedCategory && $breadcrumb->contains('id', $category->id)) || ($selectedCategory && $selectedCategory->id === $category->id)) ? 'expanded' : '' }}"
                           onclick="toggleTreeItem(this, event)">
-                        <i class="fas fa-chevron-{{ ($isAncestor || $isSelected) ? 'down' : (app()->getLocale() === 'ar' ? 'left' : 'right') }}"></i>
+                        <i class="fas fa-chevron-{{ (($selectedCategory && $breadcrumb->contains('id', $category->id)) || ($selectedCategory && $selectedCategory->id === $category->id)) ? 'down' : (app()->getLocale() === 'ar' ? 'left' : 'right') }}"></i>
                     </span>
                 @else
                     <span class="tree-toggle" style="visibility: hidden;">
@@ -50,25 +18,22 @@
                     </span>
                 @endif
 
-                <a href="{{ $categoryUrl }}" class="tree-link flex-grow-1">
-                    {{ $label }}
+                <a href="{{ $category->computed_url }}" class="tree-link flex-grow-1">
+                    {{ $category->computed_label }}
                 </a>
             </div>
 
-            @if($hasChildren)
-                <div class="tree-children {{ ($isAncestor || $isSelected) ? 'show' : '' }}"
-                     style="{{ ($isAncestor || $isSelected) ? 'display: block;' : 'display: none;' }}">
+            @if($category->has_children)
+                <div class="tree-children {{ (($selectedCategory && $breadcrumb->contains('id', $category->id)) || ($selectedCategory && $selectedCategory->id === $category->id)) ? 'show' : '' }}"
+                     style="{{ (($selectedCategory && $breadcrumb->contains('id', $category->id)) || ($selectedCategory && $selectedCategory->id === $category->id)) ? 'display: block;' : 'display: none;' }}">
                     @include('partials.catalog.category-tree-recursive', [
                         'categories' => $category->children_items,
                         'selectedCategory' => $selectedCategory,
-                        'breadcrumb' => $breadcrumb,
+                        'breadcrumb' => $breadcrumb ?? collect(),
                         'hierarchy' => $hierarchy ?? [],
                         'brand_slug' => $brand_slug,
                         'catalog_slug' => $catalog_slug,
                         'level' => $level + 1,
-                        // Pass parent slugs for URL building without N+1 queries
-                        'parentCat1Slug' => $category->level == 1 ? $category->slug : ($parentCat1Slug ?? null),
-                        'parentCat2Slug' => $category->level == 2 ? $category->slug : ($parentCat2Slug ?? null),
                     ])
                 </div>
             @endif

@@ -77,7 +77,7 @@
         @if($catalogs && $catalogs->count() > 0)
             @foreach ($catalogs->sortby('sort') as $catalog)
                 <div class="col-12 col-sm-6 col-md-4 col-xl-3 text-center">
-                    @php $vin = session('vin'); @endphp
+                    {{-- $vin pre-computed in VehicleCatalogController (DATA_FLOW_POLICY) --}}
 
                     <a href="{{ route('tree.level1', [
                         'brand' => $brand->name,

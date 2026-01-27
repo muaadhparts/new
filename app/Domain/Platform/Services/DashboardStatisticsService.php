@@ -113,7 +113,10 @@ class DashboardStatisticsService
     public function getLatestCatalogItems(int $limit = 5): Collection
     {
         return CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
-            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
+            ->with([
+                'merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price'),
+                'fitments.brand:id,name,name_ar,photo',
+            ])
             ->latest('id')
             ->take($limit)
             ->get();
@@ -128,7 +131,10 @@ class DashboardStatisticsService
     public function getPopularCatalogItems(int $limit = 5): Collection
     {
         return CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
-            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
+            ->with([
+                'merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price'),
+                'fitments.brand:id,name,name_ar,photo',
+            ])
             ->orderByDesc('views')
             ->take($limit)
             ->get();
@@ -165,11 +171,17 @@ class DashboardStatisticsService
     {
         $chartData = $this->getSalesChartData(30);
         $counts = $this->getBasicCounts();
+        $purchaseCounts = $this->getPurchaseCountsByStatus();
 
         return [
-            'pending' => $this->getPurchasesByStatus('pending'),
-            'processing' => $this->getPurchasesByStatus('processing'),
-            'completed' => $this->getPurchasesByStatus('completed'),
+            // Pre-computed counts - View should use these directly
+            'pendingCount' => $purchaseCounts['pending'],
+            'processingCount' => $purchaseCounts['processing'],
+            'completedCount' => $purchaseCounts['completed'],
+            // Legacy: return counts as values for existing view (count($pending))
+            'pending' => $purchaseCounts['pending'],
+            'processing' => $purchaseCounts['processing'],
+            'completed' => $purchaseCounts['completed'],
             'days' => $chartData['days'],
             'sales' => $chartData['sales'],
             'users' => $counts['users'],

@@ -1,23 +1,21 @@
-@if (Session::has('order_address'))
-@php
-    $user = Session::get('order_address');
-@endphp
+{{-- Data pre-computed in PurchaseCreateController (DATA_FLOW_POLICY) --}}
+@if (!empty($orderAddress))
 <div class="row mt-2">
   <div class="col col-md-4 col-sm-6">
     <label for="name">Name *</label>
-    <input type="text" class="form-control" required name="customer_name" id="name" value="{{$user['customer_name']}}" placeholder="Name">
+    <input type="text" class="form-control" required name="customer_name" id="name" value="{{ $orderAddress['customer_name'] ?? '' }}" placeholder="Name">
   </div>
   <div class="col col-md-4 col-sm-6">
     <label for="email">Email *</label>
-    <input type="text" class="form-control" required name="customer_email" id="email" placeholder="Email" value="{{$user['customer_email']}}">
+    <input type="text" class="form-control" required name="customer_email" id="email" placeholder="Email" value="{{ $orderAddress['customer_email'] ?? '' }}">
   </div>
   <div class="col col-md-4 col-sm-6">
     <label for="phone">Phone *</label>
-    <input type="text" class="form-control" required name="customer_phone" id="phone" placeholder="Phone" value="{{$user['customer_phone']}}">
+    <input type="text" class="form-control" required name="customer_phone" id="phone" placeholder="Phone" value="{{ $orderAddress['customer_phone'] ?? '' }}">
   </div>
   <div class="col col-md-12 col-sm-12">
     <label for="customer_address">Address *</label>
-    <input type="text" class="form-control" required name="customer_address" id="customer_address" placeholder="Address" value="{{$user['customer_address']}}">
+    <input type="text" class="form-control" required name="customer_address" id="customer_address" placeholder="Address" value="{{ $orderAddress['customer_address'] ?? '' }}">
   </div>
 </div>
 <div class="row">
@@ -29,30 +27,24 @@
   </div>
   <div class="col col-md-6 col-sm-6">
     <label for="customer_city">City</label>
-    <input type="text" class="form-control" name="customer_city" id="customer_city" placeholder="City" value="{{$user['customer_city']}}">
+    <input type="text" class="form-control" name="customer_city" id="customer_city" placeholder="City" value="{{ $orderAddress['customer_city'] ?? '' }}">
   </div>
   <div class="col col-md-6 col-sm-6">
     <label for="customer_state">State</label>
-    <input type="text" class="form-control" name="customer_state" id="customer_state" placeholder="State" value="{{$user['customer_state']}}">
+    <input type="text" class="form-control" name="customer_state" id="customer_state" placeholder="State" value="{{ $orderAddress['customer_state'] ?? '' }}">
   </div>
- 
+
   <div class="col col-md-6 col-sm-6">
     <label for="post_code">Postal Code</label>
-    <input type="text" class="form-control" name="customer_zip" id="post_code" placeholder="Postal Code" value="{{$user['customer_zip']}}">
+    <input type="text" class="form-control" name="customer_zip" id="post_code" placeholder="Postal Code" value="{{ $orderAddress['customer_zip'] ?? '' }}">
   </div>
 
 </div>
 
-@else  
+@else
 
-
-
-
-@php
-    $isUser = isset($isUser) ? $isUser : false;
-   
-@endphp
-@if ($isUser == 1)
+{{-- $isUser pre-passed from controller (DATA_FLOW_POLICY) --}}
+@if (($isUser ?? false) == 1)
   <div class="row mt-2">
     <div class="col col-md-4 col-sm-6">
       <label for="name">Name *</label>

@@ -316,12 +316,12 @@
                                                 <strong class="text-primary">@lang('Shipping Company Delivery')</strong>
                                             </div>
 
-                                            @if ($purchase->shipping_name && !empty($purchase->shipping_name) && !is_array(json_decode($purchase->shipping_name, true)))
+                                            @if($shippingNamesFormatted && $shippingNamesFormatted !== __('Shipping Cost'))
                                             <ul class="list-unstyled">
                                                 <li class="mb-2">
                                                     <i class="fas fa-building me-2 text-muted"></i>
                                                     <strong>@lang('Company'):</strong>
-                                                    {{ $purchase->shipping_name }}
+                                                    {{ $shippingNamesFormatted }}
                                                 </li>
 
                                                 @if($purchase->shipping_cost > 0)
@@ -414,21 +414,17 @@
                                     <th><span class="name">@lang('Total Price')</span></th>
                                 </tr>
 
-                                @foreach ($cart['items'] as $catalogItem)
+                                @foreach ($cart['items'] as $key => $catalogItem)
                                     <tr class="tbody-catalogItem">
                                         <td><b><span class="td-name">{{ $catalogItem['item']['id'] }}</span></b></td>
 
                                         <td class="td-catalogItem-name">
 
                                             <div class="td-name td-catalogItem-namee">
-                                                @php
-                                                    $userPurchaseProductUrl = !empty($catalogItem['item']['part_number'])
-                                                        ? route('front.part-result', $catalogItem['item']['part_number'])
-                                                        : '#';
-                                                @endphp
+                                                {{-- Product URL pre-computed in Controller (DATA_FLOW_POLICY) --}}
                                                 <b>
                                                     <a class="a_name_link d-block name-hover-color" target="_blank"
-                                                        href="{{ $userPurchaseProductUrl }}">
+                                                        href="{{ $cartItemsDisplay[$key]['productUrl'] ?? '#' }}">
                                                         {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
                                                     </a>
                                                 </b>

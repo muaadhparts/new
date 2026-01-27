@@ -1,90 +1,34 @@
-{{-- Catalog Item Name Component with Language Support --}}
+{{-- Catalog Item Name Component --}}
+{{-- DISPLAY ONLY - All data must come pre-computed from controller/service --}}
 @props([
-    'catalogItem' => null,
-    'item' => null, // for cart items format
-    'merchantUserId' => null,
-    'merchantItemId' => null,
-    'showSku' => false, // PART_NUMBER يعرض في catalog-item-info component
+    'name' => null,           // Localized name (pre-computed)
+    'partNumber' => null,     // PART_NUMBER
+    'url' => null,            // Pre-computed URL
+    'showSku' => false,
     'target' => '_self',
     'class' => '',
     'nameClass' => '',
     'skuClass' => 'text-muted small',
 ])
 
-@php
-    // Handle different data formats (direct catalog item object vs cart item format)
-    $itemData = $catalogItem ?? $item;
-
-    if (!$itemData) {
-        return;
-    }
-
-    // Extract data based on format
-    if (isset($itemData['item'])) {
-        // Cart item format: $item['item']['name']
-        $part_number = $itemData['item']['part_number'] ?? '';
-        $slug = $itemData['item']['slug'] ?? '';
-        $userId = $merchantUserId ?? $itemData['item']['user_id'] ?? $itemData['user_id'] ?? 0;
-        // For merchant_item_id: prioritize explicit prop, then try to infer
-        $mpId = $merchantItemId;
-        if (!$mpId) {
-            // Try to get MP ID if itemData is actually a MerchantItem
-            $mpId = ($itemData instanceof \App\Domain\Merchant\Models\MerchantItem)
-                ? $itemData->id
-                : ($itemData['item']['id'] ?? $itemData['id'] ?? null);
-        }
-        // Use centralized helper for localized name
-        $displayName = getLocalizedCatalogItemName($itemData['item']);
-    } else {
-        // Direct catalog item object format: $catalogItem->name
-        $part_number = $itemData->part_number ?? $itemData['part_number'] ?? '';
-        $slug = $itemData->slug ?? $itemData['slug'] ?? '';
-        $userId = $merchantUserId ?? $itemData->user_id ?? $itemData['user_id'] ?? 0;
-        // For merchant_item_id: prioritize explicit prop
-        $mpId = $merchantItemId;
-        if (!$mpId) {
-            // Check if this is a MerchantItem or need to fetch one
-            if ($itemData instanceof \App\Domain\Merchant\Models\MerchantItem) {
-                $mpId = $itemData->id;
-            } elseif ($itemData instanceof \App\Domain\Catalog\Models\CatalogItem && $userId) {
-                // Fetch first active MI for this catalog item and merchant
-                $mp = $itemData->merchantItems()->where('user_id', $userId)->where('status', 1)->first();
-                $mpId = $mp->id ?? null;
-            }
-        }
-        // Use centralized helper for localized name
-        $displayName = getLocalizedCatalogItemName($itemData);
-    }
-
-    // PART_NUMBER display
-    $displaySku = !empty($part_number) ? $part_number : '-';
-
-    // Route generation - always use part-result route with part_number
-    if (!empty($part_number)) {
-        $catalogItemRoute = route('front.part-result', $part_number);
-    } else {
-        $catalogItemRoute = '#';
-    }
-@endphp
-
 <div class="{{ $class }}">
-    @if(!empty($slug))
-        <a href="{{ $catalogItemRoute }}" target="{{ $target }}" class="{{ $nameClass }}">
-            {{ $displayName }}
+    @if($url)
+        <a href="{{ $url }}" target="{{ $target }}" class="{{ $nameClass }}">
+            {{ $name ?? __('N/A') }}
         </a>
     @else
-        <span class="{{ $nameClass }}">{{ $displayName }}</span>
+        <span class="{{ $nameClass }}">{{ $name ?? __('N/A') }}</span>
     @endif
 
-    @if($showSku)
+    @if($showSku && $partNumber)
         <br>
         <small class="{{ $skuClass }}">
-            @if(!empty($slug))
-                <a href="{{ $catalogItemRoute }}" target="{{ $target }}">
-                    @lang('PART_NUMBER'): {{ $displaySku }}
+            @if($url)
+                <a href="{{ $url }}" target="{{ $target }}">
+                    @lang('PART_NUMBER'): {{ $partNumber }}
                 </a>
             @else
-                @lang('PART_NUMBER'): {{ $displaySku }}
+                @lang('PART_NUMBER'): {{ $partNumber }}
             @endif
         </small>
     @endif

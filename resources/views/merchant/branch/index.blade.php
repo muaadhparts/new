@@ -57,51 +57,36 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($datas as $data)
+                            @forelse ($datasDisplay as $itemData)
                                 <tr>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->country ? $data->country->country_name : '-' }}
-                                        </span>
+                                        <span class="content">{{ $itemData['countryName'] }}</span>
                                     </td>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->city ? $data->city->city_name : '-' }}
-                                        </span>
+                                        <span class="content">{{ $itemData['cityName'] }}</span>
                                     </td>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->location }}
-                                        </span>
+                                        <span class="content">{{ $itemData['location'] }}</span>
                                     </td>
                                     <td>
-                                        @if($data->latitude && $data->longitude)
+                                        @if($itemData['latitude'] && $itemData['longitude'])
                                             <small class="text-muted">
-                                                {{ number_format($data->latitude, 6) }},<br>
-                                                {{ number_format($data->longitude, 6) }}
+                                                {{ number_format($itemData['latitude'], 6) }},<br>
+                                                {{ number_format($itemData['longitude'], 6) }}
                                             </small>
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                     <td>
-                                        @php
-                                            $active = $data->status == 1 ? 'selected' : '';
-                                            $deactivated = $data->status == 0 ? 'selected' : '';
-                                            $activeClass = $data->status == 1 ? 'active' : 'deactive';
-                                        @endphp
                                         <div class="status position-relative">
                                             <div class="dropdown-container">
-                                                <select class="form-control nice-select form__control {{ $activeClass }}"
+                                                <select class="form-control nice-select form__control {{ $itemData['statusClass'] }}"
                                                     id="branch_status">
-                                                    <option
-                                                        value="{{ route('merchant-branch-status', ['id' => $data->id, 'status' => 1]) }}"
-                                                        {{ $active }}> {{ __('Activated') }} </option>
-                                                    <option
-                                                        value="{{ route('merchant-branch-status', ['id' => $data->id, 'status' => 0]) }}"
-                                                        {{ $deactivated }}> {{ __('Deactivated') }} </option>
-
-                                                    <!-- Add more options here if needed -->
+                                                    <option value="{{ $itemData['statusActiveUrl'] }}"
+                                                        {{ $itemData['statusActiveSelected'] }}> {{ __('Activated') }} </option>
+                                                    <option value="{{ $itemData['statusInactiveUrl'] }}"
+                                                        {{ $itemData['statusInactiveSelected'] }}> {{ __('Deactivated') }} </option>
                                                 </select>
                                             </div>
                                         </div>
@@ -112,7 +97,7 @@
 
                                     <td>
                                         <div class="table-icon-btns-wrapper">
-                                            <a href="{{ route('merchant-branch-edit', $data->id) }}"
+                                            <a href="{{ $itemData['editUrl'] }}"
                                                 class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
@@ -136,7 +121,7 @@
                                             </a>
 
                                             <a href="javascript:;"
-                                                data-href="{{ route('merchant-branch-delete', $data->id) }}"
+                                                data-href="{{ $itemData['deleteUrl'] }}"
                                                 class="view-btn delete-btn branch-delete-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">

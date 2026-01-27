@@ -90,6 +90,7 @@ class Purchase extends Model
         'cart' => 'array',
         'customer_shipping_choice' => 'array',
         'shipping_status' => 'array',
+        'shipping_name' => 'array',
     ];
 
     // =========================================================================
@@ -187,6 +188,53 @@ class Purchase extends Model
         }
 
         return $merchantIds;
+    }
+
+    // =========================================================================
+    // SHIPPING NAMES METHODS
+    // =========================================================================
+
+    /**
+     * Get shipping names with details (pre-computed for views)
+     * Returns array of shipping names indexed by merchant ID
+     *
+     * @return array<int, string>
+     */
+    public function getShippingNamesWithDetails(): array
+    {
+        $shippingNames = $this->shipping_name;
+
+        if (!$shippingNames || !is_array($shippingNames)) {
+            return [];
+        }
+
+        $result = [];
+        $shippingIds = array_unique(array_values($shippingNames));
+        $shippings = Shipping::whereIn('id', $shippingIds)->pluck('name', 'id');
+
+        foreach ($shippingNames as $merchantId => $shippingId) {
+            $result[$merchantId] = $shippings[$shippingId] ?? __('Shipping');
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get formatted shipping names string for display
+     *
+     * @return string
+     */
+    public function getFormattedShippingNames(): string
+    {
+        $names = $this->getShippingNamesWithDetails();
+
+        if (empty($names)) {
+            return $this->shipping_name && !is_array($this->shipping_name)
+                ? (string) $this->shipping_name
+                : __('Shipping Cost');
+        }
+
+        return implode(', ', array_values($names));
     }
 
     // =========================================================================

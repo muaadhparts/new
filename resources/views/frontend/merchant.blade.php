@@ -131,14 +131,7 @@
                 </div>
                 <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper">
 
-                    @php
-                        // Default to list-view for first visit
-                        if (request()->input('view_check') == null || request()->input('view_check') == 'list-view') {
-                            $view = 'list-view';
-                        } else {
-                            $view = 'grid-view';
-                        }
-                    @endphp
+                    {{-- $view pre-computed in MerchantController (DATA_FLOW_POLICY) --}}
 
                     <!-- catalogItem nav wrapper -->
                     <div class=" catalogItem-nav-wrapper">

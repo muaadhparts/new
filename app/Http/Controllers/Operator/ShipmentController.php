@@ -72,6 +72,24 @@ class ShipmentController extends OperatorBaseController
             ->orderBy('occurred_at', 'desc')
             ->paginate(25);
 
+        // PRE-COMPUTED: Status colors for each shipment (DATA_FLOW_POLICY - no @php in view)
+        $statusColors = [
+            'created' => 'info',
+            'picked_up' => 'primary',
+            'in_transit' => 'warning',
+            'out_for_delivery' => 'warning',
+            'delivered' => 'success',
+            'failed' => 'danger',
+            'returned' => 'secondary',
+            'cancelled' => 'dark',
+        ];
+
+        // Add status_color attribute to each shipment
+        $shipments->getCollection()->transform(function ($shipment) use ($statusColors) {
+            $shipment->status_color = $statusColors[$shipment->status] ?? 'info';
+            return $shipment;
+        });
+
         return view('operator.shipments.index', compact('stats', 'shipments', 'merchants', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
     }
 
@@ -98,7 +116,109 @@ class ShipmentController extends OperatorBaseController
             $liveStatus = $tryotoService->trackShipment($trackingNumber);
         }
 
-        return view('operator.shipments.show', compact('shipment', 'history', 'purchase', 'merchant', 'liveStatus'));
+        // PRE-COMPUTED: Display values (DATA_FLOW_POLICY - no @php in view)
+        $displayData = $this->buildShipmentDisplayValues($shipment);
+
+        return view('operator.shipments.show', array_merge(
+            compact('shipment', 'history', 'purchase', 'merchant', 'liveStatus'),
+            $displayData
+        ));
+    }
+
+    /**
+     * Build pre-computed display values for shipment (DATA_FLOW_POLICY)
+     */
+    private function buildShipmentDisplayValues(ShipmentTracking $shipment): array
+    {
+        $statusColors = [
+            'created' => 'info',
+            'picked_up' => 'primary',
+            'in_transit' => 'warning',
+            'out_for_delivery' => 'warning',
+            'delivered' => 'success',
+            'failed' => 'danger',
+            'returned' => 'secondary',
+            'cancelled' => 'dark',
+        ];
+
+        $statusIcons = [
+            'created' => 'fa-box',
+            'picked_up' => 'fa-truck-loading',
+            'in_transit' => 'fa-truck',
+            'out_for_delivery' => 'fa-motorcycle',
+            'delivered' => 'fa-check-circle',
+            'failed' => 'fa-exclamation-circle',
+            'returned' => 'fa-undo',
+            'cancelled' => 'fa-times-circle',
+        ];
+
+        $status = $shipment->status ?? 'created';
+        $statusColor = $statusColors[$status] ?? 'info';
+
+        return [
+            'statusColor' => $statusColor,
+            'statusIcon' => $statusIcons[$status] ?? 'fa-box',
+            'progressPercent' => $this->calculateProgressPercent($status),
+            'stepsDisplay' => $this->buildStepsDisplay($status, $statusColor),
+            // Keep mappings for history items
+            'statusColors' => $statusColors,
+            'statusIcons' => $statusIcons,
+        ];
+    }
+
+    /**
+     * Calculate progress percent from status (DATA_FLOW_POLICY)
+     */
+    private function calculateProgressPercent(string $status): int
+    {
+        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+        $currentIndex = array_search($status, $steps);
+        if ($currentIndex === false) {
+            $currentIndex = 0;
+        }
+        return (int) round((($currentIndex + 1) / count($steps)) * 100);
+    }
+
+    /**
+     * Build steps display array (DATA_FLOW_POLICY)
+     */
+    private function buildStepsDisplay(string $currentStatus, string $statusColor): array
+    {
+        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+        $stepNames = [
+            'created' => __('Created'),
+            'picked_up' => __('Picked Up'),
+            'in_transit' => __('In Transit'),
+            'out_for_delivery' => __('Out for Delivery'),
+            'delivered' => __('Delivered'),
+        ];
+        $statusIcons = [
+            'created' => 'fa-box',
+            'picked_up' => 'fa-truck-loading',
+            'in_transit' => 'fa-truck',
+            'out_for_delivery' => 'fa-motorcycle',
+            'delivered' => 'fa-check-circle',
+        ];
+
+        $currentIndex = array_search($currentStatus, $steps);
+        if ($currentIndex === false) {
+            $currentIndex = -1;
+        }
+
+        $result = [];
+        foreach ($steps as $index => $step) {
+            $isActive = $index <= $currentIndex;
+            $result[] = [
+                'key' => $step,
+                'name' => $stepNames[$step],
+                'icon' => $statusIcons[$step] ?? 'fa-box',
+                'isActive' => $isActive,
+                'bgClass' => $isActive ? 'bg-' . $statusColor . ' text-white' : 'bg-light',
+                'textClass' => $isActive ? 'font-weight-bold' : 'text-muted',
+            ];
+        }
+
+        return $result;
     }
 
     /**
@@ -337,8 +457,8 @@ class ShipmentController extends OperatorBaseController
         $delivered = $statusDistribution['delivered'];
         $successRate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
 
-        // Companies Performance
-        $companiesPerformance = ShipmentTracking::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
+        // Companies Performance (raw data)
+        $companiesPerformanceRaw = ShipmentTracking::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
                 $sub->selectRaw('MAX(id)')
                     ->from('shipment_trackings')
                     ->where('occurred_at', '>=', $dateFrom)
@@ -352,11 +472,42 @@ class ShipmentController extends OperatorBaseController
             ->get()
             ->groupBy('company_name');
 
+        // PRE-COMPUTED: Company performance with calculated stats (DATA_FLOW_POLICY - no @php in view)
+        $companiesPerformance = $companiesPerformanceRaw->map(function ($statuses, $company) {
+            $delivered = $statuses->where('status', 'delivered')->first()->count ?? 0;
+            $failed = $statuses->where('status', 'failed')->first()->count ?? 0;
+            $returned = $statuses->where('status', 'returned')->first()->count ?? 0;
+            $companyTotal = $statuses->sum('count');
+            $companySuccess = $companyTotal > 0 ? round(($delivered / $companyTotal) * 100) : 0;
+
+            return [
+                'name' => $company ?? 'Unknown',
+                'delivered' => $delivered,
+                'failed' => $failed,
+                'returned' => $returned,
+                'total' => $companyTotal,
+                'success_rate' => $companySuccess,
+                'statuses' => $statuses,
+            ];
+        });
+
         // Get merchants for filter
         $merchants = User::where('is_merchant', 2)
             ->select('id', 'shop_name', 'name')
             ->orderBy('shop_name')
             ->get();
+
+        // PRE-COMPUTED: Status labels for display (DATA_FLOW_POLICY - no @php in view)
+        $statusLabels = [
+            'created' => ['label' => __('Created'), 'color' => 'info', 'icon' => 'fa-box'],
+            'picked_up' => ['label' => __('Picked Up'), 'color' => 'primary', 'icon' => 'fa-truck-loading'],
+            'in_transit' => ['label' => __('In Transit'), 'color' => 'warning', 'icon' => 'fa-truck'],
+            'out_for_delivery' => ['label' => __('Out for Delivery'), 'color' => 'warning', 'icon' => 'fa-motorcycle'],
+            'delivered' => ['label' => __('Delivered'), 'color' => 'success', 'icon' => 'fa-check-circle'],
+            'failed' => ['label' => __('Failed'), 'color' => 'danger', 'icon' => 'fa-exclamation-circle'],
+            'returned' => ['label' => __('Returned'), 'color' => 'secondary', 'icon' => 'fa-undo'],
+            'cancelled' => ['label' => __('Cancelled'), 'color' => 'dark', 'icon' => 'fa-times-circle'],
+        ];
 
         return view('operator.shipments.reports', compact(
             'overallStats',
@@ -368,7 +519,8 @@ class ShipmentController extends OperatorBaseController
             'merchants',
             'period',
             'merchantId',
-            'total'
+            'total',
+            'statusLabels'
         ));
     }
 

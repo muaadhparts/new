@@ -41,7 +41,32 @@ class PurchaseCreateController extends OperatorBaseController
         $selectedCountry = Session::has('order_address') ? Session::get('order_address')['customer_country'] : null;
         $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml($selectedCountry);
 
-        return view('operator.purchase.create.index', compact('catalogItems', 'selectd_products', 'sign', 'users', 'countriesHtml'));
+        // PRE-COMPUTED: Session data for partials (DATA_FLOW_POLICY - no Session::get in views)
+        $orderAddress = Session::get('order_address');
+        $adminCart = Session::get('admin_cart');
+        $isUser = false; // Default for guest
+
+        // Pre-compute cart item URLs if cart exists
+        if ($adminCart && isset($adminCart->items)) {
+            foreach ($adminCart->items as $key => $item) {
+                $partNumber = $item['item']['part_number'] ?? null;
+                $adminCart->items[$key]['computed_url'] = $partNumber
+                    ? route('front.part-result', $partNumber)
+                    : '#';
+            }
+        }
+
+        return view('operator.purchase.create.index', [
+            'catalogItems' => $catalogItems,
+            'selectd_products' => $selectd_products,
+            'sign' => $sign,
+            'users' => $users,
+            'countriesHtml' => $countriesHtml,
+            // Pre-computed session data for partials
+            'orderAddress' => $orderAddress,
+            'adminCart' => $adminCart,
+            'isUser' => $isUser,
+        ]);
     }
 
     public function datatables()
@@ -103,7 +128,9 @@ class PurchaseCreateController extends OperatorBaseController
         Session::put('purchase_catalogItems', $purchase_catalogItems);
 
         $sign = $this->curr;
-        return view('operator.purchase.partials.catalogItem_add_table', compact('sign'));
+        return view('operator.purchase.partials.catalogItem_add_table', [
+            'sign' => $sign,
+        ]);
     }
 
 
@@ -129,7 +156,9 @@ class PurchaseCreateController extends OperatorBaseController
             Session::forget('purchase_catalogItems');
         }
 
-        return view('operator.purchase.partials.catalogItem_add_table', compact('sign'));
+        return view('operator.purchase.partials.catalogItem_add_table', [
+            'sign' => $sign,
+        ]);
     }
 
 
@@ -150,12 +179,19 @@ class PurchaseCreateController extends OperatorBaseController
         if ($request->user_id == 'guest') {
             $isUser = 0;
             $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml();
-            return view('operator.purchase.create.address_form', compact('countriesHtml', 'isUser'));
+            return view('operator.purchase.create.address_form', [
+                'countriesHtml' => $countriesHtml,
+                'isUser' => $isUser,
+            ]);
         } else {
             $isUser = 1;
             $user = User::findOrFail($request->user_id);
             $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml($user->country);
-            return view('operator.purchase.create.address_form', compact('user', 'countriesHtml', 'isUser'));
+            return view('operator.purchase.create.address_form', [
+                'user' => $user,
+                'countriesHtml' => $countriesHtml,
+                'isUser' => $isUser,
+            ]);
         }
     }
 
@@ -175,7 +211,10 @@ class PurchaseCreateController extends OperatorBaseController
         $cart = Session::get('admin_cart');
         $address = Session::get('purchase_address');
 
-        return view('operator.purchase.create.view', compact('cart', 'address'));
+        return view('operator.purchase.create.view', [
+            'cart' => $cart,
+            'address' => $address,
+        ]);
     }
 
 

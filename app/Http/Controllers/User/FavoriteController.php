@@ -71,6 +71,21 @@ class FavoriteController extends UserBaseController
                 $favoriteItem->effective_merchant = $effectiveMerchantItem->user;
             }
 
+            // Pre-computed values for view (DATA_FLOW_POLICY)
+            $catalogItem = $favoriteItem->catalogItem;
+            $partNumber = $catalogItem?->part_number;
+            $favoriteItem->catalog_item_url = $partNumber
+                ? route('front.part-result', $partNumber)
+                : '#';
+            $favoriteItem->catalog_item_photo_url = $catalogItem && $catalogItem->photo
+                ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo)
+                : asset('assets/images/noimage.png');
+            $favoriteItem->catalog_item_name_truncated = $catalogItem
+                ? (mb_strlen($catalogItem->name, 'UTF-8') > 35
+                    ? mb_substr($catalogItem->name, 0, 35, 'UTF-8') . '...'
+                    : $catalogItem->name)
+                : '';
+
             return $favoriteItem;
         });
 

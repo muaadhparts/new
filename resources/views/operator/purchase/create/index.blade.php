@@ -76,12 +76,12 @@
                       </div>
                      
                       <div id="order_create_user_address">
-                        @include('operator.purchase.create.address_form')
+                        @include('operator.purchase.create.address_form', ['orderAddress' => $orderAddress ?? null, 'isUser' => $isUser ?? false, 'countriesHtml' => $countriesHtml ?? ''])
                       </div>
 
                     </div>
                     <div id="view_table_order">
-                      @include('operator.purchase.create.catalogItem_add_table')
+                      @include('operator.purchase.create.catalogItem_add_table', ['adminCart' => $adminCart ?? null])
                     </div>
                   </div>
                 </div>

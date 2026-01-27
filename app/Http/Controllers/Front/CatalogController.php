@@ -40,7 +40,7 @@ class CatalogController extends FrontBaseController
         );
 
         // Build category selector data (reads URL segments)
-        $data['categorySelector'] = $this->categoryTreeService->buildCategorySelectorData(
+        $categorySelector = $this->categoryTreeService->buildCategorySelectorData(
             $data['brands'] ?? collect(),
             $request->segment(2), // brand
             $request->segment(3), // catalog
@@ -48,6 +48,28 @@ class CatalogController extends FrontBaseController
             $request->segment(5), // cat2
             $request->segment(6)  // cat3
         );
+        $data['categorySelector'] = $categorySelector;
+
+        // PRE-COMPUTED: Extract category selector variables for view (DATA_FLOW_POLICY)
+        $data['currentBrandSlug'] = $categorySelector['brandSlug'] ?? null;
+        $data['currentCatalogSlug'] = $categorySelector['catalogSlug'] ?? null;
+        $data['currentLevel1Slug'] = $categorySelector['level1Slug'] ?? null;
+        $data['currentLevel2Slug'] = $categorySelector['level2Slug'] ?? null;
+        $data['currentLevel3Slug'] = $categorySelector['level3Slug'] ?? null;
+        $data['brandCatalogs'] = $categorySelector['brandCatalogs'] ?? collect();
+        $data['catalogLevel1'] = $categorySelector['catalogLevel1'] ?? collect();
+        $data['level1Level2'] = $categorySelector['level1Level2'] ?? collect();
+        $data['level2Level3'] = $categorySelector['level2Level3'] ?? collect();
+
+        // PRE-COMPUTED: View mode and sort (DATA_FLOW_POLICY - no @php in view)
+        $viewCheck = $request->input('view_check');
+        $data['viewMode'] = ($viewCheck == null || $viewCheck == 'list-view') ? 'list-view' : 'grid-view';
+        $data['currentSort'] = $request->input('sort', 'price_asc');
+
+        // PRE-COMPUTED: AJAX view specific variables (DATA_FLOW_POLICY)
+        $data['view'] = $request->input('view_check', session('view', 'grid-view'));
+        $data['catalogItems'] = $data['cards'] ?? $data['prods'] ?? collect();
+        $data['total'] = isset($data['prods']) ? $data['prods']->total() : 0;
 
         if ($request->ajax()) {
             $data['ajax_check'] = 1;
@@ -96,7 +118,7 @@ class CatalogController extends FrontBaseController
         );
 
         // Build category selector data from route parameters
-        $data['categorySelector'] = $this->categoryTreeService->buildCategorySelectorData(
+        $categorySelector = $this->categoryTreeService->buildCategorySelectorData(
             $data['brands'] ?? collect(),
             $brand,
             $catalog,
@@ -104,6 +126,28 @@ class CatalogController extends FrontBaseController
             $cat2,
             $cat3
         );
+        $data['categorySelector'] = $categorySelector;
+
+        // PRE-COMPUTED: Extract category selector variables for view (DATA_FLOW_POLICY)
+        $data['currentBrandSlug'] = $categorySelector['brandSlug'] ?? null;
+        $data['currentCatalogSlug'] = $categorySelector['catalogSlug'] ?? null;
+        $data['currentLevel1Slug'] = $categorySelector['level1Slug'] ?? null;
+        $data['currentLevel2Slug'] = $categorySelector['level2Slug'] ?? null;
+        $data['currentLevel3Slug'] = $categorySelector['level3Slug'] ?? null;
+        $data['brandCatalogs'] = $categorySelector['brandCatalogs'] ?? collect();
+        $data['catalogLevel1'] = $categorySelector['catalogLevel1'] ?? collect();
+        $data['level1Level2'] = $categorySelector['level1Level2'] ?? collect();
+        $data['level2Level3'] = $categorySelector['level2Level3'] ?? collect();
+
+        // PRE-COMPUTED: View mode and sort (DATA_FLOW_POLICY - no @php in view)
+        $viewCheck = $request->input('view_check');
+        $data['viewMode'] = ($viewCheck == null || $viewCheck == 'list-view') ? 'list-view' : 'grid-view';
+        $data['currentSort'] = $request->input('sort', 'price_asc');
+
+        // PRE-COMPUTED: AJAX view specific variables (DATA_FLOW_POLICY)
+        $data['view'] = $request->input('view_check', session('view', 'grid-view'));
+        $data['catalogItems'] = $data['cards'] ?? $data['prods'] ?? collect();
+        $data['total'] = isset($data['prods']) ? $data['prods']->total() : 0;
 
         if ($request->ajax()) {
             $data['ajax_check'] = 1;
@@ -186,8 +230,17 @@ class CatalogController extends FrontBaseController
             $currValue
         );
 
-        // Build category tree for sidebar
-        $categoryTree = $this->categoryTreeService->buildCategoryTree($catalog->id, $brand->id);
+        // Build category tree for sidebar (with pre-computed URLs - DATA_FLOW_POLICY)
+        $categoryTree = $this->categoryTreeService->buildCategoryTree($catalog->id, $brand->id, $brand_slug, $catalog_slug);
+
+        // PRE-COMPUTED: Breadcrumb with URLs (DATA_FLOW_POLICY - no @php in view)
+        $breadcrumbWithUrls = $this->buildBreadcrumbWithUrls($breadcrumb, $brand_slug, $catalog_slug);
+
+        // PRE-COMPUTED: View mode and sort (DATA_FLOW_POLICY - no @php in view)
+        $viewCheck = $request->input('view_check');
+        $viewMode = ($viewCheck == null || $viewCheck == 'list-view') ? 'list-view' : 'grid-view';
+        $view = $request->input('view_check', 'list-view'); // Alias for AJAX partial
+        $currentSort = $request->input('sort', 'price_asc');
 
         // Prepare data for view (merge filter results with category tree data)
         $data = array_merge($filterResults, [
@@ -196,12 +249,16 @@ class CatalogController extends FrontBaseController
             'categoryTree' => $categoryTree,
             'selectedCategory' => $selectedCategory,
             'breadcrumb' => $breadcrumb,
+            'breadcrumbWithUrls' => $breadcrumbWithUrls,
             'hierarchy' => $hierarchy,
             'cat1_slug' => $cat1,
             'cat2_slug' => $cat2,
             'cat3_slug' => $cat3,
             'brand_slug' => $brand_slug,
             'catalog_slug' => $catalog_slug,
+            'viewMode' => $viewMode,
+            'view' => $view, // For AJAX partial (DATA_FLOW_POLICY)
+            'currentSort' => $currentSort,
         ]);
 
         if ($request->ajax()) {
@@ -349,5 +406,42 @@ class CatalogController extends FrontBaseController
 
         return back()->with('success', 'Report has been sent successfully.');
 
+    }
+
+    /**
+     * Build breadcrumb array with pre-computed URLs (DATA_FLOW_POLICY)
+     * Handles cumulative URL building for category hierarchy
+     */
+    private function buildBreadcrumbWithUrls($breadcrumb, string $brand_slug, string $catalog_slug): array
+    {
+        $result = [];
+        $cat1Slug = null;
+        $cat2Slug = null;
+        $isArabic = app()->getLocale() === 'ar';
+
+        foreach ($breadcrumb as $crumb) {
+            $params = ['brand_slug' => $brand_slug, 'catalog_slug' => $catalog_slug];
+
+            if ($crumb->level == 1) {
+                $cat1Slug = $crumb->slug;
+                $params['cat1'] = $crumb->slug;
+            } elseif ($crumb->level == 2) {
+                $cat2Slug = $crumb->slug;
+                $params['cat1'] = $cat1Slug;
+                $params['cat2'] = $crumb->slug;
+            } elseif ($crumb->level == 3) {
+                $params['cat1'] = $cat1Slug;
+                $params['cat2'] = $cat2Slug;
+                $params['cat3'] = $crumb->slug;
+            }
+
+            $result[] = [
+                'label' => $isArabic ? ($crumb->label_ar ?: $crumb->label_en) : $crumb->label_en,
+                'url' => route('front.catalog.category', $params),
+                'level' => $crumb->level,
+            ];
+        }
+
+        return $result;
     }
 }

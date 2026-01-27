@@ -24,15 +24,10 @@
               {{-- CATALOGITEM ATTRIBUTE SECTION  --}}
 
               @if (!empty($catalogItem->attributes))
-                @php
-                  $attrArr = json_decode($catalogItem->attributes, true);
-                @endphp
-              @endif
-              @if (!empty($attrArr))
 
                   <div class="catalogItem-attributes mt-3 mb-3 text-left">
                     <div class="row">
-                    @foreach ($attrArr as $attrKey => $attrVal)
+                    @foreach ($catalogItem->attributes as $attrKey => $attrVal)
                       @if (array_key_exists("details_status",$attrVal) && $attrVal['details_status'] == 1)
 
                     <div class="col-lg-6 offset-lg-4">

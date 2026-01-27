@@ -182,9 +182,7 @@
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Net Balance') }}</h6>
-                            @php
-                                $netBalance = ($dashboard['platform_summary']['total_receivable'] ?? 0) - ($dashboard['platform_summary']['total_payable'] ?? 0);
-                            @endphp
+                            {{-- Net balance pre-computed in Controller --}}
                             <h3 class="{{ $netBalance >= 0 ? 'text-success' : 'text-danger' }}">
                                 {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
                                 @if($netBalance >= 0)

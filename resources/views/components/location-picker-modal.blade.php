@@ -166,11 +166,11 @@
 
 @push('scripts')
 {{-- POLICY: Google Maps loads ONLY if API key exists in api_credentials table --}}
-@if(!empty($googleMapsApiKey) && !isset($googleMapsLoaded))
-    @php $googleMapsLoaded = true; @endphp
+{{-- Using @once to prevent duplicate loading (DATA_FLOW_POLICY - no @php) --}}
+@if(!empty($googleMapsApiKey))
+    @once
     <script src="https://maps.googleapis.com/maps/api/js?key={{ $googleMapsApiKey }}&libraries=places&language={{ app()->getLocale() }}" async defer></script>
-@elseif(empty($googleMapsApiKey))
-    @php \Log::warning('Google Maps: API key not configured in api_credentials table - Location picker disabled'); @endphp
+    @endonce
 @endif
 
 <script>

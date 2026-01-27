@@ -19,41 +19,18 @@
 
         @if(count($shipments) > 0)
             <div class="row g-4">
+                {{-- statusColor, statusIcon, progressPercent pre-computed in TrackingDataBuilder (DATA_FLOW_POLICY) --}}
                 @foreach($shipments as $shipment)
-                    @php
-                        $statusColors = [
-                            'created' => 'info',
-                            'picked_up' => 'primary',
-                            'in_transit' => 'warning',
-                            'out_for_delivery' => 'warning',
-                            'delivered' => 'success',
-                            'failed' => 'danger',
-                            'returned' => 'secondary',
-                            'cancelled' => 'dark',
-                        ];
-                        $statusIcons = [
-                            'created' => 'fa-box',
-                            'picked_up' => 'fa-truck-loading',
-                            'in_transit' => 'fa-truck',
-                            'out_for_delivery' => 'fa-motorcycle',
-                            'delivered' => 'fa-check-circle',
-                            'failed' => 'fa-exclamation-circle',
-                            'returned' => 'fa-undo',
-                            'cancelled' => 'fa-times-circle',
-                        ];
-                        $color = $statusColors[$shipment['status']] ?? 'info';
-                        $icon = $statusIcons[$shipment['status']] ?? 'fa-box';
-                    @endphp
                     <div class="col-lg-6">
                         <div class="card shipment-card shadow-sm h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-start justify-content-between mb-3">
                                     <div class="d-flex align-items-center">
-                                        <div class="status-icon bg-{{ $color }} text-white rounded-circle p-2 me-3 muaadh-shipment-status-icon">
-                                            <i class="fas {{ $icon }} fa-lg"></i>
+                                        <div class="status-icon bg-{{ $shipment['statusColor'] }} text-white rounded-circle p-2 me-3 muaadh-shipment-status-icon">
+                                            <i class="fas {{ $shipment['statusIcon'] }} fa-lg"></i>
                                         </div>
                                         <div>
-                                            <h5 class="mb-1 text-{{ $color }}">{{ $shipment['status_ar'] }}</h5>
+                                            <h5 class="mb-1 text-{{ $shipment['statusColor'] }}">{{ $shipment['status_ar'] }}</h5>
                                             <p class="mb-0 text-muted small">
                                                 <i class="far fa-clock me-1"></i>
                                                 {{ $shipment['date']?->format('d/m/Y H:i') }}
@@ -91,20 +68,14 @@
                                 @endif
 
                                 <!-- Mini Progress -->
-                                @php
-                                    $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
-                                    $currentIndex = array_search($shipment['status'], $steps);
-                                    if ($currentIndex === false) $currentIndex = 0;
-                                    $progress = (($currentIndex + 1) / count($steps)) * 100;
-                                @endphp
                                 <div class="progress mb-3 muaadh-progress-thin">
-                                    <div class="progress-bar bg-{{ $color }}" role="progressbar"
-                                         style="width: {{ $progress }}%"></div>
+                                    <div class="progress-bar bg-{{ $shipment['statusColor'] }}" role="progressbar"
+                                         style="width: {{ $shipment['progressPercent'] }}%"></div>
                                 </div>
 
                                 <div class="d-flex justify-content-between">
                                     <a href="{{ route('front.tracking', ['tracking' => $shipment['tracking_number']]) }}"
-                                       class="btn btn-sm btn-outline-{{ $color }}">
+                                       class="btn btn-sm btn-outline-{{ $shipment['statusColor'] }}">
                                         <i class="fas fa-eye me-1"></i> @lang('Track Details')
                                     </a>
                                     <a href="{{ route('user-purchase', $shipment['purchase_id']) }}"

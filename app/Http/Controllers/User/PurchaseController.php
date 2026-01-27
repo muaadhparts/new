@@ -20,6 +20,18 @@ class PurchaseController extends UserBaseController
             ->latest('id')
             ->paginate(12);
 
+        // PRE-COMPUTED: Status CSS class for each purchase (DATA_FLOW_POLICY - no @php in view)
+        $purchases->getCollection()->transform(function ($purchase) {
+            $purchase->status_class = in_array($purchase->status, ['pending', 'processing'])
+                ? 'yellow-btn'
+                : ($purchase->status == 'completed'
+                    ? 'green-btn'
+                    : ($purchase->status == 'declined'
+                        ? 'red-btn'
+                        : 'black-btn'));
+            return $purchase;
+        });
+
         return view('user.purchase.index', compact('user', 'purchases'));
     }
 
@@ -53,7 +65,10 @@ class PurchaseController extends UserBaseController
                 ->get();
         }
 
-        return view('load.track-load', compact('purchase', 'datas', 'shipmentLogs'));
+        // PRE-COMPUTED: Group logs by tracking number (DATA_FLOW_POLICY)
+        $groupedLogs = $shipmentLogs->groupBy('tracking_number');
+
+        return view('load.track-load', compact('purchase', 'datas', 'shipmentLogs', 'groupedLogs'));
     }
 
 
@@ -66,7 +81,28 @@ class PurchaseController extends UserBaseController
         // Prepare tracking data for view (no logic in Blade)
         $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
 
-        return view('user.purchase.details', compact('user', 'purchase', 'cart', 'trackingData'));
+        // Pre-compute shipping names for view (DATA_FLOW_POLICY)
+        $shippingNamesFormatted = $purchase->getFormattedShippingNames();
+
+        // PRE-COMPUTED: Cart items display data (DATA_FLOW_POLICY - no @php in view)
+        $cartItemsDisplay = [];
+        if (!empty($cart['items'])) {
+            foreach ($cart['items'] as $key => $catalogItem) {
+                $partNumber = $catalogItem['item']['part_number'] ?? '';
+                $cartItemsDisplay[$key] = [
+                    'productUrl' => !empty($partNumber) ? route('front.part-result', $partNumber) : '#',
+                ];
+            }
+        }
+
+        return view('user.purchase.details', [
+            'user' => $user,
+            'purchase' => $purchase,
+            'cart' => $cart,
+            'trackingData' => $trackingData,
+            'shippingNamesFormatted' => $shippingNamesFormatted,
+            'cartItemsDisplay' => $cartItemsDisplay,
+        ]);
     }
 
     // Digital downloads removed - Physical-only system
@@ -89,7 +125,15 @@ class PurchaseController extends UserBaseController
         $merchantPurchases = $purchase->merchantPurchases()->with('user')->get();
         $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
 
-        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'sellersInfoLookup'));
+        // PRE-COMPUTED: Invoice header display data (DATA_FLOW_POLICY - no @php in view)
+        $firstSeller = isset($sellersInfoLookup) && count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
+        // Show platform if: no seller found, multiple sellers, or first seller is platform
+        $printDisplayData = [
+            'firstSeller' => $firstSeller,
+            'showPlatform' => !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true),
+        ];
+
+        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'sellersInfoLookup', 'printDisplayData'));
     }
 
     public function trans()

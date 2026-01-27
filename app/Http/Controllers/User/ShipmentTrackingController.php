@@ -107,6 +107,11 @@ class ShipmentTrackingController extends Controller
             'shipment' => null,
             'purchase' => null,
             'history' => collect([]),
+            // Pre-computed tracking display values (DATA_FLOW_POLICY)
+            'statusIcon' => 'fa-box',
+            'statusColor' => 'info',
+            'progressPercent' => 0,
+            'stepsDisplay' => $this->buildStepsDisplay(null),
         ];
 
         // If no input, show search form
@@ -122,6 +127,8 @@ class ShipmentTrackingController extends Controller
                 $data['shipment'] = $shipment;
                 $data['purchase'] = $shipment->purchase;
                 $data['history'] = ShipmentTracking::getHistoryByTracking($trackingNumber);
+                // Pre-compute display values (DATA_FLOW_POLICY)
+                $data = array_merge($data, $this->buildShipmentDisplayValues($shipment));
             }
 
             return view('frontend.tracking.index', $data);
@@ -138,6 +145,8 @@ class ShipmentTrackingController extends Controller
                     $data['shipment'] = $shipment;
                     $data['purchase'] = $purchase;
                     $data['history'] = ShipmentTracking::getHistoryForPurchase($purchase->id);
+                    // Pre-compute display values (DATA_FLOW_POLICY)
+                    $data = array_merge($data, $this->buildShipmentDisplayValues($shipment));
                 }
             }
 
@@ -145,6 +154,101 @@ class ShipmentTrackingController extends Controller
         }
 
         return view('frontend.tracking.index', $data);
+    }
+
+    /**
+     * Build pre-computed display values for shipment tracking (DATA_FLOW_POLICY)
+     */
+    private function buildShipmentDisplayValues(?ShipmentTracking $shipment): array
+    {
+        $statusIcons = [
+            'created' => 'fa-box',
+            'picked_up' => 'fa-truck-loading',
+            'in_transit' => 'fa-truck',
+            'out_for_delivery' => 'fa-motorcycle',
+            'delivered' => 'fa-check-circle',
+            'failed' => 'fa-exclamation-circle',
+            'returned' => 'fa-undo',
+            'cancelled' => 'fa-times-circle',
+        ];
+
+        $statusColors = [
+            'created' => 'info',
+            'picked_up' => 'primary',
+            'in_transit' => 'warning',
+            'out_for_delivery' => 'warning',
+            'delivered' => 'success',
+            'failed' => 'danger',
+            'returned' => 'secondary',
+            'cancelled' => 'dark',
+        ];
+
+        $status = $shipment?->status ?? 'created';
+
+        return [
+            'statusIcon' => $statusIcons[$status] ?? 'fa-box',
+            'statusColor' => $statusColors[$status] ?? 'info',
+            'progressPercent' => $this->calculateTrackingProgress($status),
+            'stepsDisplay' => $this->buildStepsDisplay($status),
+            // Keep mappings for history items
+            'statusIcons' => $statusIcons,
+            'statusColors' => $statusColors,
+        ];
+    }
+
+    /**
+     * Calculate tracking progress percent (DATA_FLOW_POLICY)
+     */
+    private function calculateTrackingProgress(?string $status): int
+    {
+        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+        $currentIndex = array_search($status ?? 'created', $steps);
+        if ($currentIndex === false) {
+            $currentIndex = 0;
+        }
+        return (int) round((($currentIndex + 1) / count($steps)) * 100);
+    }
+
+    /**
+     * Build steps display array with isActive pre-computed (DATA_FLOW_POLICY)
+     */
+    private function buildStepsDisplay(?string $currentStatus): array
+    {
+        $steps = ['created', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered'];
+        $stepNames = [
+            'created' => __('Created'),
+            'picked_up' => __('Picked Up'),
+            'in_transit' => __('In Transit'),
+            'out_for_delivery' => __('Out for Delivery'),
+            'delivered' => __('Delivered'),
+        ];
+        $statusIcons = [
+            'created' => 'fa-box',
+            'picked_up' => 'fa-truck-loading',
+            'in_transit' => 'fa-truck',
+            'out_for_delivery' => 'fa-motorcycle',
+            'delivered' => 'fa-check-circle',
+        ];
+
+        $currentIndex = array_search($currentStatus ?? 'created', $steps);
+        if ($currentIndex === false) {
+            $currentIndex = -1;
+        }
+
+        $result = [];
+        foreach ($steps as $index => $step) {
+            $isActive = $index <= $currentIndex;
+            $result[] = [
+                'key' => $step,
+                'name' => $stepNames[$step],
+                'icon' => $statusIcons[$step] ?? 'fa-box',
+                'isActive' => $isActive,
+                'iconClass' => $isActive ? 'bg-success text-white' : 'bg-light',
+                'textClass' => $isActive ? 'fw-bold' : 'text-muted',
+            ];
+        }
+
+        return $result;
     }
 
     /**

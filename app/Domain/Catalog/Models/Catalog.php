@@ -79,6 +79,14 @@ class Catalog extends Model
         'endYear' => 'integer',
     ];
 
+    /**
+     * Accessors to include in array/JSON serialization
+     */
+    protected $appends = [
+        'localized_name',
+        'year_range',
+    ];
+
     protected $with = ['brand:id,name,name_ar,slug,photo'];
 
     /* =========================================================================
