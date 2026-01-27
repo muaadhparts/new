@@ -49,34 +49,20 @@ final class PurchaseListItemDTO
 
     /**
      * Get localized status label
+     * Delegates to PurchaseDisplayService for consistency
      */
     private static function getStatusLabel(string $status): string
     {
-        return match ($status) {
-            'pending' => __('Pending'),
-            'processing' => __('Processing'),
-            'shipped' => __('Shipped'),
-            'delivered' => __('Delivered'),
-            'completed' => __('Completed'),
-            'cancelled' => __('Cancelled'),
-            'refunded' => __('Refunded'),
-            default => ucfirst($status),
-        };
+        return purchaseDisplay()->getStatusLabel($status);
     }
 
     /**
      * Get CSS class for status badge
+     * Delegates to PurchaseDisplayService for consistency
      */
     private static function getStatusClass(string $status): string
     {
-        return match ($status) {
-            'pending' => 'bg-warning text-dark',
-            'processing' => 'bg-info text-white',
-            'shipped' => 'bg-primary text-white',
-            'delivered', 'completed' => 'bg-success text-white',
-            'cancelled', 'refunded' => 'bg-danger text-white',
-            default => 'bg-secondary text-white',
-        };
+        return purchaseDisplay()->getStatusClass($status);
     }
 
     /**

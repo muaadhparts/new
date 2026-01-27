@@ -365,6 +365,32 @@ if (! function_exists('space_path')) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// PurchaseDisplay Helper - API-Ready Purchase Formatting
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get PurchaseDisplayService instance (SINGLE SOURCE OF TRUTH for purchase formatting)
+ *
+ * This is the main entry point for all purchase display formatting.
+ * Use this helper instead of formatting in controllers or views.
+ *
+ * Usage:
+ *   purchaseDisplay()->forList($purchase)           // Get list display data
+ *   purchaseDisplay()->forDetail($purchase)         // Get detail display data
+ *   purchaseDisplay()->getStatusLabel($status)      // Get localized status
+ *   purchaseDisplay()->formatPrice($amount)         // Format price
+ *   purchaseDisplay()->formatCartItems($cart)       // Format cart items
+ *
+ * @return \App\Domain\Commerce\Services\PurchaseDisplayService
+ */
+if (! function_exists('purchaseDisplay')) {
+    function purchaseDisplay(): \App\Domain\Commerce\Services\PurchaseDisplayService
+    {
+        return app(\App\Domain\Commerce\Services\PurchaseDisplayService::class);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MonetaryUnit Helpers - توحيد استدعاء العملة
 // ═══════════════════════════════════════════════════════════════════════════
 
