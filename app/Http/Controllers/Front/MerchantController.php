@@ -25,13 +25,10 @@ class MerchantController extends FrontBaseController
         // Find merchant by slug
         $merchant = $this->merchantCatalogService->findMerchantBySlug($slug);
 
-        // If no merchant found, try static page or 404
+        // If no merchant found, return 404
+        // Note: static_content table was dropped - static pages no longer supported
         if (empty($merchant)) {
-            $page = DB::table('static_content')->where('slug', $slug)->first();
-            if (empty($page)) {
-                return response()->view('errors.404', [], 404);
-            }
-            return view('frontend.static-content', ['page' => $page]);
+            return response()->view('errors.404', [], 404);
         }
 
         $data['merchant'] = $merchant;

@@ -106,7 +106,9 @@
       "Bash(for file in suggest support-message track-load user-chat-message user-support-message)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(while read file)",
-      "Bash(Select-String -Pattern \"VIEW_QUERY|VIEW_STATIC_QUERY|VIEW_DIRECT_DB|VIEW_LAZY_LOAD|VIEW_LARGE_PHP\")"
+      "Bash(Select-String -Pattern \"VIEW_QUERY|VIEW_STATIC_QUERY|VIEW_DIRECT_DB|VIEW_LAZY_LOAD|VIEW_LARGE_PHP\")",
+      "Bash(Select-String -Pattern \"error|exception|500\" -Context 2,5)",
+      "Bash(Select-Object -Last 30)"
     ]
   }
 }

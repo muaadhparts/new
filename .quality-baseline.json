@@ -1,0 +1,34 @@
+{
+    "version": "1.0.0",
+    "generated_at": "2026-01-27",
+    "description": "Quality baseline - warnings must not increase above these values",
+    "baselines": {
+        "lint:blade": {
+            "errors": 0,
+            "warnings": 29,
+            "last_reduced": "2026-01-27"
+        },
+        "lint:dataflow": {
+            "errors": 0,
+            "warnings": 1095,
+            "last_reduced": "2026-01-27"
+        }
+    },
+    "exceptions": {
+        "documented": [],
+        "max_allowed": 10,
+        "requires_approval": true
+    },
+    "targets": {
+        "lint:blade_warnings": {
+            "current": 29,
+            "target": 0,
+            "deadline": "2026-03-01"
+        },
+        "lint:dataflow_warnings": {
+            "current": 1095,
+            "target": 500,
+            "deadline": "2026-03-01"
+        }
+    }
+}
