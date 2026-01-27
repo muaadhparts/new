@@ -236,23 +236,61 @@ class ShippingApiController extends Controller
             ]);
 
             if (empty($deliveryCompany)) {
-                Log::warning('ShippingApiController: No delivery options returned from Tryoto', [
+                Log::warning('ShippingApiController: No delivery options for original city, trying nearest supported city', [
                     'branch_id' => $branchId,
                     'origin' => $originCity,
                     'destination' => $destinationCity,
                     'weight' => $weight,
-                    'raw_response' => $result['raw'] ?? null
                 ]);
 
-                return response()->json([
-                    'success' => false,
-                    'error' => "عذراً، لا تتوفر خيارات شحن من ({$originCity}) إلى ({$destinationCity}). يرجى التواصل مع التاجر.",
-                    'debug' => [
-                        'origin' => $originCity,
-                        'destination' => $destinationCity,
-                        'weight' => $weight
-                    ]
-                ]);
+                // Mark original city as not working with Tryoto
+                City::where('city_name', $destinationCity)->update(['tryoto_supported' => 0]);
+
+                // Get customer coordinates from session
+                $addressData = Session::get('checkout.branch.' . $branchId . '.address');
+                $customerLat = $addressData['latitude'] ?? null;
+                $customerLng = $addressData['longitude'] ?? null;
+
+                if ($customerLat && $customerLng) {
+                    // Find nearest city that actually works with Tryoto API
+                    $fallbackResult = $this->findNearestWorkingCity(
+                        $merchantId,
+                        $originCity,
+                        (float) $customerLat,
+                        (float) $customerLng,
+                        $weight,
+                        $dimensions,
+                        $destinationCity // exclude original city
+                    );
+
+                    if ($fallbackResult['success'] && !empty($fallbackResult['options'])) {
+                        Log::info('ShippingApiController: Found working city via fallback', [
+                            'original_city' => $destinationCity,
+                            'fallback_city' => $fallbackResult['city_name'],
+                            'distance_km' => $fallbackResult['distance_km'],
+                            'options_count' => count($fallbackResult['options']),
+                        ]);
+
+                        // Update destination city to the working one
+                        $destinationCity = $fallbackResult['city_name'];
+                        $deliveryCompany = $fallbackResult['options'];
+
+                        // Continue to process these options (don't return error)
+                    }
+                }
+
+                // If still no options after fallback
+                if (empty($deliveryCompany)) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => "عذراً، لا تتوفر خيارات شحن من ({$originCity}) إلى ({$destinationCity}). يرجى التواصل مع التاجر.",
+                        'debug' => [
+                            'origin' => $originCity,
+                            'destination' => $destinationCity,
+                            'weight' => $weight
+                        ]
+                    ]);
+                }
             }
 
             // Get free shipping threshold (merchant-level setting)
@@ -758,6 +796,135 @@ class ShippingApiController extends Controller
             'total_price' => round($totalPrice, 2),
             'dimensions' => $dimensions,
             'branch_id' => $branchId,
+        ];
+    }
+
+    /**
+     * Find nearest city that actually works with Tryoto API
+     *
+     * When the original city returns 0 shipping options, this method:
+     * 1. Finds nearby cities from DB (ordered by distance)
+     * 2. Tests each city with Tryoto API
+     * 3. Returns first city that has shipping options
+     * 4. Marks non-working cities as tryoto_supported = 0
+     *
+     * @param int $merchantId
+     * @param string $originCity
+     * @param float $customerLat
+     * @param float $customerLng
+     * @param float $weight
+     * @param array $dimensions
+     * @param string|null $excludeCity City to exclude (original failed city)
+     * @param int $maxAttempts Maximum cities to try
+     * @return array ['success' => bool, 'city_name' => string, 'options' => array, 'distance_km' => float]
+     */
+    protected function findNearestWorkingCity(
+        int $merchantId,
+        string $originCity,
+        float $customerLat,
+        float $customerLng,
+        float $weight,
+        array $dimensions,
+        ?string $excludeCity = null,
+        int $maxAttempts = 5
+    ): array {
+        // Haversine formula for distance calculation in SQL
+        $haversine = "(6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ))";
+
+        // Find nearby cities that are marked as supported
+        $query = City::where('tryoto_supported', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->selectRaw("*, {$haversine} as distance_km", [$customerLat, $customerLng, $customerLat])
+            ->havingRaw('distance_km <= ?', [150]) // Max 150km
+            ->orderBy('distance_km', 'asc')
+            ->limit($maxAttempts + 1); // +1 to account for excluded city
+
+        if ($excludeCity) {
+            $query->where('city_name', '!=', $excludeCity);
+        }
+
+        $nearbyCities = $query->get();
+
+        Log::info('ShippingApiController: Searching for nearest working city', [
+            'customer_lat' => $customerLat,
+            'customer_lng' => $customerLng,
+            'exclude_city' => $excludeCity,
+            'nearby_cities_count' => $nearbyCities->count(),
+        ]);
+
+        $attempts = 0;
+        foreach ($nearbyCities as $city) {
+            if ($attempts >= $maxAttempts) {
+                break;
+            }
+            $attempts++;
+
+            $cityName = $this->normalizeCityName($city->city_name);
+
+            Log::debug('ShippingApiController: Testing city with Tryoto API', [
+                'city_name' => $cityName,
+                'distance_km' => round($city->distance_km, 2),
+                'attempt' => $attempts,
+            ]);
+
+            // Test this city with Tryoto API
+            $result = $this->tryotoService
+                ->forMerchant($merchantId)
+                ->getDeliveryOptions(
+                    $originCity,
+                    $cityName,
+                    $weight,
+                    0,
+                    $dimensions
+                );
+
+            $options = $result['raw']['deliveryCompany'] ?? [];
+
+            if ($result['success'] && !empty($options)) {
+                Log::info('ShippingApiController: Found working city', [
+                    'city_name' => $cityName,
+                    'distance_km' => round($city->distance_km, 2),
+                    'options_count' => count($options),
+                ]);
+
+                return [
+                    'success' => true,
+                    'city_name' => $cityName,
+                    'city_id' => $city->id,
+                    'options' => $options,
+                    'distance_km' => round($city->distance_km, 2),
+                    'attempts' => $attempts,
+                ];
+            }
+
+            // Mark this city as not working
+            City::where('id', $city->id)->update(['tryoto_supported' => 0]);
+
+            Log::debug('ShippingApiController: City not working, marked as unsupported', [
+                'city_name' => $cityName,
+                'city_id' => $city->id,
+            ]);
+        }
+
+        Log::warning('ShippingApiController: No working city found after attempts', [
+            'attempts' => $attempts,
+            'customer_lat' => $customerLat,
+            'customer_lng' => $customerLng,
+        ]);
+
+        return [
+            'success' => false,
+            'city_name' => null,
+            'options' => [],
+            'distance_km' => null,
+            'attempts' => $attempts,
         ];
     }
 }
