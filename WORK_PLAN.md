@@ -6,112 +6,141 @@
 ---
 
 ## الهدف
-تحسين جودة الكود وتطبيق Data Flow Policy بشكل كامل، مع تجهيز المشروع للتوسع المستقبلي.
+تجهيز المشروع للتوسع المستقبلي (Mobile App, WhatsApp, Mobile Browser) من خلال فصل طبقة العرض عن المنطق.
 
 ---
 
-## التوسع المستقبلي (يجب مراعاته في كل التعديلات)
+## المنصات المستهدفة
 
-| المنصة | الوصف |
-|--------|-------|
-| Mobile App | تطبيق جوال يستخدم API |
-| WhatsApp | تكامل مع واتس اب |
-| Mobile Browser | عرض مختلف للشاشات الصغيرة (مسار منفصل) |
-| Desktop Web | الموقع الحالي |
+| المنصة | الوصف | الحالة |
+|--------|-------|--------|
+| Desktop Web | الموقع الحالي | ✅ يعمل |
+| Mobile App | تطبيق جوال يستخدم API | ⬜ مخطط |
+| Mobile Browser | عرض مختلف للشاشات الصغيرة | ⬜ مخطط |
+| WhatsApp | تكامل مع واتس اب | ⬜ مخطط |
 
 **قاعدة ذهبية:** كل الـ formatting يجب أن يكون في Services ليُعاد استخدامه في API.
 
 ---
 
-## الحالة الحالية (c4b352d8)
+## المراحل
+
+### ✅ Phase 1-4: Data Flow Foundation (COMPLETED)
+- ✅ Data Flow Policy established
+- ✅ Schema-Descriptor as source of truth
+- ✅ CLAUDE.md rules defined
+- ✅ Linting tools configured
+
+---
+
+### ⬜ Phase 5: API-Ready Presentation Layer
+
+**الهدف:** نقل الـ formatting من Controllers إلى Services لإعادة الاستخدام.
 
 ```
-Total Violations: 1046
-├── Controllers: 506 violations
-└── Views: 540 violations
+┌─────────────┐     ┌─────────────────┐     ┌─────────┐
+│  Controller │ ──► │ DisplayService  │ ──► │   DTO   │
+│(orchestrate)│     │  (formatting)   │     │ (data)  │
+└─────────────┘     └─────────────────┘     └─────────┘
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+         Web View                    API Response
+```
+
+| # | المهمة | الوصف | الأولوية |
+|---|--------|-------|----------|
+| 5.1 | PurchaseDisplayService | تنسيق بيانات الطلبات | HIGH |
+| 5.2 | MerchantDisplayService | تنسيق بيانات التاجر | HIGH |
+| 5.3 | OperatorDisplayService | تنسيق بيانات لوحة التحكم | HIGH |
+| 5.4 | UserDisplayService | تنسيق بيانات المستخدم | MEDIUM |
+| 5.5 | Display DTOs | DTOs موحدة للعرض | HIGH |
+
+**المخرج المتوقع:**
+```php
+// DisplayService - يُستخدم من Web و API
+class PurchaseDisplayService {
+    public function format(Purchase $purchase): PurchaseDisplayDTO {
+        return new PurchaseDisplayDTO(
+            id: $purchase->id,
+            number: $purchase->purchase_number,
+            total_formatted: PriceHelper::format($purchase->pay_amount),
+            date_formatted: $purchase->created_at->format('Y-m-d'),
+            status_label: __("status.{$purchase->status}"),
+            status_color: $this->getStatusColor($purchase->status),
+            // ... all pre-computed
+        );
+    }
+}
+
+// Web Controller - orchestration only
+public function show($id) {
+    $purchase = $this->purchaseService->find($id);
+    $dto = $this->displayService->format($purchase);
+    return view('purchase.show', ['purchase' => $dto]);
+}
+
+// API Controller - same service
+public function show($id) {
+    $purchase = $this->purchaseService->find($id);
+    $dto = $this->displayService->format($purchase);
+    return response()->json($dto);
+}
 ```
 
 ---
 
-## المراحل المطلوبة
+### ⬜ Phase 6: Views Alignment
 
-### المرحلة 1: Controllers Cleanup
-**الهدف:** نقل الـ queries من Controllers إلى Services/Repositories
+**الهدف:** تحويل Views لاستخدام Display DTOs - بدون منطق جديد.
 
-| المجموعة | الملفات | الأولوية |
-|----------|---------|----------|
-| Api Controllers | ~15 files | HIGH |
-| Operator Controllers | ~45 files | HIGH |
-| Merchant Controllers | ~20 files | MEDIUM |
-| User Controllers | ~10 files | MEDIUM |
+| المجموعة | الوصف | الأولوية |
+|----------|-------|----------|
+| Operator Views | استهلاك OperatorDisplayService | HIGH |
+| Merchant Views | استهلاك MerchantDisplayService | HIGH |
+| User Views | استهلاك UserDisplayService | MEDIUM |
 
-### المرحلة 2: Views Cleanup
-**الهدف:** إزالة كل PriceHelper, date(), @php, deep access من Views
+**القاعدة:**
+```blade
+{{-- ❌ FORBIDDEN --}}
+{{ PriceHelper::format($purchase->pay_amount) }}
+{{ $purchase->created_at->format('Y-m-d') }}
 
-| المجموعة | التقدير | الأولوية |
-|----------|---------|----------|
-| Operator Views | ~300 violations | HIGH |
-| Merchant Views | ~150 violations | HIGH |
-| User Views | ~50 violations | MEDIUM |
-| Frontend Views | ~40 violations | LOW |
+{{-- ✅ REQUIRED --}}
+{{ $purchase->total_formatted }}
+{{ $purchase->date_formatted }}
+```
 
-### المرحلة 3: API-Ready Architecture
-**الهدف:** نقل الـ formatting من Controllers إلى Services لإعادة الاستخدام.
+---
 
-| # | المهمة | الملفات | الأولوية |
-|---|--------|---------|----------|
-| 3.1 | إنشاء PurchaseDisplayService | جديد | HIGH |
-| 3.2 | إنشاء MerchantDisplayService | جديد | HIGH |
-| 3.3 | إنشاء UserDisplayService | جديد | MEDIUM |
-| 3.4 | إنشاء Display DTOs موحدة | جديد | HIGH |
+## الإحصائيات الحالية
 
-**المخرج المتوقع:**
-```php
-// Service يُستخدم من Web و API
-$displayService->formatPurchase($purchase) → PurchaseDisplayDTO
+```
+php artisan lint:dataflow --ci
 
-// Web Controller
-return view('...', ['data' => $dto]);
-
-// API Controller (مستقبلاً)
-return response()->json($dto);
+Total Violations: 1046
+├── Controllers: 506 (queries + formatting)
+└── Views: 540 (PriceHelper + date + @php)
 ```
 
 ---
 
 ## قواعد العمل
 
-1. **Data Flow Policy**: Model → Service → DTO → View/API
-2. **لا queries في Views**: كل البيانات تأتي محسوبة
-3. **لا compact()**: استخدم explicit arrays
-4. **لا formatting في Controllers**: استخدم Services (للـ API)
-5. **API-Ready**: كل تعديل يجب أن يكون قابل لإعادة الاستخدام
+1. **Schema-Descriptor First**: أي feature يبدأ من schema-descriptor
+2. **Data Flow Policy**: Model → Service → DTO → View/API
+3. **Controllers = Orchestration**: لا formatting، لا queries مباشرة
+4. **Services = Logic + Formatting**: كل المنطق هنا
+5. **Views = Display Only**: {{ $dto->property }} فقط
 
 ---
 
 ## أوامر الفحص
 
 ```bash
-# فحص كل الطبقات
-php artisan lint:dataflow --ci
-
-# فحص طبقة معينة
-php artisan lint:dataflow --layer=view
-php artisan lint:dataflow --layer=controller
-
-# مع اقتراحات الإصلاح
-php artisan lint:dataflow --fix
+php artisan lint:dataflow --ci              # فحص كامل
+php artisan lint:dataflow --layer=view      # Views فقط
+php artisan lint:dataflow --layer=controller # Controllers فقط
 ```
-
----
-
-## الوثائق المرجعية
-
-| الموضوع | الملف |
-|---------|-------|
-| Data Flow Policy | `docs/rules/DATA_FLOW_POLICY.md` |
-| CSS Design System | `docs/rules/css-design-system.md` |
-| Project Overview | `docs/architecture/project-overview.md` |
-| Catalog System | `docs/architecture/catalog-system.md` |
 
 ---
