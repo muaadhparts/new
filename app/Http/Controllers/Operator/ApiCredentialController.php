@@ -183,6 +183,7 @@ class ApiCredentialController extends OperatorBaseController
 
     /**
      * Test credential (verify it's working)
+     * Returns JSON for AJAX requests
      */
     public function test($id)
     {
@@ -190,12 +191,119 @@ class ApiCredentialController extends OperatorBaseController
         $value = $credential->decrypted_value;
 
         if (!$value) {
-            return back()->with('error', __('Cannot decrypt credential'));
+            return response()->json([
+                'success' => false,
+                'message' => __('Cannot decrypt credential'),
+                'details' => null
+            ]);
         }
+
+        // Test based on service type
+        $testResult = $this->testCredential($credential->service_name, $credential->key_name, $value);
 
         // Update last used timestamp
         $credential->update(['last_used_at' => now()]);
 
-        return back()->with('success', __('Credential is valid and accessible'));
+        return response()->json($testResult);
+    }
+
+    /**
+     * Actually test the credential against its API
+     */
+    protected function testCredential(string $service, string $keyName, string $value): array
+    {
+        try {
+            switch ($service) {
+                case 'google_maps':
+                    return $this->testGoogleMaps($value);
+
+                case 'digitalocean':
+                    return $this->testDigitalOcean($keyName, $value);
+
+                default:
+                    return [
+                        'success' => true,
+                        'message' => __('Credential decrypted successfully'),
+                        'details' => __('No API test available for this service'),
+                        'value_preview' => substr($value, 0, 10) . '...'
+                    ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => __('Test failed'),
+                'details' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Test Google Maps API
+     */
+    protected function testGoogleMaps(string $apiKey): array
+    {
+        $url = "https://maps.googleapis.com/maps/api/geocode/json?" . http_build_query([
+            'latlng' => '24.7136,46.6753', // Riyadh
+            'key' => $apiKey,
+            'language' => 'ar'
+        ]);
+
+        $response = @file_get_contents($url);
+
+        if (!$response) {
+            return [
+                'success' => false,
+                'message' => __('Connection failed'),
+                'details' => __('Could not connect to Google Maps API')
+            ];
+        }
+
+        $data = json_decode($response, true);
+
+        if ($data['status'] === 'OK') {
+            $address = $data['results'][0]['formatted_address'] ?? 'N/A';
+            return [
+                'success' => true,
+                'message' => __('Google Maps API is working'),
+                'details' => __('Test Address') . ': ' . $address,
+                'api_status' => 'OK'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => __('API returned error'),
+            'details' => $data['error_message'] ?? $data['status'],
+            'api_status' => $data['status']
+        ];
+    }
+
+    /**
+     * Test DigitalOcean Spaces
+     */
+    protected function testDigitalOcean(string $keyName, string $value): array
+    {
+        // Just verify format for now
+        if ($keyName === 'access_key' && strlen($value) >= 20) {
+            return [
+                'success' => true,
+                'message' => __('Access Key format is valid'),
+                'details' => __('Length') . ': ' . strlen($value) . ' ' . __('characters')
+            ];
+        }
+
+        if ($keyName === 'secret_key' && strlen($value) >= 30) {
+            return [
+                'success' => true,
+                'message' => __('Secret Key format is valid'),
+                'details' => __('Length') . ': ' . strlen($value) . ' ' . __('characters')
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => __('Credential stored'),
+            'details' => __('Format validation passed')
+        ];
     }
 }

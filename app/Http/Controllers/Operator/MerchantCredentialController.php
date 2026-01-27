@@ -276,7 +276,7 @@ class MerchantCredentialController extends OperatorBaseController
     }
 
     /**
-     * Test credential
+     * Test credential - Returns JSON for AJAX
      */
     public function test($id)
     {
@@ -284,12 +284,181 @@ class MerchantCredentialController extends OperatorBaseController
         $value = $credential->decrypted_value;
 
         if (!$value) {
-            return back()->with('error', __('Cannot decrypt credential'));
+            return response()->json([
+                'success' => false,
+                'message' => __('Cannot decrypt credential'),
+                'details' => null
+            ]);
         }
+
+        // Test based on service type
+        $testResult = $this->testCredential(
+            $credential->service_name,
+            $credential->key_name,
+            $value,
+            $credential->environment,
+            $credential->user_id
+        );
 
         // Update last used timestamp
         $credential->update(['last_used_at' => now()]);
 
-        return back()->with('success', __('Credential is valid and accessible'));
+        return response()->json($testResult);
+    }
+
+    /**
+     * Actually test the credential against its API
+     */
+    protected function testCredential(string $service, string $keyName, string $value, string $environment, int $userId): array
+    {
+        try {
+            switch ($service) {
+                case 'myfatoorah':
+                    return $this->testMyFatoorah($value, $environment);
+
+                case 'tryoto':
+                    return $this->testTryoto($value, $environment);
+
+                default:
+                    return [
+                        'success' => true,
+                        'message' => __('Credential decrypted successfully'),
+                        'details' => __('No API test available for this service'),
+                        'value_preview' => substr($value, 0, 10) . '...'
+                    ];
+            }
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => __('Test failed'),
+                'details' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Test MyFatoorah API
+     */
+    protected function testMyFatoorah(string $apiKey, string $environment): array
+    {
+        $baseUrl = $environment === 'live'
+            ? 'https://api.myfatoorah.com'
+            : 'https://apitest.myfatoorah.com';
+
+        $url = $baseUrl . '/v2/InitiatePayment';
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $apiKey,
+                'Content-Type: application/json',
+            ],
+            CURLOPT_POSTFIELDS => json_encode([
+                'InvoiceAmount' => 1,
+                'CurrencyIso' => 'SAR',
+            ]),
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            return [
+                'success' => false,
+                'message' => __('Connection failed'),
+                'details' => $error
+            ];
+        }
+
+        $data = json_decode($response, true);
+
+        if ($httpCode === 200 && isset($data['IsSuccess']) && $data['IsSuccess']) {
+            $methods = count($data['Data']['PaymentMethods'] ?? []);
+            return [
+                'success' => true,
+                'message' => __('MyFatoorah API is working'),
+                'details' => __('Environment') . ': ' . ucfirst($environment) . ' | ' . __('Payment Methods') . ': ' . $methods,
+                'api_status' => 'OK'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => __('API returned error'),
+            'details' => $data['Message'] ?? $data['ValidationErrors'][0]['Error'] ?? 'HTTP ' . $httpCode,
+            'api_status' => 'ERROR'
+        ];
+    }
+
+    /**
+     * Test Tryoto API
+     *
+     * API URL: api.tryoto.com (not tryoto.com)
+     * Field name: refresh_token (underscore, not camelCase)
+     * Response field: access_token (underscore, not camelCase)
+     */
+    protected function testTryoto(string $refreshToken, string $environment): array
+    {
+        // Tryoto API moved to api.tryoto.com subdomain
+        $baseUrl = $environment === 'live'
+            ? 'https://api.tryoto.com'
+            : 'https://staging.tryoto.com';
+
+        $url = $baseUrl . '/rest/v2/refreshToken';
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST => true,
+            CURLOPT_HTTPHEADER => [
+                'Content-Type: application/json',
+            ],
+            // Field name is refresh_token (underscore)
+            CURLOPT_POSTFIELDS => json_encode([
+                'refresh_token' => $refreshToken,
+            ]),
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_SSL_VERIFYPEER => false,
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            return [
+                'success' => false,
+                'message' => __('Connection failed'),
+                'details' => $error
+            ];
+        }
+
+        $data = json_decode($response, true);
+
+        // Response field is access_token (underscore)
+        if ($httpCode === 200 && (!empty($data['access_token']) || !empty($data['success']))) {
+            return [
+                'success' => true,
+                'message' => __('Tryoto API is working'),
+                'details' => __('Environment') . ': ' . ucfirst($environment) . ' | ' . __('Token refreshed successfully'),
+                'api_status' => 'OK'
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => __('API returned error'),
+            'details' => $data['otoErrorMessage'] ?? $data['error']['message'] ?? $data['message'] ?? 'HTTP ' . $httpCode,
+            'api_status' => 'ERROR'
+        ];
     }
 }

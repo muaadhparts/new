@@ -47,7 +47,7 @@
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
-	@if($adminLang && $adminLang->rtl == 1)
+	@if($currentLanguage && $currentLanguage->rtl == 1)
 
 		<link href="{{asset('assets/operator/css/rtl/style.css')}}" rel="stylesheet" />
 		<link href="{{asset('assets/operator/css/rtl/custom.css')}}" rel="stylesheet" />

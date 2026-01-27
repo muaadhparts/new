@@ -120,34 +120,35 @@
                                                 <td>
                                                     <div class="btn-group btn-group-sm">
                                                         <a href="{{ route('operator.credentials.edit', $credential->id) }}"
-                                                           class="btn btn-info" name="{{ __('Edit') }}">
+                                                           class="btn btn-info" title="{{ __('Edit') }}">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                         <form action="{{ route('operator.credentials.toggle', $credential->id) }}"
                                                               method="POST" style="display: inline;">
                                                             @csrf
                                                             <button type="submit" class="btn btn-{{ $credential->is_active ? 'warning' : 'success' }}"
-                                                                    name="{{ $credential->is_active ? __('Deactivate') : __('Activate') }}">
+                                                                    title="{{ $credential->is_active ? __('Deactivate') : __('Activate') }}">
                                                                 <i class="fas fa-{{ $credential->is_active ? 'pause' : 'play' }}"></i>
                                                             </button>
                                                         </form>
-                                                        <form action="{{ route('operator.credentials.test', $credential->id) }}"
-                                                              method="POST" style="display: inline;">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-secondary" name="{{ __('Test') }}">
-                                                                <i class="fas fa-check-circle"></i>
-                                                            </button>
-                                                        </form>
+                                                        <button type="button" class="btn btn-secondary btn-test-credential"
+                                                                data-url="{{ route('operator.credentials.test', $credential->id) }}"
+                                                                data-id="{{ $credential->id }}"
+                                                                title="{{ __('Test API') }}">
+                                                            <i class="fas fa-flask"></i>
+                                                        </button>
                                                         <form action="{{ route('operator.credentials.destroy', $credential->id) }}"
                                                               method="POST" style="display: inline;"
                                                               onsubmit="return confirm('{{ __('Are you sure you want to delete this credential?') }}')">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger" name="{{ __('Delete') }}">
+                                                            <button type="submit" class="btn btn-danger" title="{{ __('Delete') }}">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
                                                     </div>
+                                                    {{-- Test Result Area --}}
+                                                    <div id="test-result-{{ $credential->id }}" class="mt-2" style="display: none;"></div>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -184,4 +185,54 @@ $fatoorahKey = $credService->getMyFatoorahKey();</code></pre>
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    // Test Credential Button
+    $('.btn-test-credential').on('click', function() {
+        var btn = $(this);
+        var url = btn.data('url');
+        var id = btn.data('id');
+        var resultDiv = $('#test-result-' + id);
+        var originalHtml = btn.html();
+
+        // Show loading
+        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        resultDiv.html('<div class="alert alert-info py-2 mb-0"><i class="fas fa-spinner fa-spin me-2"></i>{{ __("Testing...") }}</div>').show();
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                var alertClass = response.success ? 'alert-success' : 'alert-danger';
+                var icon = response.success ? 'fa-check-circle' : 'fa-times-circle';
+
+                var html = '<div class="alert ' + alertClass + ' py-2 mb-0">';
+                html += '<i class="fas ' + icon + ' me-2"></i>';
+                html += '<strong>' + response.message + '</strong>';
+                if (response.details) {
+                    html += '<br><small>' + response.details + '</small>';
+                }
+                if (response.api_status) {
+                    html += '<br><code>Status: ' + response.api_status + '</code>';
+                }
+                html += '</div>';
+
+                resultDiv.html(html);
+            },
+            error: function(xhr) {
+                resultDiv.html('<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle me-2"></i>{{ __("Request failed") }}</div>');
+            },
+            complete: function() {
+                btn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
+});
+</script>
 @endsection

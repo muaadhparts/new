@@ -966,14 +966,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT SHIPMENT TRACKING ENDS ------------
 
-            //------------ MERCHANT CREDENTIALS SECTION ------------
-            Route::get('/credentials', 'Merchant\CredentialController@index')->name('merchant-credentials-index');
-            Route::get('/credentials/create', 'Merchant\CredentialController@create')->name('merchant-credentials-create');
-            Route::post('/credentials/store', 'Merchant\CredentialController@store')->name('merchant-credentials-store');
-            Route::get('/credentials/edit/{id}', 'Merchant\CredentialController@edit')->name('merchant-credentials-edit');
-            Route::put('/credentials/update/{id}', 'Merchant\CredentialController@update')->name('merchant-credentials-update');
-            Route::post('/credentials/toggle/{id}', 'Merchant\CredentialController@toggle')->name('merchant-credentials-toggle');
-            Route::delete('/credentials/delete/{id}', 'Merchant\CredentialController@destroy')->name('merchant-credentials-destroy');
+            //------------ MERCHANT CREDENTIALS SECTION - REMOVED ------------
+            // Credentials are managed by OPERATOR only (not merchants)
+            // See: operator/merchant-credentials routes instead
             //------------ MERCHANT CREDENTIALS SECTION ENDS------------
 
             // -------------------------- Merchant Income ------------------------------------//

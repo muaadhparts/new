@@ -170,10 +170,6 @@
                         href="{{ route('merchant-network-presence-index') }}">@lang('Network Presence')</a>
                 </li>
                 <li class=""><a
-                        class="sidebar-sub-menu-item {{ request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}"
-                        href="{{ route('merchant-credentials-index') }}">@lang('API Credentials')</a>
-                </li>
-                <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/logo') ? 'active' : '' }}"
                         href="{{ route('merchant-logo') }}">@lang('Merchant Logo')</a>
                 </li>

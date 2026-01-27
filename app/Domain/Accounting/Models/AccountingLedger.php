@@ -334,6 +334,16 @@ class AccountingLedger extends Model
         };
     }
 
+    public function getStatusNameAr(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'معلق',
+            self::STATUS_COMPLETED => 'مكتمل',
+            self::STATUS_CANCELLED => 'ملغي',
+            default => 'غير محدد',
+        };
+    }
+
     public function getFormattedAmount(): string
     {
         return $this->monetary_unit_code . ' ' . number_format($this->amount, 2);
