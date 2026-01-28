@@ -92,11 +92,15 @@ class CheckoutMerchantController extends Controller
             'longitude' => $customer['longitude'] ?? '',
         ]);
 
+        // Pre-format cart values for view
+        $cartData = $result['data']['cart'] ?? [];
+        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
+
         return view('merchant.checkout.address', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
             'address' => $address,
-            'cart' => $result['data']['cart'] ?? [],
+            'cart' => $cartData,
             'googleMapsApiKey' => $googleMapsApiKey,
             'curr' => $curr,
             'gs' => platformSettings(),
@@ -165,14 +169,41 @@ class CheckoutMerchantController extends Controller
         // Get currency
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
+        // Pre-format cart values
+        $cartData = $result['data']['cart'] ?? [];
+        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
+
+        // Pre-format totals
+        $totalsData = $result['data']['totals'] ?? [];
+        $totalsData['discount_amount_formatted'] = monetaryUnit()->format($totalsData['discount_amount'] ?? 0);
+        $totalsData['tax_amount_formatted'] = monetaryUnit()->format($totalsData['tax_amount'] ?? 0);
+        $totalsData['grand_total_formatted'] = monetaryUnit()->format($totalsData['grand_total'] ?? $cartData['total_price'] ?? 0);
+
+        // Pre-format shipping provider method prices
+        $shippingProviders = $result['data']['shipping_options'] ?? [];
+        foreach ($shippingProviders as &$provider) {
+            if (!empty($provider['methods'])) {
+                foreach ($provider['methods'] as &$method) {
+                    $method['free_above_formatted'] = monetaryUnit()->format($method['free_above'] ?? 0);
+                    $method['original_price_formatted'] = monetaryUnit()->format($method['original_price'] ?? 0);
+                }
+            }
+        }
+
+        // Pre-format courier prices
+        $couriers = $result['data']['courier_options'] ?? [];
+        foreach ($couriers as &$courier) {
+            $courier['delivery_fee_formatted'] = monetaryUnit()->format($courier['delivery_fee'] ?? 0);
+        }
+
         return view('merchant.checkout.shipping', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
             'address' => $result['data']['address'] ?? [],
-            'cart' => $result['data']['cart'] ?? [],
-            'totals' => $result['data']['totals'] ?? [],
-            'shipping_providers' => $result['data']['shipping_options'] ?? [],
-            'couriers' => $result['data']['courier_options'] ?? [],
+            'cart' => $cartData,
+            'totals' => $totalsData,
+            'shipping_providers' => $shippingProviders,
+            'couriers' => $couriers,
             'curr' => $curr,
             'gs' => platformSettings(),
         ]);
@@ -313,12 +344,30 @@ class CheckoutMerchantController extends Controller
         $priceCalculator = $this->checkoutService->getPriceCalculator();
         $curr = $priceCalculator->getMonetaryUnit();
 
+        // Pre-format cart values
+        $cartData = $result['data']['cart'] ?? [];
+        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
+
+        // Pre-format totals
+        $totalsData = $result['data']['totals'] ?? [];
+        $totalsData['discount_amount_formatted'] = monetaryUnit()->format($totalsData['discount_amount'] ?? 0);
+        $totalsData['tax_amount_formatted'] = monetaryUnit()->format($totalsData['tax_amount'] ?? 0);
+        $totalsData['shipping_cost_formatted'] = monetaryUnit()->format($totalsData['shipping_cost'] ?? 0);
+        $totalsData['courier_fee_formatted'] = monetaryUnit()->format($totalsData['courier_fee'] ?? 0);
+        $totalsData['grand_total_formatted'] = monetaryUnit()->format($totalsData['grand_total'] ?? 0);
+
+        // Pre-format shipping values
+        $shippingData = $result['data']['shipping'] ?? [];
+        $shippingData['courier_fee_formatted'] = monetaryUnit()->format($shippingData['courier_fee'] ?? 0);
+        $shippingData['shipping_cost_formatted'] = monetaryUnit()->format($shippingData['shipping_cost'] ?? 0);
+        $shippingData['original_shipping_cost_formatted'] = monetaryUnit()->format($shippingData['original_shipping_cost'] ?? 0);
+
         return view('merchant.checkout.payment', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
-            'cart' => $result['data']['cart'] ?? [],
-            'totals' => $result['data']['totals'] ?? [],
-            'shipping' => $result['data']['shipping'] ?? [],
+            'cart' => $cartData,
+            'totals' => $totalsData,
+            'shipping' => $shippingData,
             'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
             'curr' => $curr,

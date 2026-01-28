@@ -88,16 +88,16 @@
                                 <ul class="summary-list">
                                     <li>
                                         <span>@lang('Subtotal') ({{ $cart['total_qty'] ?? 0 }})</span>
-                                        <span id="summary-subtotal">{{ $curr->sign ?? '' }}{{ number_format($cart['total_price'] ?? 0, 2) }}</span>
+                                        <span id="summary-subtotal">{{ $cart['total_price_formatted'] }}</span>
                                     </li>
                                     <li id="tax-row" class="d-none">
                                         <span>@lang('Tax') (<span id="tax-rate">0</span>%)</span>
-                                        <span id="summary-tax">{{ $curr->sign ?? '' }}0.00</span>
+                                        <span id="summary-tax">{{ monetaryUnit()->format(0) }}</span>
                                     </li>
                                 </ul>
                                 <div class="total-cost">
                                     <span>@lang('Total')</span>
-                                    <span id="summary-total">{{ $curr->sign ?? '' }}{{ number_format($cart['total_price'] ?? 0, 2) }}</span>
+                                    <span id="summary-total">{{ $cart['total_price_formatted'] }}</span>
                                 </div>
                             </div>
 

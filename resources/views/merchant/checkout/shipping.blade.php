@@ -136,12 +136,12 @@
                                 <ul class="summary-list">
                                     <li>
                                         <span>@lang('Subtotal') ({{ $cart['total_qty'] ?? 0 }})</span>
-                                        <span id="summary-subtotal">{{ $curr->sign ?? '' }}{{ number_format($cart['total_price'] ?? 0, 2) }}</span>
+                                        <span id="summary-subtotal">{{ $cart['total_price_formatted'] }}</span>
                                     </li>
                                     @if(($totals['discount_amount'] ?? 0) > 0)
                                     <li class="text-success">
                                         <span>@lang('Discount')</span>
-                                        <span>-{{ $curr->sign ?? '' }}{{ number_format($totals['discount_amount'] ?? 0, 2) }}</span>
+                                        <span>-{{ $totals['discount_amount_formatted'] }}</span>
                                     </li>
                                     @endif
                                     {{-- Shipping Row --}}
@@ -156,13 +156,13 @@
                                     @if(($totals['tax_amount'] ?? 0) > 0)
                                     <li>
                                         <span>@lang('Tax') ({{ $totals['tax_rate'] ?? 0 }}%)</span>
-                                        <span>{{ $curr->sign ?? '' }}{{ number_format($totals['tax_amount'] ?? 0, 2) }}</span>
+                                        <span>{{ $totals['tax_amount_formatted'] }}</span>
                                     </li>
                                     @endif
                                 </ul>
                                 <div class="total-cost">
                                     <span>@lang('Total')</span>
-                                    <span id="summary-total">{{ $curr->sign ?? '' }}{{ number_format($totals['grand_total'] ?? $cart['total_price'] ?? 0, 2) }}</span>
+                                    <span id="summary-total">{{ $totals['grand_total_formatted'] }}</span>
                                 </div>
                             </div>
 
@@ -261,13 +261,13 @@
                                                     @if($method['free_above'] > 0 && !$method['is_free'])
                                                     <br><small class="text-info">
                                                         <i class="fas fa-info-circle me-1"></i>
-                                                        @lang('Free if order above') {{ $curr->sign ?? '' }}{{ number_format($method['free_above'], 2) }}
+                                                        @lang('Free if order above') {{ $method['free_above_formatted'] }}
                                                     </small>
                                                     @endif
                                                 </div>
                                                 <div class="text-end">
                                                     @if($method['original_price'] > 0)
-                                                        <span class="fw-bold">{{ $curr->sign ?? '' }}{{ number_format($method['original_price'], 2) }}</span>
+                                                        <span class="fw-bold">{{ $method['original_price_formatted'] }}</span>
                                                         @if($method['is_free'])
                                                         <br><span class="badge bg-success">@lang('Free')</span>
                                                         @endif
@@ -336,7 +336,7 @@
                                         </div>
                                     </div>
                                     <span class="text-success fw-bold">
-                                        {{ $curr->sign ?? '' }}{{ number_format($courier['delivery_fee'], 2) }}
+                                        {{ $courier['delivery_fee_formatted'] }}
                                     </span>
                                 </div>
                             </label>

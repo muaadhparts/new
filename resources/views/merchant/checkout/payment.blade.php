@@ -83,18 +83,18 @@
                                     @if(($shipping['delivery_type'] ?? 'shipping') === 'local_courier')
                                         <p class="mb-1"><strong>{{ $shipping['courier_name'] ?? '-' }}</strong></p>
                                         <p class="mb-0 small text-success">
-                                            {{ $curr->sign ?? '' }}{{ number_format($shipping['courier_fee'] ?? 0, 2) }}
+                                            {{ $shipping['courier_fee_formatted'] }}
                                         </p>
                                     @else
                                         <p class="mb-1"><strong>{{ $shipping['shipping_name'] ?? ucfirst($shipping['shipping_provider'] ?? 'Standard') }}</strong></p>
                                         <p class="mb-0 small">
                                             @if($shipping['is_free_shipping'] ?? false)
                                                 <span class="text-decoration-line-through text-muted me-1">
-                                                    {{ $curr->sign ?? '' }}{{ number_format($shipping['original_shipping_cost'] ?? 0, 2) }}
+                                                    {{ $shipping['original_shipping_cost_formatted'] }}
                                                 </span>
                                                 <span class="badge bg-success">@lang('Free')</span>
                                             @else
-                                                <span class="text-success">{{ $curr->sign ?? '' }}{{ number_format($shipping['shipping_cost'] ?? 0, 2) }}</span>
+                                                <span class="text-success">{{ $shipping['shipping_cost_formatted'] }}</span>
                                             @endif
                                         </p>
                                     @endif
@@ -149,12 +149,12 @@
                             <ul class="summary-list">
                                 <li>
                                     <span>@lang('Subtotal') ({{ $cart['total_qty'] ?? 0 }})</span>
-                                    <span>{{ $curr->sign ?? '' }}{{ number_format($cart['total_price'] ?? 0, 2) }}</span>
+                                    <span>{{ $cart['total_price_formatted'] }}</span>
                                 </li>
                                 @if(($totals['discount_amount'] ?? 0) > 0)
                                 <li class="text-success">
                                     <span>@lang('Discount')</span>
-                                    <span>-{{ $curr->sign ?? '' }}{{ number_format($totals['discount_amount'] ?? 0, 2) }}</span>
+                                    <span>-{{ $totals['discount_amount_formatted'] }}</span>
                                 </li>
                                 @endif
 
@@ -169,7 +169,7 @@
                                                 <small class="text-muted d-block">{{ $shipping['courier_name'] }}</small>
                                             @endif
                                         </span>
-                                        <span>{{ $curr->sign ?? '' }}{{ number_format($totals['courier_fee'] ?? 0, 2) }}</span>
+                                        <span>{{ $totals['courier_fee_formatted'] }}</span>
                                     </li>
                                 @else
                                     {{-- Regular Shipping --}}
@@ -184,11 +184,11 @@
                                         <span>
                                             @if($shipping['is_free_shipping'] ?? false)
                                                 <span class="text-decoration-line-through text-muted me-1">
-                                                    {{ $curr->sign ?? '' }}{{ number_format($shipping['original_shipping_cost'] ?? 0, 2) }}
+                                                    {{ $shipping['original_shipping_cost_formatted'] }}
                                                 </span>
                                                 <span class="badge bg-success">@lang('Free')</span>
                                             @else
-                                                {{ $curr->sign ?? '' }}{{ number_format($totals['shipping_cost'] ?? 0, 2) }}
+                                                {{ $totals['shipping_cost_formatted'] }}
                                             @endif
                                         </span>
                                     </li>
@@ -197,13 +197,13 @@
                                 @if(($totals['tax_amount'] ?? 0) > 0)
                                 <li>
                                     <span>@lang('Tax') ({{ $totals['tax_rate'] ?? 0 }}%)</span>
-                                    <span>{{ $curr->sign ?? '' }}{{ number_format($totals['tax_amount'] ?? 0, 2) }}</span>
+                                    <span>{{ $totals['tax_amount_formatted'] }}</span>
                                 </li>
                                 @endif
                             </ul>
                             <div class="total-cost">
                                 <span>@lang('Total')</span>
-                                <span class="text-success">{{ $curr->sign ?? '' }}{{ number_format($totals['grand_total'] ?? 0, 2) }}</span>
+                                <span class="text-success">{{ $totals['grand_total_formatted'] }}</span>
                             </div>
                         </div>
 
