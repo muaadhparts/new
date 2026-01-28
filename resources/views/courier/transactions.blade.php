@@ -17,25 +17,25 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Total Deliveries')</h6>
-                                <h4>{{ $report['deliveries_count'] ?? 0 }}</h4>
+                                <h4>{{ $report['deliveries_count'] }}</h4>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Completed')</h6>
-                                <h4 class="text-success">{{ $report['deliveries_completed'] ?? 0 }}</h4>
+                                <h4 class="text-success">{{ $report['deliveries_completed'] }}</h4>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('COD Collected')</h6>
-                                <h4 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_cod_collected'] ?? 0, 2) }}</h4>
+                                <h4 class="text-warning">{{ $report['total_cod_collected_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Fees Earned')</h6>
-                                <h4 class="text-primary">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_delivery_fees'] ?? 0, 2) }}</h4>
+                                <h4 class="text-primary">{{ $report['total_delivery_fees_formatted'] }}</h4>
                             </div>
                         </div>
                     </div>
@@ -77,13 +77,9 @@
                                             {{ $deliveries->firstItem() + $key }}
                                         </td>
                                         <td data-label="{{ __('Purchase') }}">
-                                            @if($delivery->purchase)
-                                                <a href="{{ route('courier-purchase-details', $delivery->id) }}">
-                                                    {{ $delivery->purchase->purchase_number }}
-                                                </a>
-                                            @else
-                                                -
-                                            @endif
+                                            <a href="{{ route('courier-purchase-details', $delivery->id) }}">
+                                                {{ $delivery->purchase_number }}
+                                            </a>
                                         </td>
                                         <td data-label="{{ __('Payment') }}">
                                             @if($delivery->payment_method === 'cod')
@@ -93,10 +89,10 @@
                                             @endif
                                         </td>
                                         <td data-label="{{ __('Amount') }}">
-                                            {{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}
+                                            {{ $delivery->purchase_amount_formatted }}
                                         </td>
                                         <td data-label="{{ __('Fee') }}">
-                                            <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</span>
+                                            <span class="text-success">{{ $delivery->delivery_fee_formatted }}</span>
                                         </td>
                                         <td data-label="{{ __('Status') }}">
                                             @if($delivery->isDelivered() || $delivery->isConfirmed())
@@ -116,7 +112,7 @@
                                             @endif
                                         </td>
                                         <td data-label="{{ __('Date') }}">
-                                            {{ $delivery->created_at->format('d-m-Y H:i') }}
+                                            {{ $delivery->created_at_formatted }}
                                         </td>
                                     </tr>
                                 @empty

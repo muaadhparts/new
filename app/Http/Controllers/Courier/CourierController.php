@@ -741,6 +741,7 @@ class CourierController extends CourierBaseController
     public function transactions(Request $request)
     {
         $query = DeliveryCourier::where('courier_id', $this->courier->id)
+            ->with('purchase')
             ->orderBy('created_at', 'desc');
 
         if ($request->status) {
@@ -748,13 +749,28 @@ class CourierController extends CourierBaseController
         }
 
         $deliveries = $query->paginate(20);
-        $currency = monetaryUnit()->getDefault();
         $report = $this->accountingService->getCourierReport($this->courier->id);
+
+        // PRE-COMPUTED: Transform deliveries for display (DATA_FLOW_POLICY)
+        $deliveries->through(function ($delivery) {
+            $delivery->purchase_number = $delivery->purchase?->purchase_number ?? '-';
+            $delivery->purchase_amount_formatted = monetaryUnit()->format($delivery->purchase_amount ?? 0);
+            $delivery->delivery_fee_formatted = monetaryUnit()->format($delivery->delivery_fee ?? 0);
+            $delivery->created_at_formatted = $delivery->created_at?->format('d-m-Y H:i') ?? 'N/A';
+            return $delivery;
+        });
+
+        // PRE-COMPUTED: Report values (DATA_FLOW_POLICY)
+        $reportDisplay = [
+            'deliveries_count' => $report['deliveries_count'] ?? 0,
+            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
+            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
+            'total_delivery_fees_formatted' => monetaryUnit()->format($report['total_delivery_fees'] ?? 0),
+        ];
 
         return view('courier.transactions', [
             'deliveries' => $deliveries,
-            'currency' => $currency,
-            'report' => $report,
+            'report' => $reportDisplay,
         ]);
     }
 
