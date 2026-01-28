@@ -34,34 +34,33 @@
                                 <tr>
                                     {{-- Country --}}
                                     <td data-label="@lang('Country')">
-                                        {{ $area->city->country->country_name ?? '-' }}
+                                        {{ $area->country_name }}
                                     </td>
 
                                     {{-- City --}}
                                     <td data-label="@lang('City')">
-                                        <strong>{{ $area->city->city_name ?? '-' }}</strong>
+                                        <strong>{{ $area->city_name }}</strong>
                                     </td>
 
                                     {{-- Radius --}}
                                     <td data-label="@lang('Radius')">
                                         <span class="badge bg-info text-white">
-                                            {{ $area->service_radius_km ?? 0 }} @lang('KM')
+                                            {{ $area->radius_display }} @lang('KM')
                                         </span>
                                     </td>
 
                                     {{-- Price --}}
                                     <td data-label="@lang('Delivery Cost')">
                                         <strong class="text-success">
-                                            {{ $curr->sign }}{{ round($area->price * $curr->value, 2) }}
+                                            {{ $area->price_formatted }}
                                         </strong>
                                     </td>
 
                                     {{-- Coordinates --}}
                                     <td data-label="@lang('Coordinates')">
-                                        @if($area->latitude && $area->longitude)
+                                        @if($area->coordinates_display)
                                             <small class="text-muted">
-                                                {{ number_format($area->latitude, 4) }},
-                                                {{ number_format($area->longitude, 4) }}
+                                                {{ $area->coordinates_display }}
                                             </small>
                                         @else
                                             <span class="text-warning">-</span>

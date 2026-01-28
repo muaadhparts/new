@@ -207,9 +207,24 @@ class CourierController extends CourierBaseController
     {
         $cities = City::whereStatus(1)->get();
         $courier = $this->courier;
-        $service_area = CourierServiceArea::where('courier_id', $courier->id)->paginate(10);
+        $service_areas = CourierServiceArea::where('courier_id', $courier->id)
+            ->with(['city.country'])
+            ->paginate(10);
+
+        // PRE-COMPUTED: Transform service areas for display (DATA_FLOW_POLICY)
+        $service_areas->through(function ($area) {
+            $area->country_name = $area->city?->country?->country_name ?? '-';
+            $area->city_name = $area->city?->city_name ?? '-';
+            $area->radius_display = $area->service_radius_km ?? 0;
+            $area->price_formatted = monetaryUnit()->format($area->price);
+            $area->coordinates_display = ($area->latitude && $area->longitude)
+                ? number_format($area->latitude, 4) . ', ' . number_format($area->longitude, 4)
+                : null;
+            return $area;
+        });
+
         return view('courier.service-area', [
-            'service_area' => $service_area,
+            'service_area' => $service_areas,
             'cities' => $cities,
         ]);
     }
