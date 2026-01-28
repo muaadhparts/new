@@ -77,10 +77,10 @@
                                 @endif
 
                                 {{-- Reviews --}}
-                                @if($catalogItem->catalog_reviews_count > 0)
+                                @if($catalogItem->rating_formatted)
                                     <span class="badge bg-warning text-dark">
                                         <i class="fas fa-star me-1"></i>
-                                        {{ number_format($catalogItem->catalog_reviews_avg_rating ?? 0, 1) }}
+                                        {{ $catalogItem->rating_formatted }}
                                         ({{ $catalogItem->catalog_reviews_count }})
                                     </span>
                                 @endif

@@ -74,6 +74,11 @@ class PartResultController extends FrontBaseController
             returnSelfIfNoAlternatives: false
         );
 
+        // Pre-format rating for display
+        $catalogItem->rating_formatted = $catalogItem->catalog_reviews_count > 0
+            ? number_format($catalogItem->catalog_reviews_avg_rating ?? 0, 1)
+            : null;
+
         $viewData = [
             'catalogItem' => $catalogItem,
             'part_number' => $part_number,
