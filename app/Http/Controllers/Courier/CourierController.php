@@ -494,8 +494,32 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         }
 
+        // PRE-COMPUTED: Transform delivery data for view (DATA_FLOW_POLICY)
+        $purchasesDisplay = $purchases->through(function ($delivery) {
+            $purchase = $delivery->purchase;
+            $merchant = $delivery->merchant;
+
+            // Pre-compute all display values
+            $delivery->purchase_number = $purchase->purchase_number ?? 'N/A';
+            $delivery->created_at_formatted = $delivery->created_at?->format('Y-m-d H:i') ?? 'N/A';
+            $delivery->merchant_name = $merchant->shop_name ?? $merchant->name ?? 'N/A';
+            $delivery->merchant_phone = $merchant?->shop_phone;
+            $delivery->branch_location = $delivery->merchantBranch?->location
+                ? \Illuminate\Support\Str::limit($delivery->merchantBranch->location, 25)
+                : null;
+            $delivery->customer_name = $purchase->customer_name ?? 'N/A';
+            $delivery->customer_phone = $purchase->customer_phone ?? 'N/A';
+            $delivery->customer_city = $purchase->customer_city ?? 'N/A';
+            $delivery->delivery_fee_formatted = \PriceHelper::showAdminCurrencyPrice($delivery->delivery_fee ?? 0);
+            $delivery->purchase_amount_formatted = \PriceHelper::showAdminCurrencyPrice($delivery->purchase_amount ?? 0);
+            $delivery->is_cod = $delivery->isCod();
+            $delivery->delivered_at_formatted = $delivery->delivered_at?->format('Y-m-d H:i');
+
+            return $delivery;
+        });
+
         return view('courier.orders', [
-            'purchases' => $purchases,
+            'purchases' => $purchasesDisplay,
             'type' => $type,
             'tabCounts' => $tabCounts,
         ]);

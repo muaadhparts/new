@@ -89,48 +89,48 @@
                                     <tr>
                                         {{-- Purchase Number --}}
                                         <td data-label="@lang('Purchase #')">
-                                            <strong>{{ $delivery->purchase->purchase_number ?? 'N/A' }}</strong>
+                                            <strong>{{ $delivery->purchase_number }}</strong>
                                             <br>
-                                            <small class="text-muted">{{ $delivery->created_at?->format('Y-m-d H:i') }}</small>
+                                            <small class="text-muted">{{ $delivery->created_at_formatted }}</small>
                                         </td>
 
                                         {{-- Merchant --}}
                                         <td data-label="@lang('Merchant')">
                                             <i class="fas fa-store me-1"></i>
-                                            <strong>{{ $delivery->merchant->shop_name ?? $delivery->merchant->name ?? 'N/A' }}</strong>
-                                            @if($delivery->merchantBranch && $delivery->merchantBranch->location)
+                                            <strong>{{ $delivery->merchant_name }}</strong>
+                                            @if($delivery->branch_location)
                                                 <br>
                                                 <small class="text-muted">
                                                     <i class="fas fa-map-marker-alt"></i>
-                                                    {{ Str::limit($delivery->merchantBranch->location, 25) }}
+                                                    {{ $delivery->branch_location }}
                                                 </small>
                                             @endif
-                                            @if($delivery->merchant?->shop_phone)
+                                            @if($delivery->merchant_phone)
                                                 <br>
-                                                <small><i class="fas fa-phone"></i> {{ $delivery->merchant->shop_phone }}</small>
+                                                <small><i class="fas fa-phone"></i> {{ $delivery->merchant_phone }}</small>
                                             @endif
                                         </td>
 
                                         {{-- Customer --}}
                                         <td data-label="@lang('Customer')">
                                             <i class="fas fa-user me-1"></i>
-                                            <strong>{{ $delivery->purchase->customer_name ?? 'N/A' }}</strong>
+                                            <strong>{{ $delivery->customer_name }}</strong>
                                             <br>
-                                            <small><i class="fas fa-phone"></i> {{ $delivery->purchase->customer_phone ?? 'N/A' }}</small>
+                                            <small><i class="fas fa-phone"></i> {{ $delivery->customer_phone }}</small>
                                             <br>
-                                            <small><i class="fas fa-city"></i> {{ $delivery->purchase->customer_city ?? 'N/A' }}</small>
+                                            <small><i class="fas fa-city"></i> {{ $delivery->customer_city }}</small>
                                         </td>
 
                                         {{-- Amount --}}
                                         <td data-label="@lang('Amount')">
                                             <strong class="text-success">
-                                                @lang('Fee'): {{ \PriceHelper::showAdminCurrencyPrice($delivery->delivery_fee ?? 0) }}
+                                                @lang('Fee'): {{ $delivery->delivery_fee_formatted }}
                                             </strong>
-                                            @if($delivery->isCod())
+                                            @if($delivery->is_cod)
                                                 <br>
                                                 <span class="badge bg-warning text-dark">COD</span>
                                                 <br>
-                                                <small>@lang('Collect'): {{ \PriceHelper::showAdminCurrencyPrice($delivery->purchase_amount ?? 0) }}</small>
+                                                <small>@lang('Collect'): {{ $delivery->purchase_amount_formatted }}</small>
                                             @else
                                                 <br>
                                                 <span class="badge bg-info">
@@ -165,8 +165,8 @@
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check-double"></i> @lang('Delivered')
                                                 </span>
-                                                @if($delivery->delivered_at)
-                                                    <br><small class="text-muted">{{ $delivery->delivered_at->format('Y-m-d H:i') }}</small>
+                                                @if($delivery->delivered_at_formatted)
+                                                    <br><small class="text-muted">{{ $delivery->delivered_at_formatted }}</small>
                                                 @endif
                                             @elseif($delivery->isConfirmed())
                                                 <span class="badge bg-success">
