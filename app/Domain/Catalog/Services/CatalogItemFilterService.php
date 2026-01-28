@@ -5,6 +5,7 @@ namespace App\Domain\Catalog\Services;
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\Catalog;
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Queries\CatalogItemQuery;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\QualityBrand;
 use App\Domain\Catalog\Models\Category;
@@ -217,8 +218,8 @@ class CatalogItemFilterService
      */
     public function buildCatalogItemQuery(): Builder
     {
-        return CatalogItem::query()
-            ->withOffersData();
+        // Use CatalogItemQuery which includes offers data by default
+        return CatalogItemQuery::make()->getQuery();
         // NOTE: withBestOffer() is NOT called here anymore.
         // Use applyMerchantItemsEagerLoad() after filters are applied.
     }

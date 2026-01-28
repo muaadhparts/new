@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\Queries;
 
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -28,7 +29,52 @@ class CatalogItemQuery
 
     public function __construct()
     {
-        $this->query = CatalogItem::query()->withOffersData();
+        $this->query = $this->buildBaseQuery();
+    }
+
+    /**
+     * Build base query with offers data
+     */
+    protected function buildBaseQuery(): Builder
+    {
+        // Subquery for counting active offers
+        $offersCountSubquery = MerchantItem::selectRaw('COUNT(*)')
+            ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+            ->where('merchant_items.status', 1)
+            ->whereExists(function ($q) {
+                $q->selectRaw(1)
+                    ->from('users')
+                    ->whereColumn('users.id', 'merchant_items.user_id')
+                    ->where('users.is_merchant', 2);
+            });
+
+        // Subquery for lowest price
+        $lowestPriceSubquery = MerchantItem::selectRaw('MIN(merchant_items.price)')
+            ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+            ->where('merchant_items.status', 1)
+            ->whereExists(function ($q) {
+                $q->selectRaw(1)
+                    ->from('users')
+                    ->whereColumn('users.id', 'merchant_items.user_id')
+                    ->where('users.is_merchant', 2);
+            });
+
+        return CatalogItem::query()
+            ->selectRaw('catalog_items.*')
+            ->selectSub($offersCountSubquery, 'offers_count')
+            ->selectSub($lowestPriceSubquery, 'lowest_price')
+            ->whereExists(function ($q) {
+                $q->selectRaw(1)
+                    ->from('merchant_items')
+                    ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+                    ->where('merchant_items.status', 1)
+                    ->whereExists(function ($q2) {
+                        $q2->selectRaw(1)
+                            ->from('users')
+                            ->whereColumn('users.id', 'merchant_items.user_id')
+                            ->where('users.is_merchant', 2);
+                    });
+            });
     }
 
     /**
