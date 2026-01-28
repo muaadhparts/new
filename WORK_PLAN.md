@@ -104,8 +104,13 @@ public function show($id) {
 **تقدم التفاصيل:**
 - ✅ courier/dashbaord.blade.php - pre-computed arrays
 - ✅ courier/financial_report.blade.php - pre-computed formatted values
+- ✅ courier/orders.blade.php - pre-computed delivery display values
+- ✅ courier/purchase_details.blade.php - merchant info, prices, cart items
+- ✅ courier/service-area.blade.php - country, city, price formatting
 - ✅ operator/dashboard.blade.php - pre-computed catalog items
 - ✅ merchant/index.blade.php - monetaryUnit()->format()
+
+**Progress:** 534 → 508 violations (26 fixed)
 
 **القاعدة:**
 ```blade
