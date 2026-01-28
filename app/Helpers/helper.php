@@ -365,6 +365,31 @@ if (! function_exists('space_path')) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// OperatorDisplay Helper - API-Ready Operator/Admin Formatting
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get OperatorDisplayService instance (SINGLE SOURCE OF TRUTH for admin formatting)
+ *
+ * This is the main entry point for all operator/admin display formatting.
+ * Use this helper for dashboard stats, reports, and admin UI formatting.
+ *
+ * Usage:
+ *   operatorDisplay()->formatStat('Users', 1234)         // Format stat card
+ *   operatorDisplay()->formatMoneyStat('Revenue', 5000)  // Format money stat
+ *   operatorDisplay()->parseDateRange($start, $end)      // Parse date filters
+ *   operatorDisplay()->formatComparison($now, $prev)     // Compare periods
+ *
+ * @return \App\Domain\Platform\Services\OperatorDisplayService
+ */
+if (! function_exists('operatorDisplay')) {
+    function operatorDisplay(): \App\Domain\Platform\Services\OperatorDisplayService
+    {
+        return app(\App\Domain\Platform\Services\OperatorDisplayService::class);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // MerchantDisplay Helper - API-Ready Merchant Formatting
 // ═══════════════════════════════════════════════════════════════════════════
 
