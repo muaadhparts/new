@@ -4,6 +4,8 @@ namespace App\Domain\Catalog\DTOs;
 
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\CatalogItemDisplayService;
+use App\Domain\Merchant\Services\MerchantItemDisplayService;
 use Illuminate\Support\Collection;
 
 /**
@@ -86,7 +88,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
@@ -101,7 +103,7 @@ class CatalogItemCardDTO
         $dto->merchantItemId = $merchant->id;
         $dto->merchantId = $merchant->user_id;
         $dto->price = (float) $merchant->price;
-        $dto->priceFormatted = $merchant->showPrice();
+        $dto->priceFormatted = app(MerchantItemDisplayService::class)->formatPrice($merchant);
         $dto->previousPrice = (float) ($merchant->previous_price ?? 0);
         $dto->previousPriceFormatted = $dto->previousPrice > 0
             ? CatalogItem::convertPrice($dto->previousPrice)
@@ -162,7 +164,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
@@ -177,7 +179,7 @@ class CatalogItemCardDTO
         $dto->merchantItemId = null;
         $dto->merchantId = null;
         $dto->price = 0;
-        $dto->priceFormatted = $catalogItem->showPrice();
+        $dto->priceFormatted = app(CatalogItemDisplayService::class)->formatPrice($catalogItem, 0);
         $dto->previousPrice = 0;
         $dto->previousPriceFormatted = '';
         $dto->stock = 0;
@@ -236,7 +238,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data (from catalog_items table)
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);

@@ -87,7 +87,7 @@ class CatalogDisplayService
             'id' => $catalogItem->id,
             'part_number' => $catalogItem->part_number,
             'name' => $catalogItem->localized_name,
-            'photo_url' => $catalogItem->photo_url,
+            'photo_url' => app(CatalogItemDisplayService::class)->getPhotoUrl($catalogItem),
             'rating_formatted' => $this->formatRating($avgRating, $reviewsCount),
             'reviews_count' => $reviewsCount,
             'has_reviews' => $reviewsCount > 0,

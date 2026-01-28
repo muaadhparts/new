@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\DTOs;
 
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\CatalogItemDisplayService;
 use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Facades\Storage;
 
@@ -103,12 +104,11 @@ class QuickViewDTO
                 ? CatalogItem::convertPrice($rawPrev)
                 : null;
         } else {
-            $dto->priceHtml = method_exists($catalogItem, 'showPrice')
-                ? $catalogItem->showPrice()
-                : CatalogItem::convertPrice($rawPrice ?? 0);
-            $dto->prevPriceHtml = (method_exists($catalogItem, 'showPreviousPrice') && $catalogItem->showPreviousPrice())
-                ? $catalogItem->showPreviousPrice()
-                : ($rawPrev !== null && $rawPrev > 0 ? CatalogItem::convertPrice($rawPrev) : null);
+            $displayService = app(CatalogItemDisplayService::class);
+            $dto->priceHtml = $displayService->formatPrice($catalogItem, $rawPrice ?? 0);
+            $dto->prevPriceHtml = $rawPrev !== null && $rawPrev > 0 
+                ? CatalogItem::convertPrice($rawPrev) 
+                : null;
         }
 
         // MerchantItem data
