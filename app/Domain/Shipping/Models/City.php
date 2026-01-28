@@ -16,11 +16,11 @@ use App\Domain\Merchant\Models\MerchantBranch;
  *
  * Architectural note:
  * - Tryoto is the single source for cities
- * - Data: city_name (English only), latitude, longitude, country_id, tryoto_supported
+ * - Data: name (English only), latitude, longitude, country_id, tryoto_supported
  * - No Arabic city names (city_name_ar removed from database)
  *
  * @property int $id
- * @property string $city_name
+ * @property string $name
  * @property int $status
  * @property int $country_id
  * @property float|null $latitude
@@ -34,7 +34,7 @@ class City extends Model
     protected $table = 'cities';
 
     protected $fillable = [
-        'city_name',
+        'name',
         'status',
         'country_id',
         'latitude',
@@ -111,6 +111,6 @@ class City extends Model
      */
     public function getDisplayName(): string
     {
-        return $this->city_name;
+        return $this->name;
     }
 }

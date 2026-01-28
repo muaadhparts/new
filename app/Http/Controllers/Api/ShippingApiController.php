@@ -122,7 +122,7 @@ class ShippingApiController extends Controller
                 'branch_city_data' => $branchCityData,
             ]);
 
-            if (!$branchCityData || empty($branchCityData['city_name'])) {
+            if (!$branchCityData || empty($branchCityData['name'])) {
                 Log::warning('TRYOTO: Branch city not configured', ['branch_id' => $branchId]);
                 return response()->json([
                     'success' => false,
@@ -136,7 +136,7 @@ class ShippingApiController extends Controller
 
             Log::info('TRYOTO STEP 2.1: Branch City (Origin) - Resolved', [
                 'branch_id' => $branchId,
-                'original_city' => $branchCityData['city_name'],
+                'original_city' => $branchCityData['name'],
                 'resolved_city' => $originCity,
             ]);
 
@@ -244,7 +244,7 @@ class ShippingApiController extends Controller
                 ]);
 
                 // Mark original city as not working with Tryoto
-                City::where('city_name', $destinationCity)->update(['tryoto_supported' => 0]);
+                City::where('name', $destinationCity)->update(['tryoto_supported' => 0]);
 
                 // Get customer coordinates from session
                 $addressData = Session::get('checkout.branch.' . $branchId . '.address');
@@ -266,13 +266,13 @@ class ShippingApiController extends Controller
                     if ($fallbackResult['success'] && !empty($fallbackResult['options'])) {
                         Log::info('ShippingApiController: Found working city via fallback', [
                             'original_city' => $destinationCity,
-                            'fallback_city' => $fallbackResult['city_name'],
+                            'fallback_city' => $fallbackResult['name'],
                             'distance_km' => $fallbackResult['distance_km'],
                             'options_count' => count($fallbackResult['options']),
                         ]);
 
                         // Update destination city to the working one
-                        $destinationCity = $fallbackResult['city_name'];
+                        $destinationCity = $fallbackResult['name'];
                         $deliveryCompany = $fallbackResult['options'];
 
                         // Continue to process these options (don't return error)
@@ -510,7 +510,7 @@ class ShippingApiController extends Controller
 
         $locationService = app(TryotoLocationService::class);
 
-        $cityName = null;
+        $name = null;
         $stateName = null;
         $countryName = null;
         $geocodingSuccess = false;
@@ -520,14 +520,14 @@ class ShippingApiController extends Controller
             $geocodeResult = $googleMapsService->reverseGeocode((float)$latitude, (float)$longitude, 'en');
 
             if ($geocodeResult['success'] && !empty($geocodeResult['data'])) {
-                $cityName = $geocodeResult['data']['city'] ?? null;
+                $name = $geocodeResult['data']['city'] ?? null;
                 $stateName = $geocodeResult['data']['state'] ?? null;
                 $countryName = $geocodeResult['data']['country'] ?? null;
                 $geocodingSuccess = true;
 
                 Log::info('ShippingApiController: Geocoding successful', [
                     'branch_id' => $branchId,
-                    'city' => $cityName,
+                    'city' => $name,
                     'state' => $stateName,
                     'country' => $countryName,
                 ]);
@@ -541,7 +541,7 @@ class ShippingApiController extends Controller
 
         if ($geocodingSuccess && $countryName) {
             $resolution = $locationService->resolveMapCity(
-                $cityName ?? '',
+                $name ?? '',
                 $stateName,
                 $countryName,
                 (float) $latitude,
@@ -554,7 +554,7 @@ class ShippingApiController extends Controller
                     'resolved_city' => $resolution['resolved_name'],
                     'strategy' => $resolution['strategy']
                 ]);
-                return $this->normalizeCityName($resolution['resolved_name']);
+                return $this->normalizename($resolution['resolved_name']);
             }
         }
 
@@ -564,7 +564,7 @@ class ShippingApiController extends Controller
         );
 
         if ($fallbackResolution['success']) {
-            return $this->normalizeCityName($fallbackResolution['resolved_name']);
+            return $this->normalizename($fallbackResolution['resolved_name']);
         }
 
         Log::warning('ShippingApiController: City resolution failed', [
@@ -579,11 +579,11 @@ class ShippingApiController extends Controller
     /**
      * Normalize city name for Tryoto API
      */
-    protected function normalizeCityName(string $cityName): string
+    protected function normalizename(string $name): string
     {
         $charsToReplace = ['ā', 'ī', 'ū', 'ē', 'ō', 'Ā', 'Ī', 'Ū', 'Ē', 'Ō'];
         $replacements = ['a', 'i', 'u', 'e', 'o', 'A', 'I', 'U', 'E', 'O'];
-        $normalized = str_replace($charsToReplace, $replacements, $cityName);
+        $normalized = str_replace($charsToReplace, $replacements, $name);
         $normalized = str_replace("'", '', $normalized);
         return trim($normalized);
     }
@@ -601,12 +601,12 @@ class ShippingApiController extends Controller
      */
     protected function resolveOriginCity(array $branchCityData): ?string
     {
-        $cityName = $branchCityData['city_name'] ?? null;
+        $name = $branchCityData['name'] ?? null;
         $latitude = $branchCityData['latitude'] ?? null;
         $longitude = $branchCityData['longitude'] ?? null;
         $countryId = $branchCityData['country_id'] ?? null;
 
-        if (!$cityName) {
+        if (!$name) {
             Log::warning('ShippingApiController: No city name in branch data');
             return null;
         }
@@ -624,7 +624,7 @@ class ShippingApiController extends Controller
         // Try to resolve using the existing resolveMapCity method
         if ($latitude && $longitude && $countryName) {
             $resolution = $locationService->resolveMapCity(
-                $cityName,
+                $name,
                 null, // stateName - not available for branches
                 $countryName,
                 (float) $latitude,
@@ -632,7 +632,7 @@ class ShippingApiController extends Controller
             );
 
             Log::info('ShippingApiController: Origin city resolution attempt', [
-                'city_name' => $cityName,
+                'name' => $name,
                 'country_name' => $countryName,
                 'latitude' => $latitude,
                 'longitude' => $longitude,
@@ -641,28 +641,28 @@ class ShippingApiController extends Controller
 
             if ($resolution['success']) {
                 Log::info('ShippingApiController: Origin city resolved via resolveMapCity', [
-                    'original_city' => $cityName,
+                    'original_city' => $name,
                     'resolved_city' => $resolution['resolved_name'],
                     'strategy' => $resolution['strategy'],
                 ]);
-                return $this->normalizeCityName($resolution['resolved_name']);
+                return $this->normalizename($resolution['resolved_name']);
             }
         }
 
         // Step 2: If no coordinates, try direct city lookup with normalization
-        $normalizedCity = $this->normalizeCityName($cityName);
+        $normalizedCity = $this->normalizename($name);
 
         // Check if the normalized city exists in Tryoto's supported cities
-        $city = \App\Domain\Shipping\Models\City::where('city_name', 'LIKE', '%' . $normalizedCity . '%')
+        $city = \App\Domain\Shipping\Models\City::where('name', 'LIKE', '%' . $normalizedCity . '%')
             ->where('tryoto_supported', 1)
             ->first();
 
         if ($city) {
             Log::info('ShippingApiController: Origin city found via direct lookup', [
-                'original_city' => $cityName,
-                'found_city' => $city->city_name,
+                'original_city' => $name,
+                'found_city' => $city->name,
             ]);
-            return $this->normalizeCityName($city->city_name);
+            return $this->normalizename($city->name);
         }
 
         // Step 3: Try coordinates-only fallback if we have coordinates
@@ -674,17 +674,17 @@ class ShippingApiController extends Controller
 
             if ($fallbackResolution['success']) {
                 Log::info('ShippingApiController: Origin city resolved via coordinates fallback', [
-                    'original_city' => $cityName,
+                    'original_city' => $name,
                     'resolved_city' => $fallbackResolution['resolved_name'],
                     'strategy' => 'coordinates_fallback',
                 ]);
-                return $this->normalizeCityName($fallbackResolution['resolved_name']);
+                return $this->normalizename($fallbackResolution['resolved_name']);
             }
         }
 
         // Failed to resolve
         Log::warning('ShippingApiController: Origin city resolution failed', [
-            'city_name' => $cityName,
+            'name' => $name,
             'latitude' => $latitude,
             'longitude' => $longitude,
             'country_id' => $countryId,
@@ -700,8 +700,8 @@ class ShippingApiController extends Controller
     {
         if (str_contains($error, 'could not be found on database')) {
             preg_match('/Given city (.+) could not be found/', $error, $matches);
-            $cityName = $matches[1] ?? '';
-            return "عذراً، مدينة المرسل ({$cityName}) غير مدعومة حالياً في خدمة الشحن الذكي.";
+            $name = $matches[1] ?? '';
+            return "عذراً، مدينة المرسل ({$name}) غير مدعومة حالياً في خدمة الشحن الذكي.";
         }
 
         if (str_contains($error, 'destination')) {
@@ -816,7 +816,7 @@ class ShippingApiController extends Controller
      * @param array $dimensions
      * @param string|null $excludeCity City to exclude (original failed city)
      * @param int $maxAttempts Maximum cities to try
-     * @return array ['success' => bool, 'city_name' => string, 'options' => array, 'distance_km' => float]
+     * @return array ['success' => bool, 'name' => string, 'options' => array, 'distance_km' => float]
      */
     protected function findNearestWorkingCity(
         int $merchantId,
@@ -847,7 +847,7 @@ class ShippingApiController extends Controller
             ->limit($maxAttempts + 1); // +1 to account for excluded city
 
         if ($excludeCity) {
-            $query->where('city_name', '!=', $excludeCity);
+            $query->where('name', '!=', $excludeCity);
         }
 
         $nearbyCities = $query->get();
@@ -866,10 +866,10 @@ class ShippingApiController extends Controller
             }
             $attempts++;
 
-            $cityName = $this->normalizeCityName($city->city_name);
+            $name = $this->normalizename($city->name);
 
             Log::debug('ShippingApiController: Testing city with Tryoto API', [
-                'city_name' => $cityName,
+                'name' => $name,
                 'distance_km' => round($city->distance_km, 2),
                 'attempt' => $attempts,
             ]);
@@ -879,7 +879,7 @@ class ShippingApiController extends Controller
                 ->forMerchant($merchantId)
                 ->getDeliveryOptions(
                     $originCity,
-                    $cityName,
+                    $name,
                     $weight,
                     0,
                     $dimensions
@@ -889,14 +889,14 @@ class ShippingApiController extends Controller
 
             if ($result['success'] && !empty($options)) {
                 Log::info('ShippingApiController: Found working city', [
-                    'city_name' => $cityName,
+                    'name' => $name,
                     'distance_km' => round($city->distance_km, 2),
                     'options_count' => count($options),
                 ]);
 
                 return [
                     'success' => true,
-                    'city_name' => $cityName,
+                    'name' => $name,
                     'city_id' => $city->id,
                     'options' => $options,
                     'distance_km' => round($city->distance_km, 2),
@@ -908,7 +908,7 @@ class ShippingApiController extends Controller
             City::where('id', $city->id)->update(['tryoto_supported' => 0]);
 
             Log::debug('ShippingApiController: City not working, marked as unsupported', [
-                'city_name' => $cityName,
+                'name' => $name,
                 'city_id' => $city->id,
             ]);
         }
@@ -921,7 +921,7 @@ class ShippingApiController extends Controller
 
         return [
             'success' => false,
-            'city_name' => null,
+            'name' => null,
             'options' => [],
             'distance_km' => null,
             'attempts' => $attempts,

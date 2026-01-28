@@ -39,10 +39,10 @@ class CustomerLocationService
     /**
      * Get city name
      */
-    public function getCityName(): ?string
+    public function getname(): ?string
     {
         $data = Session::get(self::SESSION_KEY);
-        return $data['city_name'] ?? null;
+        return $data['name'] ?? null;
     }
 
     /**
@@ -58,7 +58,7 @@ class CustomerLocationService
 
         $data = [
             'city_id' => $cityId,
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'source' => 'manual',
         ];
 
@@ -81,7 +81,7 @@ class CustomerLocationService
 
         $data = [
             'city_id' => $city->id,
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'source' => 'geolocation',
         ];
 
@@ -105,11 +105,11 @@ class CustomerLocationService
     {
         return cache()->remember('shipping_cities_dropdown', 3600, function () {
             return DB::table('cities')
-                ->select('id', 'city_name')
+                ->select('id', 'name')
                 ->where('status', 1)
-                ->orderBy('city_name')
+                ->orderBy('name')
                 ->get()
-                ->map(fn($c) => ['id' => $c->id, 'name' => $c->city_name])
+                ->map(fn($c) => ['id' => $c->id, 'name' => $c->name])
                 ->toArray();
         });
     }

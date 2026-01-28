@@ -264,7 +264,7 @@ class DomainTraitsTest extends TestCase
     /** @test */
     public function has_address_trait_has_required_methods()
     {
-        $methods = ['getAddress', 'getFullAddress', 'getCityName', 'hasCompleteAddress', 'setAddress'];
+        $methods = ['getAddress', 'getFullAddress', 'getname', 'hasCompleteAddress', 'setAddress'];
 
         foreach ($methods as $method) {
             $this->assertTrue(

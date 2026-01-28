@@ -54,7 +54,7 @@ const CustomerLocation = (function() {
                 if (shippingData.resolved_city) {
                     currentCity = {
                         city_id: null, // From coordinates, no city_id
-                        city_name: shippingData.resolved_city
+                        name: shippingData.resolved_city
                     };
                 }
                 updateDisplay();
@@ -74,7 +74,7 @@ const CustomerLocation = (function() {
             if (data.has_location) {
                 currentCity = {
                     city_id: data.city_id,
-                    city_name: data.city_name
+                    name: data.name
                 };
                 updateDisplay();
             }
@@ -190,13 +190,13 @@ const CustomerLocation = (function() {
         if (data.success) {
             currentCity = {
                 city_id: data.city_id,
-                city_name: data.city_name
+                name: data.name
             };
         } else if (shippingData.resolved_city) {
             // Use resolved city from shipping API
             currentCity = {
                 city_id: null,
-                city_name: shippingData.resolved_city
+                name: shippingData.resolved_city
             };
         }
 
@@ -226,7 +226,7 @@ const CustomerLocation = (function() {
             throw new Error(data.message || 'Failed to set location');
         }
 
-        currentCity = { city_id: data.city_id, city_name: data.city_name };
+        currentCity = { city_id: data.city_id, name: data.name };
         // Clear coordinates since manual selection doesn't have them
         currentCoordinates = null;
 
@@ -370,7 +370,7 @@ const CustomerLocation = (function() {
 
     function updateDisplay() {
         document.querySelectorAll('[data-location-display]').forEach(el => {
-            el.textContent = currentCity ? currentCity.city_name : (el.dataset.locationPlaceholder || '');
+            el.textContent = currentCity ? currentCity.name : (el.dataset.locationPlaceholder || '');
             el.classList.toggle('has-location', !!currentCity);
         });
 
@@ -392,7 +392,7 @@ const CustomerLocation = (function() {
     }
 
     function hasCity() {
-        return currentCity !== null && (currentCity.city_id || currentCity.city_name);
+        return currentCity !== null && (currentCity.city_id || currentCity.name);
     }
 
     function hasCoordinates() {
@@ -403,8 +403,8 @@ const CustomerLocation = (function() {
         return currentCity ? currentCity.city_id : null;
     }
 
-    function getCityName() {
-        return currentCity ? currentCity.city_name : null;
+    function getname() {
+        return currentCity ? currentCity.name : null;
     }
 
     function getCoordinates() {
@@ -426,7 +426,7 @@ const CustomerLocation = (function() {
         hasCity,
         hasCoordinates,
         getCityId,
-        getCityName,
+        getname,
         getCoordinates,
         onLocationChange,
     };

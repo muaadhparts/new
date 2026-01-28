@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  * التوجيه المعماري:
  * - Tryoto هو المصدر الوحيد للمدن (يتم الاستيراد يدوياً عبر CLI)
  * - هذا الـ controller READ-ONLY - لا يُنشئ مدن جديدة
- * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - البيانات: name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
  * - لا يوجد اسم عربي للمدن (city_name_ar محذوف)
  * - يبحث عن أقرب مدينة في DB ويستخدمها للشحن
  */
@@ -77,13 +77,13 @@ class GeocodingController extends Controller
             $addressComponents = $geocodeResult['data'];
 
             // Extract location details (English)
-            $cityName = $addressComponents['city'] ?? null;
+            $name = $addressComponents['city'] ?? null;
             $stateName = $addressComponents['state'] ?? null;
             $countryName = $addressComponents['country'] ?? null;
             $countryCode = $addressComponents['country_code'] ?? null;
 
             // Arabic names
-            $cityNameAr = $addressComponents['city_ar'] ?? $cityName;
+            $nameAr = $addressComponents['city_ar'] ?? $name;
             $stateNameAr = $addressComponents['state_ar'] ?? $stateName;
             $countryNameAr = $addressComponents['country_ar'] ?? $countryName;
 
@@ -92,8 +92,8 @@ class GeocodingController extends Controller
             $formattedAddressEn = $geocodeResult['formatted_address_en'] ?? '';
 
             Log::debug('Geocoding: Data from Google Maps', [
-                'en' => compact('cityName', 'stateName', 'countryName'),
-                'ar' => ['city' => $cityNameAr, 'state' => $stateNameAr, 'country' => $countryNameAr]
+                'en' => compact('name', 'stateName', 'countryName'),
+                'ar' => ['city' => $nameAr, 'state' => $stateNameAr, 'country' => $countryNameAr]
             ]);
 
             // ==========================================
@@ -113,7 +113,7 @@ class GeocodingController extends Controller
                     return response()->json([
                         'success' => true,
                         'needs_sync' => false,
-                        'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['city_name']}",
+                        'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['name']}",
                         'data' => $nearestResult,
                         'warning' => 'تم استخدام أقرب منطقة مدعومة بناءً على الإحداثيات'
                     ]);
@@ -145,7 +145,7 @@ class GeocodingController extends Controller
                     return response()->json([
                         'success' => true,
                         'needs_sync' => false,
-                        'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['city_name']}",
+                        'message' => "تم تحديد أقرب منطقة مدعومة: {$nearestResult['name']}",
                         'data' => $nearestResult,
                         'warning' => 'هذه الدولة غير مدعومة حالياً، تم اختيار أقرب منطقة مدعومة'
                     ]);
@@ -166,7 +166,7 @@ class GeocodingController extends Controller
             $country = $syncStatus['country'];
 
             $resolution = $this->tryotoLocationService->resolveMapCity(
-                $cityName ?? '',
+                $name ?? '',
                 $stateName,
                 $countryName,
                 $latitude,
@@ -175,7 +175,7 @@ class GeocodingController extends Controller
 
             if (!$resolution['success']) {
                 Log::warning('Geocoding: Location not supported by Tryoto', [
-                    'city' => $cityName,
+                    'city' => $name,
                     'state' => $stateName,
                     'country' => $countryName,
                     'message' => $resolution['message']
@@ -187,8 +187,8 @@ class GeocodingController extends Controller
                     'message' => $resolution['message'],
                     'data' => [
                         'original' => [
-                            'city' => $cityName,
-                            'city_ar' => $cityNameAr,
+                            'city' => $name,
+                            'city_ar' => $nameAr,
                             'state' => $stateName,
                             'state_ar' => $stateNameAr,
                             'country' => $countryName,
@@ -220,7 +220,7 @@ class GeocodingController extends Controller
                     ],
                     'city' => [
                         'id' => $city->id,
-                        'name' => $city->city_name,
+                        'name' => $city->name,
                         'tryoto_name' => $resolution['tryoto_name']
                     ],
                     'coordinates' => $resolution['coordinates'],
@@ -230,7 +230,7 @@ class GeocodingController extends Controller
                     ],
                     'resolution_info' => [
                         'strategy' => $resolution['strategy'],
-                        'original' => $resolution['original'] ?? compact('cityName', 'stateName', 'countryName'),
+                        'original' => $resolution['original'] ?? compact('name', 'stateName', 'countryName'),
                     ]
                 ]
             ];
@@ -244,7 +244,7 @@ class GeocodingController extends Controller
             Log::debug('Geocoding: Completed successfully', [
                 'strategy' => $resolution['strategy'],
                 'resolved' => $resolution['resolved_name'],
-                'original_city' => $cityName
+                'original_city' => $name
             ]);
 
             return response()->json($response);
@@ -370,7 +370,7 @@ class GeocodingController extends Controller
 
                 if ($anyCity) {
                     Log::debug('Geocoding: Using random city from synced country (no coordinates available)', [
-                        'city' => $anyCity->city_name,
+                        'city' => $anyCity->name,
                         'country' => $syncedCountry->country_name,
                         'user_coordinates' => compact('latitude', 'longitude')
                     ]);
@@ -383,9 +383,9 @@ class GeocodingController extends Controller
                         ],
                         'city' => [
                             'id' => $anyCity->id,
-                            'name' => $anyCity->city_name,
+                            'name' => $anyCity->name,
                         ],
-                        'city_name' => $anyCity->city_name,
+                        'name' => $anyCity->name,
                         'coordinates' => [
                             'latitude' => $latitude,
                             'longitude' => $longitude
@@ -403,7 +403,7 @@ class GeocodingController extends Controller
         }
 
         Log::debug('Geocoding: Found nearest city globally', [
-            'city' => $city->city_name,
+            'city' => $city->name,
             'country' => $city->country?->country_name,
             'distance_km' => round($city->distance_km, 2)
         ]);
@@ -416,10 +416,10 @@ class GeocodingController extends Controller
             ],
             'city' => [
                 'id' => $city->id,
-                'name' => $city->city_name,
-                'tryoto_name' => $city->city_name
+                'name' => $city->name,
+                'tryoto_name' => $city->name
             ],
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'coordinates' => [
                 'latitude' => $city->latitude ?? $latitude,
                 'longitude' => $city->longitude ?? $longitude
@@ -446,11 +446,11 @@ class GeocodingController extends Controller
     /**
      * البحث عن مدينة في قاعدة البيانات (read-only)
      * ملاحظة: لا يتم إنشاء مدن جديدة - المزامنة تتم عبر CLI فقط
-     * البيانات: city_name (إنجليزي فقط) - لا يوجد city_name_ar
+     * البيانات: name (إنجليزي فقط) - لا يوجد city_name_ar
      */
-    protected function findCity(int $countryId, string $cityName): ?City
+    protected function findCity(int $countryId, string $name): ?City
     {
-        return City::where('city_name', $cityName)
+        return City::where('name', $name)
             ->where('country_id', $countryId)
             ->first();
     }
@@ -581,7 +581,7 @@ class GeocodingController extends Controller
         $query = $request->query;
 
         $cities = City::where('status', 1)
-            ->where('city_name', 'like', "%{$query}%")
+            ->where('name', 'like', "%{$query}%")
             ->with(['country:id,country_name,country_code'])
             ->limit(20)
             ->get();
@@ -591,7 +591,7 @@ class GeocodingController extends Controller
             'data' => $cities->map(function ($city) {
                 return [
                     'id' => $city->id,
-                    'name' => $city->city_name,
+                    'name' => $city->name,
                     'country' => [
                         'id' => $city->country->id,
                         'name' => $city->country->country_name,
@@ -620,8 +620,8 @@ class GeocodingController extends Controller
 
         $cities = City::where('status', 1)
             ->where('country_id', $countryId)
-            ->orderBy('city_name')
-            ->get(['id', 'city_name']);
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         return response()->json($cities);
     }

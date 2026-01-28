@@ -169,13 +169,13 @@ class CourierController extends CourierBaseController
         // Get active cities for this country
         $cities = City::where('country_id', $request->country_id)
             ->where('status', 1)
-            ->orderBy('city_name')
-            ->get(['id', 'city_name']);
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         // Build options HTML
         $options = '<option value="">' . __('Select City') . '</option>';
         foreach ($cities as $city) {
-            $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->city_name) . '</option>';
+            $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->name) . '</option>';
         }
 
         return response()->json([
@@ -253,7 +253,7 @@ class CourierController extends CourierBaseController
 
         // Get cities for the selected country
         $cities = $selectedCountryId
-            ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
+            ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('name')->get()
             : collect();
 
         return view('courier.edit_service', [

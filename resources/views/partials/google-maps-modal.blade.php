@@ -555,8 +555,8 @@ window.selectCityById = function(cityId, reinitCityNiceSelect) {
 
     // Get city data from API response for matching
     const cityIdFromApi = window.selectedLocationData?.city?.id || cityId;
-    const cityNameEn = window.selectedLocationData?.city?.name || '';
-    const cityNameAr = window.selectedLocationData?.city?.name_ar || '';
+    const nameEn = window.selectedLocationData?.city?.name || '';
+    const nameAr = window.selectedLocationData?.city?.name_ar || '';
 
     // Log all available city options for debugging
     const citySelects = $('[name="city"], [name="customer_city"], #show_city, #city, [name="warehouse_city"], #warehouse_city, [name="city_id"]');
@@ -567,10 +567,10 @@ window.selectCityById = function(cityId, reinitCityNiceSelect) {
 
         // Match by city ID (for user/courier profiles) OR city name (for warehouse/checkout)
         const matchById = parseInt(optionValue) === parseInt(cityIdFromApi);
-        const matchByEnName = optionValue.toLowerCase() === cityNameEn.toLowerCase();
-        const matchByArName = optionValue.toLowerCase() === cityNameAr.toLowerCase();
-        const matchByEnText = optionText.toLowerCase() === cityNameEn.toLowerCase();
-        const matchByArText = optionText.toLowerCase() === cityNameAr.toLowerCase();
+        const matchByEnName = optionValue.toLowerCase() === nameEn.toLowerCase();
+        const matchByArName = optionValue.toLowerCase() === nameAr.toLowerCase();
+        const matchByEnText = optionText.toLowerCase() === nameEn.toLowerCase();
+        const matchByArText = optionText.toLowerCase() === nameAr.toLowerCase();
 
         if (optionValue && (matchById || matchByEnName || matchByArName || matchByEnText || matchByArText)) {
             $(this).prop('selected', true);

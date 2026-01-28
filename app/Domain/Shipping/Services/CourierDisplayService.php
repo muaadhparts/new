@@ -423,7 +423,7 @@ class CourierDisplayService
                 'id' => $area->id,
                 'status' => $area->status,
                 'country_name' => $area->city?->country?->country_name ?? '-',
-                'city_name' => $area->city?->city_name ?? '-',
+                'name' => $area->city?->name ?? '-',
                 'radius_display' => $area->service_radius_km ?? 0,
                 'price_formatted' => monetaryUnit()->format($area->price),
                 'coordinates_display' => ($area->latitude && $area->longitude)

@@ -172,7 +172,7 @@ class ShippingServicesTest extends TestCase
     /** @test */
     public function tryoto_service_has_utility_methods()
     {
-        $this->assertTrue(method_exists(TryotoService::class, 'resolveCityName'));
+        $this->assertTrue(method_exists(TryotoService::class, 'resolvename'));
         $this->assertTrue(method_exists(TryotoService::class, 'verifyCitySupport'));
         $this->assertTrue(method_exists(TryotoService::class, 'getOrderDetails'));
         $this->assertTrue(method_exists(TryotoService::class, 'checkConfiguration'));
@@ -249,7 +249,7 @@ class ShippingServicesTest extends TestCase
 
         $this->assertTrue(method_exists($service, 'hasCity'));
         $this->assertTrue(method_exists($service, 'getCityId'));
-        $this->assertTrue(method_exists($service, 'getCityName'));
+        $this->assertTrue(method_exists($service, 'getname'));
     }
 
     /** @test */

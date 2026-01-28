@@ -230,12 +230,12 @@ class MerchantBranch extends Model
     /**
      * Get the city name.
      */
-    public function getCityNameAttribute(): ?string
+    public function getityNameAttribute(): ?string
     {
         if ($this->relationLoaded('city')) {
-            return $this->city?->city_name;
+            return $this->city?->name;
         }
-        return $this->city()->value('city_name');
+        return $this->city()->value('name');
     }
 
     /**
@@ -245,7 +245,7 @@ class MerchantBranch extends Model
     {
         $parts = array_filter([
             $this->location,
-            $this->city_name,
+            $this->name,
         ]);
         return implode(', ', $parts);
     }

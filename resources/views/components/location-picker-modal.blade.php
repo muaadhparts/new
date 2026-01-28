@@ -35,7 +35,7 @@
        <input name="longitude" data-location-field="longitude">
        <input name="country" data-location-field="country_name">
        <input name="state" data-location-field="state_name">
-       <input name="city" data-location-field="city_name">
+       <input name="city" data-location-field="name">
        <input name="country_id" data-location-field="country_id">
        <input name="state_id" data-location-field="state_id">
        <input name="city_id" data-location-field="city_id">
@@ -647,7 +647,7 @@
                 'state_name_ar': data.state?.name_ar,
                 'state_name_en': data.state?.name,
                 'city_id': data.city?.id,
-                'city_name': isArabic ? (data.city?.name_ar || data.city?.name) : data.city?.name,
+                'name': isArabic ? (data.city?.name_ar || data.city?.name) : data.city?.name,
                 'city_name_ar': data.city?.name_ar,
                 'city_name_en': data.city?.name
             };

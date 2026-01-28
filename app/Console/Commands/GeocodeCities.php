@@ -143,7 +143,7 @@ class GeocodeCities extends Command
      * تنظيف اسم المدينة للبحث
      * يزيل العلامات الخاصة والفراغات الزائدة
      */
-    protected function normalizeCityName(string $name): string
+    protected function normalizename(string $name): string
     {
         // إزالة العلامات الخاصة مع الاحتفاظ بالحروف والأرقام والمسافات
         $normalized = preg_replace('/[^\p{L}\p{N}\s]/u', '', $name);
@@ -170,10 +170,10 @@ class GeocodeCities extends Command
             }
 
             // تنظيف اسم المدينة للبحث
-            $cleanCityName = $this->normalizeCityName($city->city_name);
+            $cleanname = $this->normalizename($city->name);
 
             // بناء عنوان البحث
-            $searchAddress = "{$cleanCityName}, {$country->country_name}";
+            $searchAddress = "{$cleanname}, {$country->country_name}";
 
             $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'address' => $searchAddress,
@@ -183,8 +183,8 @@ class GeocodeCities extends Command
 
             if (!$response->successful()) {
                 Log::warning("GeocodeCities: API request failed", [
-                    'city' => $city->city_name,
-                    'clean_name' => $cleanCityName,
+                    'city' => $city->name,
+                    'clean_name' => $cleanname,
                     'status' => $response->status()
                 ]);
                 return false;
@@ -194,13 +194,13 @@ class GeocodeCities extends Command
 
             if ($data['status'] !== 'OK' || empty($data['results'])) {
                 // محاولة ثانية بدون تنظيف الاسم
-                if ($cleanCityName !== $city->city_name) {
+                if ($cleanname !== $city->name) {
                     return $this->geocodeCityRaw($city, $country);
                 }
 
                 Log::debug("GeocodeCities: No results for city", [
-                    'city' => $city->city_name,
-                    'clean_name' => $cleanCityName,
+                    'city' => $city->name,
+                    'clean_name' => $cleanname,
                     'status' => $data['status']
                 ]);
                 return false;
@@ -215,7 +215,7 @@ class GeocodeCities extends Command
             ]);
 
             Log::debug("GeocodeCities: City geocoded", [
-                'city' => $city->city_name,
+                'city' => $city->name,
                 'lat' => $location['lat'],
                 'lng' => $location['lng']
             ]);
@@ -224,7 +224,7 @@ class GeocodeCities extends Command
 
         } catch (\Exception $e) {
             Log::error("GeocodeCities: Exception", [
-                'city' => $city->city_name ?? 'unknown',
+                'city' => $city->name ?? 'unknown',
                 'error' => $e->getMessage()
             ]);
             return false;
@@ -237,7 +237,7 @@ class GeocodeCities extends Command
     protected function geocodeCityRaw(City $city, Country $country): bool
     {
         try {
-            $searchAddress = "{$city->city_name}, {$country->country_name}";
+            $searchAddress = "{$city->name}, {$country->country_name}";
 
             $response = Http::timeout(10)->get('https://maps.googleapis.com/maps/api/geocode/json', [
                 'address' => $searchAddress,

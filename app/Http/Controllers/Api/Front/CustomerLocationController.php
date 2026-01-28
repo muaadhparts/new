@@ -36,7 +36,7 @@ class CustomerLocationController extends Controller
         return response()->json([
             'has_location' => true,
             'city_id' => $this->locationService->getCityId(),
-            'city_name' => $this->locationService->getCityName(),
+            'name' => $this->locationService->getname(),
         ]);
     }
 
@@ -55,7 +55,7 @@ class CustomerLocationController extends Controller
             return response()->json([
                 'success' => true,
                 'city_id' => $data['city_id'],
-                'city_name' => $data['city_name'],
+                'name' => $data['name'],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -84,7 +84,7 @@ class CustomerLocationController extends Controller
             return response()->json([
                 'success' => true,
                 'city_id' => $data['city_id'],
-                'city_name' => $data['city_name'],
+                'name' => $data['name'],
             ]);
         } catch (\Exception $e) {
             return response()->json([

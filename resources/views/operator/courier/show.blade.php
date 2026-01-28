@@ -74,7 +74,7 @@
                                         @if($data->city_id != null)
                                         <tr>
                                             <th>{{ __("City") }}</th>
-                                            <td>{{$data->city->city_name ?? '-'}}</td>
+                                            <td>{{$data->city->name ?? '-'}}</td>
                                         </tr>
                                         @endif
                                         <tr>

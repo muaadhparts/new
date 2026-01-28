@@ -304,7 +304,7 @@ class CatalogItem extends Model
                     'user:id,is_merchant,name,shop_name,shop_name_ar,email,merchant_logo',
                     'qualityBrand:id,code,name_en,name_ar,logo',
                     'merchantBranch:id,warehouse_name,branch_name,city_id',
-                    'merchantBranch.city:id,city_name',
+                    'merchantBranch.city:id,name',
                 ])
                 ->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')
                 ->orderBy('price', 'asc');

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
  * Unified Shipping Calculator Service
  *
  * Architecture:
- * - Data: city_name (English only) - no city_name_ar
+ * - Data: name (English only) - no city_name_ar
  * - No hardcoded values
  * - No fallback for any data
  * - Each branch calculated independently (not merchant)
@@ -96,7 +96,7 @@ class ShippingCalculatorService
 
         return [
             'city_id' => $city->id,
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'country_id' => $city->country_id,
             'branch_id' => $branch->id,
             'branch_name' => $branch->getDisplayName(),
@@ -150,7 +150,7 @@ class ShippingCalculatorService
 
         return [
             'city_id' => $city->id,
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'country_id' => $city->country_id,
             'branch_id' => $branch->id,
             'branch_name' => $branch->getDisplayName(),
@@ -184,7 +184,7 @@ class ShippingCalculatorService
 
         return [
             'city_id' => $city->id,
-            'city_name' => $city->city_name,
+            'name' => $city->name,
             'country_id' => $city->country_id,
             'source' => 'map',
         ];
@@ -203,7 +203,7 @@ class ShippingCalculatorService
             $errors[] = 'merchant_city_missing';
         }
 
-        $customerCity = $customerData['city_name'] ?? null;
+        $customerCity = $customerData['name'] ?? null;
         if (!$customerCity) {
             $errors[] = 'customer_city_missing';
         }

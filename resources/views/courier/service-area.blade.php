@@ -39,7 +39,7 @@
 
                                     {{-- City --}}
                                     <td data-label="@lang('City')">
-                                        <strong>{{ $area->city_name }}</strong>
+                                        <strong>{{ $area->name }}</strong>
                                     </td>
 
                                     {{-- Radius --}}

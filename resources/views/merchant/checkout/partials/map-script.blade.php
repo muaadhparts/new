@@ -215,7 +215,7 @@ function confirmLocation() {
             $('#longitude').val(selectedLng);
 
             if (response.country_name) $('#customer_country').val(response.country_name);
-            if (response.city_name) $('#customer_city').val(response.city_name);
+            if (response.name) $('#customer_city').val(response.name);
             if (response.state_name) $('#customer_state').val(response.state_name);
             if (response.formatted_address) {
                 $('#customer_address').val(response.formatted_address);

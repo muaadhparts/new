@@ -221,7 +221,7 @@ class DeliveryController extends MerchantBaseController
     {
         // البحث عن المدينة بالاسم أو بالـ ID (الاسم إنجليزي فقط - لا يوجد city_name_ar)
         $city = City::where('id', $request->city)
-            ->orWhere('city_name', $request->city)
+            ->orWhere('name', $request->city)
             ->first();
 
         if (!$city) {
@@ -238,7 +238,7 @@ class DeliveryController extends MerchantBaseController
 
         foreach ($areas as $area) {
             if ($area->courier) {
-                $couriersData .= '<option courierName="' . $area->courier->name . '" area="' . $city->city_name . '" courierCost="' . PriceHelper::showAdminCurrencyPrice($area->price) . '" value="' . $area->id . '">' . $area->courier->name . ' - ' . PriceHelper::showAdminCurrencyPrice($area->price) . '</option>';
+                $couriersData .= '<option courierName="' . $area->courier->name . '" area="' . $city->name . '" courierCost="' . PriceHelper::showAdminCurrencyPrice($area->price) . '" value="' . $area->id . '">' . $area->courier->name . ' - ' . PriceHelper::showAdminCurrencyPrice($area->price) . '</option>';
             }
         }
 
@@ -544,8 +544,8 @@ class DeliveryController extends MerchantBaseController
 
         if ($merchantBranch && $merchantBranch->city_id) {
             $city = City::find($merchantBranch->city_id);
-            if ($city && $city->city_name) {
-                return $city->city_name;
+            if ($city && $city->name) {
+                return $city->name;
             }
         }
 
@@ -599,8 +599,8 @@ class DeliveryController extends MerchantBaseController
         // إذا كان رقماً (ID)، نحوله لاسم المدينة
         if (is_numeric($cityValue)) {
             $city = City::find($cityValue);
-            if ($city && $city->city_name) {
-                return $city->city_name;
+            if ($city && $city->name) {
+                return $city->name;
             }
         }
 
@@ -652,8 +652,8 @@ class DeliveryController extends MerchantBaseController
                 ->where('tryoto_supported', 1)
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->where('city_name', '!=', $originalCity) // ✅ استبعاد المدينة الأصلية
-                ->selectRaw("city_name, {$haversine} as distance_km", [(float)$lat, (float)$lng, (float)$lat])
+                ->where('name', '!=', $originalCity) // ✅ استبعاد المدينة الأصلية
+                ->selectRaw("name, {$haversine} as distance_km", [(float)$lat, (float)$lng, (float)$lat])
                 ->havingRaw('distance_km <= ?', [100]) // حد أقصى 100 كم
                 ->orderBy('distance_km', 'asc')
                 ->first();
@@ -662,10 +662,10 @@ class DeliveryController extends MerchantBaseController
                 Log::debug('findNearestSupportedCity: Found different city', [
                     'purchase_id' => $purchase->id,
                     'original_city' => $originalCity,
-                    'nearest_city' => $nearestCity->city_name,
+                    'nearest_city' => $nearestCity->name,
                     'distance_km' => round($nearestCity->distance_km, 2)
                 ]);
-                return $nearestCity->city_name;
+                return $nearestCity->name;
             }
 
             Log::debug('findNearestSupportedCity: No different city found within 100km');
@@ -698,13 +698,13 @@ class DeliveryController extends MerchantBaseController
     /**
      * تحويل city ID إلى city name
      */
-    private function resolveCityName($cityId, $fallbackName = null): ?string
+    private function resolvename($cityId, $fallbackName = null): ?string
     {
         // إذا كان لدينا ID، نبحث عن الاسم
         if ($cityId && is_numeric($cityId)) {
             $city = City::find($cityId);
-            if ($city && $city->city_name) {
-                return $city->city_name;
+            if ($city && $city->name) {
+                return $city->name;
             }
         }
 
@@ -716,8 +716,8 @@ class DeliveryController extends MerchantBaseController
         // آخر محاولة: إذا كان الـ fallback رقماً أيضاً
         if ($fallbackName && is_numeric($fallbackName)) {
             $city = City::find($fallbackName);
-            if ($city && $city->city_name) {
-                return $city->city_name;
+            if ($city && $city->name) {
+                return $city->name;
             }
         }
 
@@ -1350,10 +1350,10 @@ class DeliveryController extends MerchantBaseController
 
             // Get city names for each branch
             $cityIds = $branches->pluck('city_id')->filter()->unique()->toArray();
-            $cities = City::whereIn('id', $cityIds)->pluck('city_name', 'id')->toArray();
+            $cities = City::whereIn('id', $cityIds)->pluck('name', 'id')->toArray();
 
             $result = $branches->map(function ($branch) use ($cities) {
-                $cityName = $cities[$branch->city_id] ?? '';
+                $name = $cities[$branch->city_id] ?? '';
                 $displayName = $branch->warehouse_name ?: __('Warehouse');
 
                 // Add Tryoto code if available (helps user verify)
@@ -1363,8 +1363,8 @@ class DeliveryController extends MerchantBaseController
                 }
 
                 // Add city name if available
-                if ($cityName) {
-                    $displayName .= ' - ' . $cityName;
+                if ($name) {
+                    $displayName .= ' - ' . $name;
                 }
 
                 // Warning if no Tryoto code configured
@@ -1376,7 +1376,7 @@ class DeliveryController extends MerchantBaseController
                     'tryoto_code' => $tryotoCode,
                     'has_tryoto_code' => $hasTryotoCode,
                     'location' => $branch->location,
-                    'city_name' => $cityName,
+                    'name' => $name,
                     'display_name' => $displayName,
                 ];
             });

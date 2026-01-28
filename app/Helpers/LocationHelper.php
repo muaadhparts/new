@@ -13,7 +13,7 @@ use App\Domain\Shipping\Services\LocationDataService;
  * All queries are delegated to LocationDataService.
  *
  * Architecture:
- * - Cities: city_name only (English) - no city_name_ar (dropped from database)
+ * - Cities: name only (English) - no city_name_ar (dropped from database)
  * - Countries: country_name, country_name_ar
  */
 class LocationHelper
@@ -38,7 +38,7 @@ class LocationHelper
      * Get city name
      * Note: Cities have English name only - no city_name_ar
      */
-    public static function getCityName(City $city): string
+    public static function getname(City $city): string
     {
         return self::service()->getCityDisplayName($city);
     }
@@ -136,7 +136,7 @@ class LocationHelper
      */
     public static function getCityColumnName(): string
     {
-        return 'city_name';
+        return 'name';
     }
 
     /**
@@ -156,14 +156,14 @@ class LocationHelper
     /**
      * Get city display name from database by name
      */
-    public static function getCityDisplayName(string $cityName): ?string
+    public static function getCityDisplayName(string $name): ?string
     {
-        $city = self::service()->findCityByName($cityName);
+        $city = self::service()->findCityByName($name);
 
         if (!$city) {
-            return $cityName;
+            return $name;
         }
 
-        return self::getCityName($city);
+        return self::getname($city);
     }
 }

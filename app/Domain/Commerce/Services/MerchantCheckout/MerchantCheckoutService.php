@@ -704,7 +704,7 @@ class MerchantCheckoutService
                 'courier_photo' => $sa->courier->photo ?? null,
                 'delivery_fee' => round((float)$sa->price, 2),
                 'service_area_id' => $sa->id,
-                'city_name' => $sa->city->name ?? '',
+                'name' => $sa->city->name ?? '',
                 'merchant_branch_id' => $branchId,
                 'distance_to_customer' => round($distanceToCustomer, 1),
                 // ✅ المندوب يتبع المنصة دائماً → المبلغ للمنصة

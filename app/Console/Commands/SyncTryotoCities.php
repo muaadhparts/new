@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
  *
  * التوجيه المعماري:
  * - Tryoto هو المصدر الوحيد للمدن
- * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - البيانات: name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
  * - لا يوجد اسم عربي للمدن
  * - يُشغّل يدوياً فقط - لا علاقة بالـ checkout
  */
@@ -96,10 +96,10 @@ class SyncTryotoCities extends Command
 
             $geocodedCount = 0;
             foreach ($cities as $cityData) {
-                $cityName = $cityData['name'] ?? '';
-                if (empty($cityName)) continue;
+                $name = $cityData['name'] ?? '';
+                if (empty($name)) continue;
 
-                $geocoded = $this->syncCity($country, $cityName);
+                $geocoded = $this->syncCity($country, $name);
                 if ($geocoded) $geocodedCount++;
 
                 $bar->advance();
@@ -207,14 +207,14 @@ class SyncTryotoCities extends Command
 
     /**
      * مزامنة مدينة واحدة
-     * البيانات: city_name فقط (إنجليزي) + tryoto_supported + coordinates
+     * البيانات: name فقط (إنجليزي) + tryoto_supported + coordinates
      */
-    protected function syncCity(Country $country, string $cityName): bool
+    protected function syncCity(Country $country, string $name): bool
     {
         try {
             // التحقق من وجود المدينة
             $existingCity = City::where('country_id', $country->id)
-                ->where('city_name', $cityName)
+                ->where('name', $name)
                 ->first();
 
             // إذا موجودة ولديها إحداثيات، نتخطاها
@@ -225,14 +225,14 @@ class SyncTryotoCities extends Command
             // جلب الإحداثيات من Google (اختياري)
             $coordinates = null;
             if (!$this->option('no-geocode') && $this->googleApiKey) {
-                $coordinates = $this->geocodeCity($cityName, $country->country_name);
+                $coordinates = $this->geocodeCity($name, $country->country_name);
             }
 
             // إنشاء أو تحديث المدينة
             City::updateOrCreate(
                 [
                     'country_id' => $country->id,
-                    'city_name' => $cityName,
+                    'name' => $name,
                 ],
                 [
                     'latitude' => $coordinates['lat'] ?? null,
@@ -246,7 +246,7 @@ class SyncTryotoCities extends Command
 
         } catch (\Exception $e) {
             Log::warning('SyncTryotoCities: Failed to sync city', [
-                'city' => $cityName,
+                'city' => $name,
                 'country' => $country->country_code,
                 'error' => $e->getMessage()
             ]);
@@ -258,11 +258,11 @@ class SyncTryotoCities extends Command
      * جلب الإحداثيات من Google Geocoding API
      * يرجع الإحداثيات فقط - لا أسماء عربية
      */
-    protected function geocodeCity(string $cityName, string $countryName): ?array
+    protected function geocodeCity(string $name, string $countryName): ?array
     {
         try {
             $response = Http::timeout(5)->get('https://maps.googleapis.com/maps/api/geocode/json', [
-                'address' => "{$cityName}, {$countryName}",
+                'address' => "{$name}, {$countryName}",
                 'key' => $this->googleApiKey,
                 'language' => 'en',
             ]);

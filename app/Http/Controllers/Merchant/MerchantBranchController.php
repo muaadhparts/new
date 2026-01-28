@@ -70,12 +70,12 @@ class MerchantBranchController extends MerchantBaseController
 
         $cities = City::where('country_id', $request->country_id)
             ->where('status', 1)
-            ->orderBy('city_name')
-            ->get(['id', 'city_name']);
+            ->orderBy('name')
+            ->get(['id', 'name']);
 
         $options = '<option value="">' . __('Select City') . '</option>';
         foreach ($cities as $city) {
-            $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->city_name) . '</option>';
+            $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->name) . '</option>';
         }
 
         return response()->json([
@@ -131,7 +131,7 @@ class MerchantBranchController extends MerchantBaseController
 
         // Get cities for the selected country
         $cities = $selectedCountryId
-            ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
+            ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('name')->get()
             : collect();
 
         return view('merchant.branch.edit', compact('data', 'countries', 'cities', 'selectedCountryId'));

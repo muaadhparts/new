@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
  * التوجيه المعماري:
  * - Tryoto هو المصدر الوحيد للمدن
  * - يتم الاستيراد يدوياً فقط عبر CLI
- * - البيانات: city_name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
+ * - البيانات: name (إنجليزي فقط), latitude, longitude, country_id, tryoto_supported
  * - لا يوجد اسم عربي للمدن
  * - الإحداثيات تُجلب من Google Maps في الخلفية
  */
@@ -152,7 +152,7 @@ class CountrySyncService
 
     /**
      * استيراد المدن من Tryoto
-     * البيانات: city_name فقط (إنجليزي) + tryoto_supported
+     * البيانات: name فقط (إنجليزي) + tryoto_supported
      * الإحداثيات تُجلب لاحقاً عبر: php artisan cities:geocode
      */
     protected function importCities(Country $country, array $cities): int
@@ -161,8 +161,8 @@ class CountrySyncService
         $total = count($cities);
 
         foreach ($cities as $index => $cityData) {
-            $cityName = $cityData['name'] ?? '';
-            if (empty($cityName)) continue;
+            $name = $cityData['name'] ?? '';
+            if (empty($name)) continue;
 
             if ($index % 100 === 0) {
                 $percent = 15 + (int)(($index / $total) * 80);
@@ -173,7 +173,7 @@ class CountrySyncService
             City::firstOrCreate(
                 [
                     'country_id' => $country->id,
-                    'city_name' => $cityName
+                    'name' => $name
                 ],
                 [
                     'tryoto_supported' => 1,
@@ -269,9 +269,9 @@ class CountrySyncService
             $totalCount = $data['totalCount'] ?? 0;
 
             foreach ($cities as $city) {
-                $cityName = $city['name'] ?? $city['city'] ?? '';
-                if (!empty($cityName)) {
-                    $allCities[] = ['name' => $cityName];
+                $name = $city['name'] ?? $city['city'] ?? '';
+                if (!empty($name)) {
+                    $allCities[] = ['name' => $name];
                 }
             }
 

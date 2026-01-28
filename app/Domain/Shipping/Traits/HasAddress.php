@@ -62,7 +62,7 @@ trait HasAddress
     /**
      * Get city name
      */
-    public function getCityName(): ?string
+    public function getname(): ?string
     {
         $columns = $this->getAddressColumns();
         return $this->{$columns['city']} ?? null;

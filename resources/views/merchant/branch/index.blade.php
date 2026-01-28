@@ -63,7 +63,7 @@
                                         <span class="content">{{ $itemData['countryName'] }}</span>
                                     </td>
                                     <td>
-                                        <span class="content">{{ $itemData['cityName'] }}</span>
+                                        <span class="content">{{ $itemData['name'] }}</span>
                                     </td>
                                     <td>
                                         <span class="content">{{ $itemData['location'] }}</span>

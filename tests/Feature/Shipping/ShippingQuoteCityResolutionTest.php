@@ -84,7 +84,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
 
         // Test the resolution
         $result = $this->locationService->resolveMapCity(
-            $testCity->city_name, // Exact name from DB
+            $testCity->name, // Exact name from DB
             null,
             'Saudi Arabia',
             (float) $testCity->latitude,
@@ -93,7 +93,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
 
         $this->assertTrue($result['success'], 'Expected exact match to succeed');
         $this->assertEquals('exact_city', $result['strategy'], 'Expected exact_city strategy');
-        $this->assertEquals($testCity->city_name, $result['resolved_name']);
+        $this->assertEquals($testCity->name, $result['resolved_name']);
     }
 
     /**
@@ -124,7 +124,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
         }
 
         // Use a fake city name that definitely won't match
-        $fakeCityName = 'NonExistentCityXYZ12345';
+        $fakename = 'NonExistentCityXYZ12345';
 
         // Use coordinates near a real city (with small offset)
         $nearLat = (float) $testCity->latitude + 0.01; // ~1km offset
@@ -132,7 +132,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
 
         // Test the resolution
         $result = $this->locationService->resolveMapCity(
-            $fakeCityName,
+            $fakename,
             null,
             'Saudi Arabia',
             $nearLat,
@@ -187,7 +187,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
         // Use the city name as the state (Google Maps sometimes returns this)
         $result = $this->locationService->resolveMapCity(
             'SomeSmallVillageNotInDB', // City name that won't match
-            $testCity->city_name,       // State name that matches a city
+            $testCity->name,       // State name that matches a city
             'Saudi Arabia',
             (float) $testCity->latitude,
             (float) $testCity->longitude
@@ -253,7 +253,7 @@ class ShippingQuoteCityResolutionTest extends TestCase
 
         // Use reflection to test the private method
         $reflection = new \ReflectionClass($quoteService);
-        $method = $reflection->getMethod('normalizeCityName');
+        $method = $reflection->getMethod('normalizename');
         $method->setAccessible(true);
 
         // Test cases

@@ -514,10 +514,10 @@ class TryotoService
      * @param mixed $cityValue City ID or name
      * @return string|null City name or null if not found
      */
-    public function resolveCityName($cityValue): ?string
+    public function resolvename($cityValue): ?string
     {
         if (empty($cityValue)) {
-            Log::warning('Tryoto: resolveCityName - empty city value provided');
+            Log::warning('Tryoto: resolvename - empty city value provided');
             return null;
         }
 
@@ -526,9 +526,9 @@ class TryotoService
             $city = City::find($cityValue);
             if ($city) {
                 // جلب الاسم من الأعمدة المتاحة
-                return $city->city_name ?? $city->name ?? null;
+                return $city->name ?? $city->name ?? null;
             }
-            Log::warning('Tryoto: resolveCityName - city not found', ['city_id' => $cityValue]);
+            Log::warning('Tryoto: resolvename - city not found', ['city_id' => $cityValue]);
             return null;
         }
 
@@ -624,7 +624,7 @@ class TryotoService
         }
 
         // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback
-        $originCity = $merchantCityData['city_name'] ?? null;
+        $originCity = $merchantCityData['name'] ?? null;
 
         if (!$originCity) {
             Log::error('Tryoto: createShipment - merchant city missing', ['merchant_id' => $merchantId]);
@@ -651,7 +651,7 @@ class TryotoService
 
         // مدينة العميل من الطلب
         $destinationCityValue = $purchase->customer_city;
-        $destinationCity = $this->resolveCityName($destinationCityValue);
+        $destinationCity = $this->resolvename($destinationCityValue);
 
         if (!$destinationCity) {
             Log::error('Tryoto: createShipment - customer city missing', ['purchase_id' => $purchase->id]);

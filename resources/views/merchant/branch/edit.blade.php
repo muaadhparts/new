@@ -76,7 +76,7 @@
                             <select name="city_id" id="city_id" class="form-control" required>
                                 <option value="">@lang('Select City')</option>
                                 @foreach($cities as $city)
-                                    <option value="{{ $city->id }}" {{ $data->city_id == $city->id ? 'selected' : '' }}>{{ $city->city_name }}</option>
+                                    <option value="{{ $city->id }}" {{ $data->city_id == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
                                 @endforeach
                             </select>
                             @error('city_id')

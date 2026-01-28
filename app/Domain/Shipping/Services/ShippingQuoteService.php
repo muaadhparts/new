@@ -66,7 +66,7 @@ class ShippingQuoteService
         }
 
         // استدعاء Tryoto API
-        return $this->callTryotoApi($merchantId, $origin['city_name'], $destination['city_name'], $weight);
+        return $this->callTryotoApi($merchantId, $origin['name'], $destination['name'], $weight);
     }
 
     /**
@@ -80,13 +80,13 @@ class ShippingQuoteService
             return null;
         }
 
-        if (empty($branchData['city_name'])) {
+        if (empty($branchData['name'])) {
             return null;
         }
 
         // التحقق من دعم المدينة
         $city = DB::table('cities')
-            ->where('city_name', $branchData['city_name'])
+            ->where('name', $branchData['name'])
             ->where('tryoto_supported', 1)
             ->first();
 
@@ -94,12 +94,12 @@ class ShippingQuoteService
             // محاولة مطابقة جزئية
             $city = DB::table('cities')
                 ->where('tryoto_supported', 1)
-                ->where(fn($q) => $q->where('city_name', 'LIKE', $branchData['city_name'] . '%')
-                    ->orWhere('city_name', 'LIKE', '%' . $branchData['city_name']))
+                ->where(fn($q) => $q->where('name', 'LIKE', $branchData['name'] . '%')
+                    ->orWhere('name', 'LIKE', '%' . $branchData['name']))
                 ->first();
         }
 
-        return $city ? ['city_name' => $city->city_name, 'city_id' => $city->id] : null;
+        return $city ? ['name' => $city->name, 'city_id' => $city->id] : null;
     }
 
     /**
@@ -114,7 +114,7 @@ class ShippingQuoteService
             return ['success' => false, 'error_code' => 'GEOCODING_FAILED', 'message' => __('لم نتمكن من تحديد موقعك')];
         }
 
-        $cityName = $geocode['data']['city'] ?? null;
+        $name = $geocode['data']['city'] ?? null;
         $stateName = $geocode['data']['state'] ?? null;
         $countryName = $geocode['data']['country'] ?? null;
 
@@ -129,13 +129,13 @@ class ShippingQuoteService
 
         // البحث عن المدينة
         $city = null;
-        foreach (array_filter([$cityName, $stateName]) as $name) {
+        foreach (array_filter([$name, $stateName]) as $name) {
             $city = DB::table('cities')
                 ->where('country_id', $country->id)
                 ->where('tryoto_supported', 1)
-                ->where(fn($q) => $q->where('city_name', $name)
-                    ->orWhere('city_name', 'LIKE', $name . '%')
-                    ->orWhere('city_name', 'LIKE', '%' . $name))
+                ->where(fn($q) => $q->where('name', $name)
+                    ->orWhere('name', 'LIKE', $name . '%')
+                    ->orWhere('name', 'LIKE', '%' . $name))
                 ->first();
             if ($city) break;
         }
@@ -144,7 +144,7 @@ class ShippingQuoteService
             return ['success' => false, 'error_code' => 'CITY_NOT_SUPPORTED', 'message' => __('مدينتك غير مدعومة حالياً')];
         }
 
-        return ['success' => true, 'city_name' => $city->city_name, 'city_id' => $city->id];
+        return ['success' => true, 'name' => $city->name, 'city_id' => $city->id];
     }
 
     /**
@@ -219,7 +219,7 @@ class ShippingQuoteService
         // محاولة تحديد المدينة
         $resolution = $this->resolveDestinationCity($lat, $lng);
         if ($resolution['success']) {
-            $data['resolved_city'] = $resolution['city_name'];
+            $data['resolved_city'] = $resolution['name'];
         }
 
         Session::put(self::SESSION_KEY, $data);

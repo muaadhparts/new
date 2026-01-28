@@ -45,7 +45,7 @@ trait CreatesTryotoShipments
         // Shipment destination: customer city
         // تحويل city ID إلى city name باستخدام TryotoService
         $destinationCityValue = $purchase->customer_city;
-        $destinationCity = $systemTryotoService->resolveCityName($destinationCityValue);
+        $destinationCity = $systemTryotoService->resolvename($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
         // Use model method that handles legacy double-encoded data
@@ -137,11 +137,11 @@ trait CreatesTryotoShipments
     }
 
     /**
-     * @deprecated Use TryotoService::resolveCityName() instead
+     * @deprecated Use TryotoService::resolvename() instead
      * تحويل city ID أو اسم إلى اسم المدينة الصحيح لـ Tryoto
      */
-    protected function resolveCityNameForTryoto($cityValue): string
+    protected function resolvenameForTryoto($cityValue): string
     {
-        return app(TryotoService::class)->resolveCityName($cityValue);
+        return app(TryotoService::class)->resolvename($cityValue);
     }
 }

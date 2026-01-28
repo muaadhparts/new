@@ -68,7 +68,7 @@
                                 <td>{{ $branch->branch_name }}</td>
                                 <td><code>{{ $branch->warehouse_name }}</code></td>
                                 <td><code>twa{{ str_pad(substr($branch->warehouse_name, -2), 2, '0', STR_PAD_LEFT) }}.csv</code></td>
-                                <td>{{ $branch->getCityName() ?? 'غير محدد' }}</td>
+                                <td>{{ $branch->getname() ?? 'غير محدد' }}</td>
                             </tr>
                             @endforeach
                         </tbody>

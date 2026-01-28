@@ -22,7 +22,7 @@ final class MerchantCardDTO
         public readonly int $reviewsCount,
         public readonly int $itemsCount,
         public readonly bool $isVerified,
-        public readonly ?string $cityName,
+        public readonly ?string $name,
         public readonly ?string $countryName,
         public readonly string $memberSince,
     ) {}
@@ -49,7 +49,7 @@ final class MerchantCardDTO
             reviewsCount: (int) ($merchant->reviews_count ?? 0),
             itemsCount: (int) ($merchant->merchant_items_count ?? 0),
             isVerified: (bool) ($merchant->is_verified ?? false),
-            cityName: $merchant->city ?? null,
+            name: $merchant->city ?? null,
             countryName: $merchant->country ?? null,
             memberSince: $merchant->created_at?->format('Y') ?? '',
         );

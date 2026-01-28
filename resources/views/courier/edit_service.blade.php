@@ -54,7 +54,7 @@
                                                     <option value="">-- @lang('Select City') --</option>
                                                     @foreach ($cities as $city)
                                                         <option value="{{ $city->id }}" {{ $service_area->city_id == $city->id ? 'selected' : '' }}>
-                                                            {{ $city->city_name }}
+                                                            {{ $city->name }}
                                                         </option>
                                                     @endforeach
                                                 </select>

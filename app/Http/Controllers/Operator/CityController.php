@@ -64,7 +64,7 @@ class CityController extends Controller
     public function store(Request $request, $country_id)
     {
         $rules = [
-            'city_name'  => 'required|unique:cities,city_name',
+            'name'  => 'required|unique:cities,name',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -77,7 +77,7 @@ class CityController extends Controller
 
         // ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
         $city = new City();
-        $city->city_name = $request->city_name;
+        $city->name = $request->name;
         $city->country_id = $country_id;
         $city->status = 1;
         $city->save();
@@ -102,7 +102,7 @@ class CityController extends Controller
     public function update(Request $request, $id)
     {
         $rules = [
-            'city_name'  => 'required|unique:cities,city_name,' . $id,
+            'name'  => 'required|unique:cities,name,' . $id,
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -113,7 +113,7 @@ class CityController extends Controller
 
         // ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
         $city = City::findOrFail($id);
-        $city->city_name = $request->city_name;
+        $city->name = $request->name;
         $city->update();
 
         $mgs = __('Data Updated Successfully.');

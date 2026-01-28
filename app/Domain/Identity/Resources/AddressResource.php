@@ -28,7 +28,7 @@ class AddressResource extends JsonResource
             'landmark' => $this->landmark,
             'postal_code' => $this->postal_code,
             'city' => new CityResource($this->whenLoaded('city')),
-            'city_name' => $this->city_name ?? $this->city?->name,
+            'name' => $this->name ?? $this->city?->name,
             'is_default' => (bool) $this->is_default,
             'coordinates' => $this->when(
                 $this->latitude && $this->longitude,
@@ -51,7 +51,7 @@ class AddressResource extends JsonResource
             $this->street,
             $this->building,
             $this->apartment ? "Apt {$this->apartment}" : null,
-            $this->city_name ?? $this->city?->name,
+            $this->name ?? $this->city?->name,
         ]);
 
         return implode(', ', $parts);

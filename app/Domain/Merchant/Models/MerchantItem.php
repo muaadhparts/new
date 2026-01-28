@@ -306,7 +306,7 @@ class MerchantItem extends Model
             'user:id,name,shop_name,shop_name_ar,merchant_logo',
             'qualityBrand:id,code,name_en,name_ar,logo',
             'merchantBranch:id,branch_name,warehouse_name,city_id',
-            'merchantBranch.city:id,city_name',
+            'merchantBranch.city:id,name',
             'photos',
         ]);
     }

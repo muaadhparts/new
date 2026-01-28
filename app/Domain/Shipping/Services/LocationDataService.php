@@ -34,7 +34,7 @@ class LocationDataService
     {
         return cache()->remember("cities_country_{$countryId}", 3600, function () use ($countryId) {
             return City::where('country_id', $countryId)
-                ->orderBy('city_name')
+                ->orderBy('name')
                 ->get();
         });
     }
@@ -50,9 +50,9 @@ class LocationDataService
     /**
      * Find city by name
      */
-    public function findCityByName(string $cityName): ?City
+    public function findCityByName(string $name): ?City
     {
-        return City::where('city_name', $cityName)->first();
+        return City::where('name', $name)->first();
     }
 
     /**
@@ -71,7 +71,7 @@ class LocationDataService
      */
     public function getCityDisplayName(City $city): string
     {
-        return $city->city_name;
+        return $city->name;
     }
 
     /**
@@ -110,11 +110,11 @@ class LocationDataService
         $cities = $this->getCitiesByCountry($countryId);
 
         return $cities->map(function ($city) use ($selectedCity, $useIdAsValue) {
-            $value = $useIdAsValue ? $city->id : $city->city_name;
+            $value = $useIdAsValue ? $city->id : $city->name;
 
             return [
                 'value' => $value,
-                'label' => $city->city_name,
+                'label' => $city->name,
                 'selected' => $selectedCity && $value == $selectedCity,
             ];
         })->toArray();

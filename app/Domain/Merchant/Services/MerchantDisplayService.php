@@ -614,7 +614,7 @@ class MerchantDisplayService
                 'id' => $branch->id,
                 'item' => $branch,
                 'countryName' => $branch->country?->country_name ?? '-',
-                'cityName' => $branch->city?->city_name ?? '-',
+                'name' => $branch->city?->name ?? '-',
                 'location' => $branch->location,
                 'latitude' => $branch->latitude,
                 'longitude' => $branch->longitude,
