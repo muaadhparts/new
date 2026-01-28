@@ -15,14 +15,14 @@
                     <!-- Current Balance Card -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-4 col-md-6">
-                            <div class="account-info-box text-center {{ ($report['current_balance'] ?? 0) < 0 ? 'border-danger' : (($report['current_balance'] ?? 0) > 0 ? 'border-success' : '') }}">
+                            <div class="account-info-box text-center {{ $report['is_in_debt'] ? 'border-danger' : ($report['has_credit'] ? 'border-success' : '') }}">
                                 <h6>@lang('Current Balance')</h6>
-                                <h3 class="{{ ($report['current_balance'] ?? 0) < 0 ? 'text-danger' : 'text-success' }}">
-                                    {{ $currency->sign ?? 'SAR ' }}{{ number_format($report['current_balance'] ?? 0, 2) }}
+                                <h3 class="{{ $report['is_in_debt'] ? 'text-danger' : 'text-success' }}">
+                                    {{ $report['current_balance_formatted'] }}
                                 </h3>
-                                @if(($report['is_in_debt'] ?? false))
+                                @if($report['is_in_debt'])
                                     <small class="text-danger">@lang('You owe to platform')</small>
-                                @elseif(($report['has_credit'] ?? false))
+                                @elseif($report['has_credit'])
                                     <small class="text-success">@lang('Platform owes you')</small>
                                 @endif
                             </div>
@@ -30,13 +30,13 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Total COD Collected')</h6>
-                                <h3 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_cod_collected'] ?? 0, 2) }}</h3>
+                                <h3 class="text-warning">{{ $report['total_cod_collected_formatted'] }}</h3>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Total Fees Earned')</h6>
-                                <h3 class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_fees_earned'] ?? 0, 2) }}</h3>
+                                <h3 class="text-success">{{ $report['total_fees_earned_formatted'] }}</h3>
                             </div>
                         </div>
                     </div>
@@ -49,23 +49,22 @@
                                 <div class="account-info">
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-name">@lang('COD Amount (You Owe)')</span>
-                                        <span class="text-danger">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</span>
+                                        <span class="text-danger">{{ $settlementCalc['cod_amount_formatted'] }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-name">@lang('Fees Earned (Online)')</span>
-                                        <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</span>
+                                        <span class="text-success">{{ $settlementCalc['fees_earned_online_formatted'] }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-name">@lang('Fees Earned (COD)')</span>
-                                        <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</span>
+                                        <span class="text-success">{{ $settlementCalc['fees_earned_cod_formatted'] }}</span>
                                     </div>
                                     <hr>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-name"><strong>@lang('Net Amount')</strong></span>
-                                        {{-- Net amount pre-computed in Controller (DATA_FLOW_POLICY) --}}
-                                        <span class="{{ $netAmount >= 0 ? 'text-success' : 'text-danger' }}">
-                                            <strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format(abs($netAmount), 2) }}</strong>
-                                            @if($netAmount >= 0)
+                                        <span class="{{ $settlementCalc['is_positive'] ? 'text-success' : 'text-danger' }}">
+                                            <strong>{{ $settlementCalc['net_amount_formatted'] }}</strong>
+                                            @if($settlementCalc['is_positive'])
                                                 <small>(@lang('Platform owes you'))</small>
                                             @else
                                                 <small>(@lang('You owe to platform'))</small>
@@ -121,33 +120,29 @@
                                             {{ $key + 1 }}
                                         </td>
                                         <td data-label="{{ __('Purchase') }}">
-                                            @if($delivery->purchase)
-                                                <a href="{{ route('courier-purchase-details', $delivery->id) }}">
-                                                    {{ $delivery->purchase->purchase_number }}
-                                                </a>
-                                            @else
-                                                -
-                                            @endif
+                                            <a href="{{ route('courier-purchase-details', $delivery['id']) }}">
+                                                {{ $delivery['purchase_number'] }}
+                                            </a>
                                         </td>
                                         <td data-label="{{ __('Payment') }}">
-                                            @if($delivery->payment_method === 'cod')
+                                            @if($delivery['payment_method'] === 'cod')
                                                 <span class="badge bg-warning">@lang('COD')</span>
                                             @else
                                                 <span class="badge bg-success">@lang('Online')</span>
                                             @endif
                                         </td>
                                         <td data-label="{{ __('COD Amount') }}">
-                                            @if($delivery->payment_method === 'cod')
-                                                <span class="text-danger">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}</span>
+                                            @if($delivery['payment_method'] === 'cod')
+                                                <span class="text-danger">{{ $delivery['purchase_amount_formatted'] }}</span>
                                             @else
                                                 -
                                             @endif
                                         </td>
                                         <td data-label="{{ __('Delivery Fee') }}">
-                                            <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</span>
+                                            <span class="text-success">{{ $delivery['delivery_fee_formatted'] }}</span>
                                         </td>
                                         <td data-label="{{ __('Date') }}">
-                                            {{ $delivery->delivered_at ? $delivery->delivered_at->format('d-m-Y') : $delivery->created_at->format('d-m-Y') }}
+                                            {{ $delivery['date_formatted'] }}
                                         </td>
                                     </tr>
                                 @empty

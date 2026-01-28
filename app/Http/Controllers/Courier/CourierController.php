@@ -779,7 +779,6 @@ class CourierController extends CourierBaseController
      */
     public function settlements()
     {
-        $currency = monetaryUnit()->getDefault();
         $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
         $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
         $report = $this->accountingService->getCourierReport($this->courier->id);
@@ -787,12 +786,42 @@ class CourierController extends CourierBaseController
         // PRE-COMPUTED: Net amount for display (DATA_FLOW_POLICY - no @php in view)
         $netAmount = $settlementCalc['net_amount'] ?? 0;
 
+        // PRE-COMPUTED: Report values (DATA_FLOW_POLICY)
+        $reportDisplay = [
+            'current_balance' => $report['current_balance'] ?? 0,
+            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
+            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
+            'has_credit' => ($report['current_balance'] ?? 0) > 0,
+            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
+            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
+        ];
+
+        // PRE-COMPUTED: Settlement calc values (DATA_FLOW_POLICY)
+        $settlementDisplay = [
+            'cod_amount_formatted' => monetaryUnit()->format($settlementCalc['cod_amount'] ?? 0),
+            'fees_earned_online_formatted' => monetaryUnit()->format($settlementCalc['fees_earned_online'] ?? 0),
+            'fees_earned_cod_formatted' => monetaryUnit()->format($settlementCalc['fees_earned_cod'] ?? 0),
+            'net_amount' => $netAmount,
+            'net_amount_formatted' => monetaryUnit()->format(abs($netAmount)),
+            'is_positive' => $netAmount >= 0,
+        ];
+
+        // PRE-COMPUTED: Transform unsettled deliveries (DATA_FLOW_POLICY)
+        $deliveriesDisplay = collect($unsettledDeliveries)->map(function ($delivery) {
+            return [
+                'id' => $delivery->id,
+                'purchase_number' => $delivery->purchase?->purchase_number ?? '-',
+                'payment_method' => $delivery->payment_method,
+                'purchase_amount_formatted' => monetaryUnit()->format($delivery->purchase_amount ?? 0),
+                'delivery_fee_formatted' => monetaryUnit()->format($delivery->delivery_fee ?? 0),
+                'date_formatted' => $delivery->delivered_at?->format('d-m-Y') ?? $delivery->created_at?->format('d-m-Y') ?? 'N/A',
+            ];
+        });
+
         return view('courier.settlements', [
-            'currency' => $currency,
-            'settlementCalc' => $settlementCalc,
-            'unsettledDeliveries' => $unsettledDeliveries,
-            'report' => $report,
-            'netAmount' => $netAmount,
+            'settlementCalc' => $settlementDisplay,
+            'unsettledDeliveries' => $deliveriesDisplay,
+            'report' => $reportDisplay,
         ]);
     }
 
