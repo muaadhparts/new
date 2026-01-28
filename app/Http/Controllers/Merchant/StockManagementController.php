@@ -7,6 +7,10 @@ use App\Domain\Catalog\Models\CatalogItemCodeMapping;
 use App\Domain\Merchant\Models\MerchantBranch;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Merchant\Models\MerchantStockUpdate;
+use App\Domain\Merchant\Queries\MerchantItemQuery;
+use App\Domain\Merchant\Services\MerchantItemDisplayService;
+use App\Domain\Merchant\Services\MerchantItemStockService;
+use App\Domain\Merchant\Services\MerchantItemPricingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -31,14 +35,8 @@ use Yajra\DataTables\Facades\DataTables;
  */
 class StockManagementController extends Controller
 {
-    /**
-     * The merchant user ID that has access to this page
-     */
     private const ALLOWED_MERCHANT_ID = 1;
 
-    /**
-     * Branch file mapping: filename => warehouse_name
-     */
     private const BRANCH_FILE_MAPPING = [
         'twa01' => 'BR-01',
         'twa02' => 'BR-02',
@@ -47,8 +45,15 @@ class StockManagementController extends Controller
         'twa05' => 'BR-05',
     ];
 
+    public function __construct(
+        private MerchantItemQuery $itemQuery,
+        private MerchantItemDisplayService $displayService,
+        private MerchantItemStockService $stockService,
+        private MerchantItemPricingService $pricingService,
+    ) {}
+
     /**
-     * Check if current user has access to stock management
+     * Check if current user has access
      */
     private function checkAccess(): bool
     {
@@ -56,9 +61,9 @@ class StockManagementController extends Controller
     }
 
     /**
-     * Abort if user doesn't have access
+     * Abort if no access
      */
-    private function abortIfNoAccess()
+    private function abortIfNoAccess(): void
     {
         if (!$this->checkAccess()) {
             abort(403, 'هذه الصفحة خاصة بتاجر معين فقط');
@@ -76,7 +81,9 @@ class StockManagementController extends Controller
             ->where('status', 1)
             ->get();
 
-        return view('merchant.stock.index', compact('branches'));
+        $stockSummary = $this->stockService->getStockSummary(self::ALLOWED_MERCHANT_ID);
+
+        return view('merchant.stock.index', compact('branches', 'stockSummary'));
     }
 
     /**
@@ -99,667 +106,270 @@ class StockManagementController extends Controller
                 ];
                 return $badges[$update->status] ?? $update->status;
             })
-            ->editColumn('update_type', function ($update) {
-                return $update->update_type === 'manual' ? 'يدوي' : 'تلقائي';
-            })
-            ->editColumn('created_at', function ($update) {
-                return $update->created_at->format('Y-m-d H:i:s');
-            })
-            ->addColumn('completed_at', function ($update) {
-                return $update->completed_at ? $update->completed_at->format('Y-m-d H:i:s') : '-';
-            })
-            ->addColumn('progress', function ($update) {
-                if ($update->total_rows > 0) {
-                    $percentage = round(($update->updated_rows / $update->total_rows) * 100, 2);
-                    return "{$update->updated_rows} / {$update->total_rows} ({$percentage}%)";
-                }
-                return 'N/A';
-            })
-            ->addColumn('action', function ($update) {
-                $html = '';
-                if ($update->error_log) {
-                    $html .= '<button class="btn btn-sm btn-warning view-errors" data-id="' . $update->id . '" data-errors="' . htmlspecialchars($update->error_log) . '"><i class="fas fa-exclamation-triangle"></i></button> ';
-                }
-                if ($update->file_path && Storage::exists($update->file_path)) {
-                    $html .= '<a href="' . route('merchant-stock-download', $update->id) . '" class="btn btn-sm btn-info"><i class="fas fa-download"></i></a>';
-                }
-                return $html;
-            })
-            ->rawColumns(['status', 'action'])
+            ->editColumn('created_at', fn($update) => $update->created_at->format('Y-m-d H:i'))
+            ->editColumn('completed_at', fn($update) => $update->completed_at?->format('Y-m-d H:i') ?? '-')
+            ->rawColumns(['status'])
             ->make(true);
     }
 
     /**
-     * Trigger full refresh - download from S3 and process all branch files
+     * Trigger full stock refresh from CSV files
      */
     public function triggerFullRefresh(Request $request)
     {
         $this->abortIfNoAccess();
 
         try {
-            // Create stock update record
-            $stockUpdate = MerchantStockUpdate::create([
+            $update = MerchantStockUpdate::create([
                 'user_id' => self::ALLOWED_MERCHANT_ID,
-                'update_type' => 'automatic',
+                'type' => 'full_refresh',
                 'status' => 'pending',
-                'started_at' => now(),
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم بدء عملية التحديث الكامل. يرجى الانتظار...',
-                'update_id' => $stockUpdate->id
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Full refresh failed: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل بدء التحديث: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Process full refresh - download and process each file one by one
-     */
-    public function processFullRefresh(Request $request)
-    {
-        $this->abortIfNoAccess();
-
-        $updateId = $request->input('update_id');
-
-        try {
-            $stockUpdate = MerchantStockUpdate::where('id', $updateId)
-                ->where('user_id', self::ALLOWED_MERCHANT_ID)
-                ->firstOrFail();
-
-            $stockUpdate->update([
-                'status' => 'processing',
-                'started_at' => now(),
-            ]);
-
-            set_time_limit(600); // 10 minutes max
-            ini_set('memory_limit', '512M');
-
-            // معالجة كل ملف على حدة لتوفير الذاكرة
-            $results = $this->processAllBranchesOneByOne();
-
-            // Mark as completed
-            $stockUpdate->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-                'total_rows' => $results['total_rows'],
-                'updated_rows' => $results['updated_rows'],
-                'failed_rows' => $results['failed_rows'],
-                'error_log' => $results['errors'] ? implode("\n", array_slice($results['errors'], 0, 100)) : null,
-            ]);
-
-            return response()->json([
-                'success' => true,
-                'message' => 'تم التحديث بنجاح',
-                'status' => 'completed',
-                'results' => $results
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Full refresh processing failed: ' . $e->getMessage());
-
-            if (isset($stockUpdate)) {
-                $stockUpdate->update([
-                    'status' => 'failed',
-                    'completed_at' => now(),
-                    'error_log' => $e->getMessage(),
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل التحديث: ' . $e->getMessage(),
-                'status' => 'failed'
-            ], 500);
-        }
-    }
-
-    /**
-     * Process all branches one by one - download, process, then free memory
-     */
-    private function processAllBranchesOneByOne(): array
-    {
-        $totalRows = 0;
-        $updatedRows = 0;
-        $failedRows = 0;
-        $errors = [];
-
-        // Find the latest ATWJRY folder path (sync/YYYY/MM/DD/ATWJRY)
-        $remotePath = $this->findLatestAtwjryPath();
-
-        if (!$remotePath) {
-            return [
                 'total_rows' => 0,
+                'processed_rows' => 0,
+                'created_rows' => 0,
                 'updated_rows' => 0,
-                'failed_rows' => 0,
-                'errors' => ['Could not find ATWJRY folder in S3. Please check sync folder.'],
-            ];
+                'skipped_rows' => 0,
+                'error_rows' => 0,
+            ]);
+
+            dispatch(function () use ($update) {
+                $this->processFullRefresh($update);
+            })->afterResponse();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم بدء عملية التحديث الكامل',
+                'update_id' => $update->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Stock refresh trigger failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'فشل بدء عملية التحديث: ' . $e->getMessage(),
+            ], 500);
         }
+    }
 
-        Log::info("Using S3 path: {$remotePath}");
+    /**
+     * Process full stock refresh
+     */
+    public function processFullRefresh(MerchantStockUpdate $update)
+    {
+        try {
+            $update->update(['status' => 'processing', 'started_at' => now()]);
 
-        // Get all branches for this merchant indexed by warehouse_name
-        $branches = MerchantBranch::where('user_id', self::ALLOWED_MERCHANT_ID)
-            ->get()
-            ->keyBy('warehouse_name');
+            $stats = [
+                'total' => 0,
+                'processed' => 0,
+                'created' => 0,
+                'updated' => 0,
+                'skipped' => 0,
+                'errors' => 0,
+            ];
 
-        foreach (self::BRANCH_FILE_MAPPING as $filename => $warehouseName) {
-            $branch = $branches->get($warehouseName);
+            foreach (self::BRANCH_FILE_MAPPING as $filename => $warehouseName) {
+                $branch = MerchantBranch::where('user_id', self::ALLOWED_MERCHANT_ID)
+                    ->where('warehouse_name', $warehouseName)
+                    ->first();
 
-            if (!$branch) {
-                $errors[] = "Branch not found for warehouse: {$warehouseName}";
-                continue;
+                if (!$branch) {
+                    Log::warning("Branch not found: {$warehouseName}");
+                    continue;
+                }
+
+                $filePath = storage_path("app/stock_updates/{$filename}.csv");
+
+                if (!file_exists($filePath)) {
+                    Log::warning("CSV file not found: {$filePath}");
+                    continue;
+                }
+
+                $branchStats = $this->processBranchFile($filePath, $branch);
+                $stats['total'] += $branchStats['total'];
+                $stats['processed'] += $branchStats['processed'];
+                $stats['created'] += $branchStats['created'];
+                $stats['updated'] += $branchStats['updated'];
+                $stats['skipped'] += $branchStats['skipped'];
+                $stats['errors'] += $branchStats['errors'];
             }
 
-            Log::info("Processing branch: {$warehouseName} ({$filename})");
+            $update->update([
+                'status' => 'completed',
+                'total_rows' => $stats['total'],
+                'processed_rows' => $stats['processed'],
+                'created_rows' => $stats['created'],
+                'updated_rows' => $stats['updated'],
+                'skipped_rows' => $stats['skipped'],
+                'error_rows' => $stats['errors'],
+                'completed_at' => now(),
+            ]);
 
-            // Step 1: Download file from S3 using Storage facade
-            // Try both .csv and .CSV extensions
-            $s3Path = $remotePath . '/' . $filename . '.csv';
-            $s3PathUpper = $remotePath . '/' . $filename . '.CSV';
-            $localPath = 'stock/branches/' . $filename . '.csv';
+            Log::info('Stock refresh completed', $stats);
+        } catch (\Exception $e) {
+            $update->update([
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'completed_at' => now(),
+            ]);
+
+            Log::error('Stock refresh failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+        }
+    }
+
+    /**
+     * Process single branch CSV file
+     */
+    private function processBranchFile(string $filePath, MerchantBranch $branch): array
+    {
+        $stats = [
+            'total' => 0,
+            'processed' => 0,
+            'created' => 0,
+            'updated' => 0,
+            'skipped' => 0,
+            'errors' => 0,
+        ];
+
+        $handle = fopen($filePath, 'r');
+        if (!$handle) {
+            return $stats;
+        }
+
+        $header = fgetcsv($handle);
+        
+        while (($row = fgetcsv($handle)) !== false) {
+            $stats['total']++;
 
             try {
-                // Check if file exists on S3 (try both .csv and .CSV)
-                $actualPath = null;
-                if (Storage::disk('do')->exists($s3Path)) {
-                    $actualPath = $s3Path;
-                } elseif (Storage::disk('do')->exists($s3PathUpper)) {
-                    $actualPath = $s3PathUpper;
-                }
-
-                if (!$actualPath) {
-                    $errors[] = "File not found on S3: {$filename}.csv";
-                    Log::warning("Branch file not found on S3: {$s3Path}");
+                if (count($row) < 3) {
+                    $stats['skipped']++;
                     continue;
                 }
 
-                // Download using Storage facade (handles authentication)
-                $content = Storage::disk('do')->get($actualPath);
+                $itemCode = trim($row[0]);
+                $stock = (int) trim($row[1]);
+                $price = (float) trim($row[2]);
 
-                if (empty($content)) {
-                    $errors[] = "File is empty: {$filename}.csv";
-                    Log::warning("Branch file is empty: {$s3Path}");
+                if (empty($itemCode) || $price <= 0) {
+                    $stats['skipped']++;
                     continue;
                 }
 
-                // Save to local
-                Storage::disk('local')->put($localPath, $content);
-                unset($content); // Free memory immediately
+                $mapping = CatalogItemCodeMapping::where('item_code', $itemCode)->first();
+                if (!$mapping) {
+                    $stats['skipped']++;
+                    continue;
+                }
 
-                Log::info("Downloaded: {$filename}.csv from S3");
+                $item = MerchantItem::where('user_id', self::ALLOWED_MERCHANT_ID)
+                    ->where('catalog_item_id', $mapping->catalog_item_id)
+                    ->where('merchant_branch_id', $branch->id)
+                    ->first();
 
-                // Step 2: Process file immediately (no pre-loaded mappings)
-                $result = $this->processBranchFile($localPath, $branch->id);
+                if ($item) {
+                    $item->update([
+                        'stock' => $stock,
+                        'price' => $price,
+                    ]);
+                    $stats['updated']++;
+                } else {
+                    MerchantItem::create([
+                        'user_id' => self::ALLOWED_MERCHANT_ID,
+                        'catalog_item_id' => $mapping->catalog_item_id,
+                        'merchant_branch_id' => $branch->id,
+                        'price' => $price,
+                        'stock' => $stock,
+                        'status' => 1,
+                        'item_type' => 'normal',
+                        'item_condition' => 1,
+                        'stock_check' => 1,
+                        'preordered' => false,
+                    ]);
+                    $stats['created']++;
+                }
 
-                $totalRows += $result['total'];
-                $updatedRows += $result['updated'];
-                $failedRows += $result['failed'];
-
-                // Only keep first 10 errors per file
-                $errors = array_merge($errors, array_slice($result['errors'], 0, 10));
-
-                // Step 3: Delete local file to free disk space
-                Storage::disk('local')->delete($localPath);
-
-                Log::info("Processed {$filename}: {$result['updated']}/{$result['total']} rows");
-
-                // Force garbage collection
-                gc_collect_cycles();
-
+                $stats['processed']++;
             } catch (\Exception $e) {
-                $errors[] = "Error processing {$filename}: " . $e->getMessage();
-                Log::error("Failed to process {$filename}.csv: " . $e->getMessage());
+                $stats['errors']++;
+                Log::error('Row processing failed', [
+                    'row' => $row,
+                    'error' => $e->getMessage(),
+                ]);
             }
         }
 
-        return [
-            'total_rows' => $totalRows,
-            'updated_rows' => $updatedRows,
-            'failed_rows' => $failedRows,
-            'errors' => $errors,
-        ];
+        fclose($handle);
+        return $stats;
     }
 
     /**
-     * Process a single branch DBF file using batch operations
-     * The .csv files are actually DBF (dBase) format
+     * Get update progress
      */
-    private function processBranchFile(string $localPath, int $branchId): array
+    public function getUpdateProgress($updateId)
     {
-        $total = 0;
-        $updated = 0;
-        $failed = 0;
-        $errors = [];
-        $processedCatalogItemIds = [];
-        $batchSize = 1000;
+        $this->abortIfNoAccess();
 
-        try {
-            $fullPath = storage_path('app/' . $localPath);
+        $update = MerchantStockUpdate::findOrFail($updateId);
 
-            if (!file_exists($fullPath)) {
-                throw new \Exception("File not found: {$fullPath}");
-            }
-
-            // Read file content
-            $content = file_get_contents($fullPath);
-            if ($content === false) {
-                throw new \Exception("Cannot read file: {$fullPath}");
-            }
-
-            // Parse DBF file
-            $records = $this->parseDbfFile($content);
-            $total = count($records);
-
-            Log::info("Parsed {$total} records from DBF file");
-
-            $rowBatch = [];
-
-            foreach ($records as $record) {
-                $itemCode = trim($record['FITEMNO'] ?? '');
-                if (empty($itemCode)) {
-                    $failed++;
-                    continue;
-                }
-
-                $rowBatch[] = [
-                    'item_code' => $itemCode,
-                    'qty' => (int) ($record['FQTYONHAND'] ?? 0),
-                    'cost_price' => (float) ($record['FCOSTPRICE'] ?? 0),
-                ];
-
-                // Process batch when size is reached
-                if (count($rowBatch) >= $batchSize) {
-                    $result = $this->processBatchWithMappings($rowBatch, $branchId);
-                    $updated += $result['updated'];
-                    $failed += $result['failed'];
-                    $processedCatalogItemIds = array_merge($processedCatalogItemIds, $result['catalog_ids']);
-                    $rowBatch = [];
-                    gc_collect_cycles();
-                }
-            }
-
-            // Clear records to free memory
-            unset($records);
-            unset($content);
-
-            // Process remaining batch
-            if (!empty($rowBatch)) {
-                $result = $this->processBatchWithMappings($rowBatch, $branchId);
-                $updated += $result['updated'];
-                $failed += $result['failed'];
-                $processedCatalogItemIds = array_merge($processedCatalogItemIds, $result['catalog_ids']);
-            }
-
-            // Zero out items not in file for this branch
-            $this->zeroOutMissingItems($branchId, $processedCatalogItemIds);
-
-            unset($processedCatalogItemIds);
-            gc_collect_cycles();
-
-        } catch (\Exception $e) {
-            $errors[] = "File processing error: " . $e->getMessage();
-            Log::error("processBranchFile error: " . $e->getMessage());
-        }
-
-        return [
-            'total' => $total,
-            'updated' => $updated,
-            'failed' => $failed,
-            'errors' => $errors,
-        ];
+        return response()->json([
+            'status' => $update->status,
+            'total_rows' => $update->total_rows,
+            'processed_rows' => $update->processed_rows,
+            'created_rows' => $update->created_rows,
+            'updated_rows' => $update->updated_rows,
+            'skipped_rows' => $update->skipped_rows,
+            'error_rows' => $update->error_rows,
+            'completed_at' => $update->completed_at?->toISOString(),
+        ]);
     }
 
     /**
-     * Parse a DBF (dBase) file and return records as array
+     * Download sample CSV
      */
-    private function parseDbfFile(string $content): array
+    public function download()
     {
-        $records = [];
+        $this->abortIfNoAccess();
 
-        // Parse DBF header
-        $numRecords = unpack('V', substr($content, 4, 4))[1];
-        $headerSize = unpack('v', substr($content, 8, 2))[1];
-        $recordSize = unpack('v', substr($content, 10, 2))[1];
+        $csv = "item_code,stock,price\n";
+        $csv .= "SAMPLE001,10,150.00\n";
+        $csv .= "SAMPLE002,5,250.50\n";
 
-        // Parse field descriptors
-        $fields = [];
-        $offset = 32;
-        while ($offset < $headerSize - 1) {
-            $fieldName = trim(substr($content, $offset, 11), "\x00");
-            if (empty($fieldName) || ord($fieldName[0]) === 0x0D) break;
-
-            $fieldLen = ord($content[$offset + 16]);
-            $fields[] = [
-                'name' => $fieldName,
-                'length' => $fieldLen,
-            ];
-            $offset += 32;
-        }
-
-        // Parse records
-        $dataOffset = $headerSize;
-        for ($i = 0; $i < $numRecords; $i++) {
-            $recordData = substr($content, $dataOffset + ($i * $recordSize), $recordSize);
-
-            // Skip deleted records (marked with *)
-            if ($recordData[0] === '*') continue;
-
-            $pos = 1;
-            $record = [];
-            foreach ($fields as $field) {
-                $value = trim(substr($recordData, $pos, $field['length']));
-                $record[$field['name']] = $value;
-                $pos += $field['length'];
-            }
-
-            $records[] = $record;
-        }
-
-        return $records;
+        return response($csv)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', 'attachment; filename="sample_stock.csv"');
     }
 
     /**
-     * Process a batch of rows with lazy-loaded mappings
+     * Export current stock
      */
-    private function processBatchWithMappings(array $inputRows, int $branchId): array
+    public function export()
     {
-        $updated = 0;
-        $failed = 0;
-        $catalogIds = [];
+        $this->abortIfNoAccess();
 
-        // Extract item codes from batch
-        $itemCodes = array_column($inputRows, 'item_code');
-
-        // Load only needed mappings from database (only with valid catalog_item_id)
-        $mappings = [];
-        $dbRows = DB::table('catalog_item_code_mappings')
-            ->select('item_code', 'catalog_item_id', 'quality_brand_id')
-            ->whereIn('item_code', $itemCodes)
-            ->whereNotNull('catalog_item_id')
+        $items = MerchantItem::Make()
+            ->forMerchant(self::ALLOWED_MERCHANT_ID)
+            ->withRelations()
             ->get();
 
-        foreach ($dbRows as $dbRow) {
-            $mappings[$dbRow->item_code] = [
-                'catalog_item_id' => (int) $dbRow->catalog_item_id,
-                'quality_brand_id' => (int) $dbRow->quality_brand_id,
-            ];
+        $csv = "item_code,catalog_item_name,branch,stock,price\n";
+
+        foreach ($items as $item) {
+            $itemCode = $item->catalogItem->codeMappings->first()?->item_code ?? 'N/A';
+            $name = $item->catalogItem->name ?? 'N/A';
+            $branch = $item->branch?->warehouse_name ?? 'N/A';
+            
+            $csv .= "\"{$itemCode}\",\"{$name}\",\"{$branch}\",{$item->stock},{$item->price}\n";
         }
 
-        $batchData = [];
-
-        foreach ($inputRows as $row) {
-            $itemCode = $row['item_code'];
-
-            if (!isset($mappings[$itemCode])) {
-                $failed++;
-                continue;
-            }
-
-            $mapping = $mappings[$itemCode];
-            $price = $row['cost_price']; // السعر مباشرة بدون هامش
-
-            $batchData[] = [
-                'catalog_item_id' => $mapping['catalog_item_id'],
-                'user_id' => self::ALLOWED_MERCHANT_ID,
-                'merchant_branch_id' => $branchId,
-                'quality_brand_id' => $mapping['quality_brand_id'],
-                'price' => $price,
-                'stock' => $row['qty'],
-                'status' => 1,
-                'item_type' => 'normal',
-                'item_condition' => 2,
-            ];
-
-            $catalogIds[] = $mapping['catalog_item_id'];
-        }
-
-        if (!empty($batchData)) {
-            $updated = $this->upsertBatch($batchData);
-        }
-
-        return [
-            'updated' => $updated,
-            'failed' => $failed,
-            'catalog_ids' => $catalogIds,
-        ];
-    }
-
-    /**
-     * Upsert a batch of merchant items
-     */
-    private function upsertBatch(array $batchData): int
-    {
-        if (empty($batchData)) {
-            return 0;
-        }
-
-        try {
-            MerchantItem::upsert(
-                $batchData,
-                ['catalog_item_id', 'user_id', 'merchant_branch_id'], // Unique keys
-                ['stock', 'price', 'status', 'quality_brand_id'] // Columns to update
-            );
-
-            return count($batchData);
-        } catch (\Exception $e) {
-            Log::error('Batch upsert failed: ' . $e->getMessage());
-            return 0;
-        }
-    }
-
-    /**
-     * Zero out items not in the processed list for a branch
-     * Uses chunked whereNotIn to avoid memory issues
-     */
-    private function zeroOutMissingItems(int $branchId, array $processedIds): void
-    {
-        if (empty($processedIds)) {
-            // No processed items means zero out everything for this branch
-            MerchantItem::where('user_id', self::ALLOWED_MERCHANT_ID)
-                ->where('merchant_branch_id', $branchId)
-                ->update(['stock' => 0, 'status' => 0]);
-            return;
-        }
-
-        // Convert to unique set to minimize size
-        $processedIds = array_unique($processedIds);
-
-        // For smaller datasets, use direct whereNotIn
-        if (count($processedIds) <= 10000) {
-            MerchantItem::where('user_id', self::ALLOWED_MERCHANT_ID)
-                ->where('merchant_branch_id', $branchId)
-                ->whereNotIn('catalog_item_id', $processedIds)
-                ->update(['stock' => 0, 'status' => 0]);
-            return;
-        }
-
-        // For larger datasets, use raw SQL with temporary exclusion
-        $ids = implode(',', $processedIds);
-        DB::statement("
-            UPDATE merchant_items
-            SET stock = 0, status = 0
-            WHERE user_id = ?
-            AND merchant_branch_id = ?
-            AND catalog_item_id NOT IN ({$ids})
-        ", [self::ALLOWED_MERCHANT_ID, $branchId]);
-    }
-
-    /**
-     * Find the latest ATWJRY folder path in S3
-     * Structure: sync/{year}/{month}/{day}/ATWJRY
-     */
-    private function findLatestAtwjryPath(): ?string
-    {
-        try {
-            // Get current year folder
-            $currentYear = date('Y');
-            $yearPath = "sync/{$currentYear}";
-
-            // Get months
-            $months = Storage::disk('do')->directories($yearPath);
-            if (empty($months)) {
-                // Try previous year
-                $yearPath = "sync/" . ($currentYear - 1);
-                $months = Storage::disk('do')->directories($yearPath);
-            }
-
-            if (empty($months)) {
-                Log::warning("No months found in sync folder");
-                return null;
-            }
-
-            // Sort and get latest month
-            sort($months);
-            $latestMonth = end($months);
-
-            // Get days in latest month
-            $days = Storage::disk('do')->directories($latestMonth);
-            if (empty($days)) {
-                Log::warning("No days found in {$latestMonth}");
-                return null;
-            }
-
-            // Sort and get latest day
-            sort($days);
-            $latestDay = end($days);
-
-            // Check if ATWJRY folder exists
-            $atwjryPath = $latestDay . '/ATWJRY';
-
-            if (Storage::disk('do')->exists($atwjryPath) ||
-                count(Storage::disk('do')->files($atwjryPath)) > 0) {
-                Log::info("Found ATWJRY at: {$atwjryPath}");
-                return $atwjryPath;
-            }
-
-            Log::warning("ATWJRY folder not found at {$atwjryPath}");
-            return null;
-
-        } catch (\Exception $e) {
-            Log::error("Error finding ATWJRY path: " . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Download stock file from history
-     */
-    public function download($id)
-    {
-        $this->abortIfNoAccess();
-
-        $stockUpdate = MerchantStockUpdate::where('id', $id)
-            ->where('user_id', self::ALLOWED_MERCHANT_ID)
-            ->firstOrFail();
-
-        if (!$stockUpdate->file_path || !Storage::exists($stockUpdate->file_path)) {
-            return back()->with('error', 'الملف غير موجود');
-        }
-
-        return Storage::download($stockUpdate->file_path, $stockUpdate->file_name);
-    }
-
-    /**
-     * Get update progress status
-     */
-    public function getUpdateProgress($id)
-    {
-        $this->abortIfNoAccess();
-
-        try {
-            $stockUpdate = MerchantStockUpdate::where('id', $id)
-                ->where('user_id', self::ALLOWED_MERCHANT_ID)
-                ->firstOrFail();
-
-            $progress = 0;
-            if ($stockUpdate->total_rows > 0) {
-                $progress = round(($stockUpdate->updated_rows / $stockUpdate->total_rows) * 100, 2);
-            }
-
-            return response()->json([
-                'success' => true,
-                'status' => $stockUpdate->status,
-                'progress' => $progress,
-                'updated_rows' => $stockUpdate->updated_rows,
-                'total_rows' => $stockUpdate->total_rows,
-                'failed_rows' => $stockUpdate->failed_rows,
-                'message' => $this->getStatusMessage($stockUpdate->status, $progress)
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'فشل في جلب حالة التحديث'
-            ], 404);
-        }
-    }
-
-    /**
-     * Get status message in Arabic
-     */
-    private function getStatusMessage($status, $progress)
-    {
-        $messages = [
-            'pending' => 'في انتظار البدء...',
-            'processing' => "جاري المعالجة... {$progress}%",
-            'completed' => 'اكتملت العملية بنجاح',
-            'failed' => 'فشلت العملية'
-        ];
-
-        return $messages[$status] ?? 'حالة غير معروفة';
-    }
-
-    /**
-     * Export current merchant stock to CSV
-     */
-    public function export(Request $request)
-    {
-        $this->abortIfNoAccess();
-
-        try {
-            $branchId = $request->get('branch_id');
-
-            $query = MerchantItem::where('user_id', self::ALLOWED_MERCHANT_ID)
-                ->where('status', 1)
-                ->with(['catalogItem:id,part_number,name', 'merchantBranch:id,warehouse_name,branch_name']);
-
-            if ($branchId) {
-                $query->where('merchant_branch_id', $branchId);
-            }
-
-            $merchantItems = $query->get();
-
-            $filename = 'stock_export_' . self::ALLOWED_MERCHANT_ID . '_' . date('Y-m-d_His') . '.csv';
-
-            $csvContent = "Branch,Warehouse,PART_NUMBER,Catalog Item Name,Stock,Price\n";
-
-            foreach ($merchantItems as $mp) {
-                $branchName = str_replace('"', '""', $mp->merchantBranch->branch_name ?? '');
-                $warehouseName = $mp->merchantBranch->warehouse_name ?? '';
-                $partNumber = $mp->catalogItem->part_number ?? '';
-                $name = str_replace('"', '""', $mp->catalogItem->name ?? '');
-                $stock = $mp->stock ?? 0;
-                $price = $mp->price ?? 0;
-
-                $csvContent .= "\"{$branchName}\",\"{$warehouseName}\",\"{$partNumber}\",\"{$name}\",{$stock},{$price}\n";
-            }
-
-            return response($csvContent, 200, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Stock export failed: ' . $e->getMessage());
-            return back()->with('error', 'فشل تصدير المخزون: ' . $e->getMessage());
-        }
+        return response($csv)
+            ->header('Content-Type', 'text/csv; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="stock_export_' . date('Y-m-d') . '.csv"');
     }
 }

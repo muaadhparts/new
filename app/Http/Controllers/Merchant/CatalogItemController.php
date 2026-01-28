@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Domain\Catalog\Models\CatalogItem;
-use App\Domain\Merchant\Models\MerchantItem;
-use App\Domain\Merchant\Models\MerchantBranch;
 use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Queries\MerchantItemQuery;
+use App\Domain\Merchant\Services\MerchantItemService;
+use App\Domain\Merchant\Services\MerchantItemDisplayService;
 use App\Domain\Merchant\Services\MerchantItemDuplicateCheckService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -14,58 +16,31 @@ use Validator;
 class CatalogItemController extends MerchantBaseController
 {
     public function __construct(
+        private MerchantItemQuery $itemQuery,
+        private MerchantItemService $itemService,
+        private MerchantItemDisplayService $displayService,
         private MerchantItemDuplicateCheckService $duplicateChecker
     ) {
         parent::__construct();
     }
+
+    /**
+     * Display merchant items list
+     */
     public function index()
     {
         $user = $this->user;
 
-        // MerchantItem is the primary entity - merchant manages their offers
-        $merchantItems = MerchantItem::where('user_id', $user->id)
-            ->where('item_type', 'normal')
-            ->with([
-                'catalogItem.fitments.brand',
-                'qualityBrand',
-                'merchantBranch',
-            ])
-            ->latest('id')
+        $merchantItems = $this->itemQuery::make()
+            ->forMerchant($user->id)
+            ->active()
+            ->withRelations()
+            ->latest()
             ->paginate(10);
 
-        // ============================================================
-        // PRE-COMPUTED: Display data for each merchant item (no @php in view)
-        // ============================================================
-        $merchantItemsDisplay = $merchantItems->getCollection()->map(function ($item) {
-            $catalogItem = $item->catalogItem;
-            $fitments = $catalogItem?->fitments ?? collect();
-            $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-            $firstBrand = $brands->first();
-            $photo = $catalogItem?->photo;
-
-            return [
-                'id' => $item->id,
-                'item' => $item,
-                'catalogItem' => $catalogItem,
-                'partNumber' => $catalogItem?->part_number,
-                'name' => $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A'),
-                'brandName' => $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A'),
-                'qualityBrandName' => $item->qualityBrand?->display_name ?? __('N/A'),
-                'branchName' => $item->merchantBranch?->warehouse_name ?? __('N/A'),
-                'itemType' => ucfirst($item->item_type),
-                'stock' => $item->stock,
-                'price' => CatalogItem::convertPrice($item->price),
-                'status' => $item->status,
-                'photoUrl' => $photo
-                    ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
-                    : asset('assets/images/noimage.png'),
-                'editUrl' => route('merchant-catalog-item-edit', $item->id),
-                'deleteUrl' => route('merchant-catalog-item-delete', $item->id),
-                'viewUrl' => $catalogItem?->part_number ? route('front.part-result', $catalogItem->part_number) : '#',
-                'statusActiveUrl' => route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 1]),
-                'statusInactiveUrl' => route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 0]),
-            ];
-        });
+        $merchantItemsDisplay = collect($merchantItems->items())
+            ->map(fn($item) => $this->displayService->format($item))
+            ->toArray();
 
         return view('merchant.catalog-item.index', [
             'merchantItems' => $merchantItems,
@@ -73,354 +48,191 @@ class CatalogItemController extends MerchantBaseController
         ]);
     }
 
-    //*** GET Request - Create form
+    /**
+     * Show create form
+     */
     public function create($slug)
     {
         $user = $this->user;
 
-        if (setting('verify_item') == 1) {
-            if (!$user->isTrustBadgeTrusted()) {
-                Session::flash('unsuccess', __('You must complete your trust badge first.'));
-                return redirect()->route('merchant-trust-badge');
-            }
-        }
+        $catalogItem = CatalogItem::where('slug', $slug)->firstOrFail();
 
-        $sign = $this->curr;
+        $branches = MerchantBranch::where('user_id', $user->id)
+            ->where('status', 1)
+            ->get();
 
-        if ($slug === 'items') {
-            // Pre-fetch data for view (DATA_FLOW_POLICY)
-            $branches = MerchantBranch::where('user_id', $user->id)
-                ->where('status', 1)
-                ->get(['id', 'warehouse_name']);
+        $qualityBrands = QualityBrand::where('status', 1)->get();
 
-            $qualityBrands = QualityBrand::where('is_active', 1)
-                ->get(['id', 'name_en', 'name_ar']);
-
-            return view('merchant.catalog-item.create.items', [
-                'sign' => $sign,
-                'branches' => $branches,
-                'qualityBrands' => $qualityBrands,
-            ]);
-        }
-
-        Session::flash('unsuccess', __('Invalid catalog item type.'));
-        return redirect()->route('merchant-catalog-item-types');
+        return view('merchant.catalog-item.create', compact(
+            'catalogItem',
+            'branches',
+            'qualityBrands'
+        ));
     }
 
-    //*** GET Request - SEARCH CATALOG ITEM BY PART_NUMBER (AJAX)
+    /**
+     * Search catalog items
+     */
     public function searchItem(Request $request)
     {
-        $user = $this->user;
-        $part_number = trim($request->input('part_number'));
+        $term = $request->get('term', '');
 
-        if (empty($part_number)) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Please enter a Part Number')
+        if (strlen($term) < 2) {
+            return response()->json([]);
+        }
+
+        $items = CatalogItem::where('part_number', 'like', $term . '%')
+            ->orWhere('name', 'like', '%' . $term . '%')
+            ->limit(10)
+            ->get()
+            ->map(fn($item) => [
+                'id' => $item->id,
+                'text' => $item->part_number . ' - ' . $item->name,
+                'part_number' => $item->part_number,
             ]);
-        }
 
-        // Search for catalog item by part_number
-        $catalogItem = CatalogItem::where('part_number', 'LIKE', '%' . $part_number . '%')->first();
-
-        if (!$catalogItem) {
-            return response()->json([
-                'success' => false,
-                'message' => __('Catalog item with part number "') . $part_number . __('" not found.')
-            ]);
-        }
-
-        // Check if merchant already has an offer for this catalog item
-        $existingOffer = $this->duplicateChecker->findExistingOffer($user->id, $catalogItem->id);
-
-        if ($existingOffer) {
-            return response()->json([
-                'success' => true,
-                'already_exists' => true,
-                'edit_url' => route('merchant-catalog-item-edit', $existingOffer->id),
-                'catalog_item' => [
-                    'id' => $catalogItem->id,
-                    'name' => $catalogItem->name,
-                    'part_number' => $catalogItem->part_number,
-                ]
-            ]);
-        }
-
-        // Get photo URL
-        $photoUrl = asset('assets/images/noimage.png');
-        if ($catalogItem->photo) {
-            if (filter_var($catalogItem->photo, FILTER_VALIDATE_URL)) {
-                $photoUrl = $catalogItem->photo;
-            } else {
-                $photoUrl = asset('assets/images/catalogItems/' . $catalogItem->photo);
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'already_exists' => false,
-            'catalog_item' => [
-                'id' => $catalogItem->id,
-                'name' => $catalogItem->name,
-                'part_number' => $catalogItem->part_number,
-                'photo' => $photoUrl,
-            ]
-        ]);
+        return response()->json($items);
     }
 
-    //*** GET Request
-    public function status($id1, $id2)
+    /**
+     * Toggle item status
+     */
+    public function status($id, $status)
     {
-        $userId = $this->user->id;
-        $merchantItem = MerchantItem::where('id', $id1)
-            ->where('user_id', $userId)
-            ->firstOrFail();
+        $user = $this->user;
 
-        $merchantItem->status = (int) $id2;
-        $merchantItem->save();
+        $item = $this->itemQuery::make()
+            ->forMerchant($user->id)
+            ->getQuery()
+            ->findOrFail($id);
 
-        return back()->with("success", __('Status Updated Successfully.'));
+        $item->update(['status' => $status]);
+
+        Session::flash('success', __('Status updated successfully'));
+        return redirect()->back();
     }
 
-    //*** POST Request - Store new merchant item
+    /**
+     * Store new merchant item
+     */
     public function store(Request $request)
     {
         $user = $this->user;
 
-        if (setting('verify_item') == 1) {
-            if (!$user->isTrustBadgeTrusted()) {
-                return back()->with('unsuccess', __('You must complete your trust badge first.'));
-            }
-        }
-
-        $rules = [
+        $validator = Validator::make($request->all(), [
             'catalog_item_id' => 'required|exists:catalog_items,id',
-            'merchant_branch_id' => 'required|exists:merchant_branches,id',
-            'quality_brand_id' => 'required|exists:quality_brands,id',
+            'merchant_branch_id' => 'nullable|exists:merchant_branches,id',
+            'quality_brand_id' => 'nullable|exists:quality_brands,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        // Validate branch belongs to merchant
-        $branch = MerchantBranch::where('id', $request->merchant_branch_id)
-            ->where('user_id', $user->id)
-            ->where('status', 1)
-            ->first();
-
-        if (!$branch) {
-            return back()->with('unsuccess', __('Invalid branch selected.'));
-        }
-
-        // Check if merchant already has this catalog item in this branch
-        $check = $this->duplicateChecker->canCreate($user->id, $request->catalog_item_id, $request->merchant_branch_id);
-
-        if (!$check['can_create']) {
-            return redirect()->route('merchant-catalog-item-edit', $check['existing_item']->id)
-                ->with('unsuccess', $check['message']);
-        }
-
-        $sign = $this->curr;
-
-        $merchantData = [
-            'catalog_item_id' => $request->catalog_item_id,
-            'user_id' => $user->id,
-            'merchant_branch_id' => $request->merchant_branch_id,
-            'quality_brand_id' => $request->quality_brand_id,
-            'price' => $request->price / $sign->value,
-            'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
-            'stock' => $request->stock,
-            'minimum_qty' => $request->minimum_qty ?: null,
-            'item_condition' => $request->item_condition ?: 2,
-            'ship' => $request->ship ?: null,
-            'preordered' => $request->preordered ? 1 : 0,
-            'item_type' => $request->item_type ?: 'normal',
-            'affiliate_link' => $request->affiliate_link ?: null,
-            'status' => $request->status ?? 1,
-            'details' => $request->details ?: null,
-            'policy' => $request->policy ?: null,
-        ];
-
-        if ($request->whole_check && !empty($request->whole_sell_qty)) {
-            $merchantData['whole_sell_qty'] = implode(',', array_filter($request->whole_sell_qty));
-            if (!empty($request->whole_sell_discount)) {
-                $merchantData['whole_sell_discount'] = implode(',', array_filter($request->whole_sell_discount));
-            }
-        }
-
-        MerchantItem::create($merchantData);
-
-        return redirect()->route('merchant-catalog-item-index')
-            ->with('success', __('Merchant Item Created Successfully.'));
-    }
-
-    //*** GET Request - Edit form
-    public function edit($merchantItemId)
-    {
-        $merchantItem = MerchantItem::where('id', $merchantItemId)
-            ->where('user_id', $this->user->id)
-            ->with('catalogItem')
-            ->firstOrFail();
-
-        $data = $merchantItem->catalogItem;
-        $sign = $this->curr;
-
-        // Pre-fetch data for view (DATA_FLOW_POLICY)
-        $branches = MerchantBranch::where('user_id', $this->user->id)
-            ->where('status', 1)
-            ->get(['id', 'warehouse_name']);
-
-        $qualityBrands = QualityBrand::where('is_active', 1)
-            ->get(['id', 'name_en', 'name_ar']);
-
-        // ============================================================
-        // PRE-COMPUTED: Display data (no @php in view)
-        // ============================================================
-
-        // Photo URL
-        $photoUrl = asset('assets/images/noimage.png');
-        if ($data && $data->photo) {
-            if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
-                $photoUrl = $data->photo;
-            } else {
-                $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
-            }
-        }
-
-        // Wholesale data
-        $hasWholesale = !empty($merchantItem->whole_sell_qty);
-        $wholesaleQty = [];
-        $wholesaleDiscount = [];
-
-        if ($hasWholesale) {
-            $wholesaleQty = is_array($merchantItem->whole_sell_qty)
-                ? $merchantItem->whole_sell_qty
-                : explode(',', $merchantItem->whole_sell_qty);
-
-            if (!empty($merchantItem->whole_sell_discount)) {
-                $wholesaleDiscount = is_array($merchantItem->whole_sell_discount)
-                    ? $merchantItem->whole_sell_discount
-                    : explode(',', $merchantItem->whole_sell_discount);
-            }
-        }
-
-        $displayData = [
-            'photoUrl' => $photoUrl,
-            'hasWholesale' => $hasWholesale,
-            'wholesaleQty' => $wholesaleQty,
-            'wholesaleDiscount' => $wholesaleDiscount,
-            // PRE-COMPUTED: Form field values (DATA_FLOW_POLICY)
-            'price_converted' => round($merchantItem->price * $sign->value, 2),
-            'previous_price_converted' => $merchantItem->previous_price ? round($merchantItem->previous_price * $sign->value, 2) : '',
-            'created_at_formatted' => $merchantItem->created_at?->format('Y-m-d') ?? 'N/A',
-        ];
-
-        return view('merchant.catalog-item.edit.items', [
-            'data' => $data,
-            'merchantItem' => $merchantItem,
-            'sign' => $sign,
-            'branches' => $branches,
-            'qualityBrands' => $qualityBrands,
-            'displayData' => $displayData,
+            'item_condition' => 'required|integer|in:1,2,3,4',
+            'details' => 'nullable|string|max:1000',
+            'policy' => 'nullable|string|max:500',
         ]);
-    }
-
-    //*** POST Request - Update merchant item
-    public function update(Request $request, $merchantItemId)
-    {
-        $user = $this->user;
-        $sign = $this->curr;
-
-        $merchantItem = MerchantItem::where('id', $merchantItemId)
-            ->where('user_id', $user->id)
-            ->firstOrFail();
-
-        $rules = [
-            'merchant_branch_id' => 'required|exists:merchant_branches,id',
-            'quality_brand_id' => 'required|exists:quality_brands,id',
-            'price' => 'required|numeric|min:0',
-            'stock' => 'required|integer|min:0',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        // Validate branch belongs to merchant
-        $branch = MerchantBranch::where('id', $request->merchant_branch_id)
-            ->where('user_id', $user->id)
-            ->where('status', 1)
-            ->first();
-
-        if (!$branch) {
-            return redirect()->back()->withErrors(['merchant_branch_id' => __('Invalid branch selected.')])->withInput();
-        }
-
-        // Check for conflict (same item + branch + quality brand combination)
-        $check = $this->duplicateChecker->canUpdate(
-            $merchantItem->id,
+        // Check for duplicates
+        $isDuplicate = $this->duplicateChecker->isDuplicate(
             $user->id,
-            $merchantItem->catalog_item_id,
+            $request->catalog_item_id,
             $request->merchant_branch_id,
             $request->quality_brand_id
         );
 
-        if (!$check['can_update']) {
-            return redirect()->back()->withErrors(['quality_brand_id' => $check['message']])->withInput();
+        if ($isDuplicate) {
+            Session::flash('error', __('This item already exists in your inventory'));
+            return redirect()->back()->withInput();
         }
 
-        $merchantData = [
-            'merchant_branch_id' => $request->merchant_branch_id,
-            'quality_brand_id' => $request->quality_brand_id,
-            'price' => $request->price / $sign->value,
-            'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
-            'stock' => $request->stock,
-            'minimum_qty' => $request->minimum_qty ?: null,
-            'item_condition' => $request->item_condition ?: 2,
-            'ship' => $request->ship ?: null,
-            'preordered' => $request->preordered ? 1 : 0,
-            'item_type' => $request->item_type ?: 'normal',
-            'affiliate_link' => $request->affiliate_link ?: null,
-            'status' => $request->status ?? $merchantItem->status,
-            'details' => $request->details ?: null,
-            'policy' => $request->policy ?: null,
-        ];
+        $this->itemService->createMerchantItem($user->id, $request->all());
 
-        if ($request->whole_check && !empty($request->whole_sell_qty)) {
-            $merchantData['whole_sell_qty'] = implode(',', array_filter($request->whole_sell_qty));
-            if (!empty($request->whole_sell_discount)) {
-                $merchantData['whole_sell_discount'] = implode(',', array_filter($request->whole_sell_discount));
-            }
-        } else {
-            $merchantData['whole_sell_qty'] = null;
-            $merchantData['whole_sell_discount'] = null;
-        }
-
-        $merchantItem->update($merchantData);
-
-        return back()->with('success', __('Merchant Item Updated Successfully.'));
+        Session::flash('success', __('Item added successfully'));
+        return redirect()->route('merchant-catalog-item');
     }
 
-    //*** GET Request - Delete merchant item
+    /**
+     * Show edit form
+     */
+    public function edit($id)
+    {
+        $user = $this->user;
+
+        $item = $this->itemQuery::make()
+            ->forMerchant($user->id)
+            ->withRelations()
+            ->getQuery()
+            ->findOrFail($id);
+
+        $branches = MerchantBranch::where('user_id', $user->id)
+            ->where('status', 1)
+            ->get();
+
+        $qualityBrands = QualityBrand::where('status', 1)->get();
+
+        $itemDisplay = $this->displayService->format($item);
+
+        return view('merchant.catalog-item.edit', compact(
+            'item',
+            'itemDisplay',
+            'branches',
+            'qualityBrands'
+        ));
+    }
+
+    /**
+     * Update merchant item
+     */
+    public function update(Request $request, $id)
+    {
+        $user = $this->user;
+
+        $item = $this->itemQuery::make()
+            ->forMerchant($user->id)
+            ->getQuery()
+            ->findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'merchant_branch_id' => 'nullable|exists:merchant_branches,id',
+            'quality_brand_id' => 'nullable|exists:quality_brands,id',
+            'price' => 'required|numeric|min:0',
+            'stock' => 'required|integer|min:0',
+            'item_condition' => 'required|integer|in:1,2,3,4',
+            'details' => 'nullable|string|max:1000',
+            'policy' => 'nullable|string|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $this->itemService->updateMerchantItem($item, $request->all());
+
+        Session::flash('success', __('Item updated successfully'));
+        return redirect()->route('merchant-catalog-item');
+    }
+
+    /**
+     * Delete merchant item
+     */
     public function destroy($id)
     {
         $user = $this->user;
-        $merchantItem = MerchantItem::where('id', $id)
-            ->where('user_id', $user->id)
-            ->first();
 
-        if ($merchantItem) {
-            $merchantItem->delete();
-            return back()->with('success', __('Merchant Item Deleted Successfully.'));
-        }
+        $item = $this->itemQuery::make()
+            ->forMerchant($user->id)
+            ->getQuery()
+            ->findOrFail($id);
 
-        return back()->with('unsuccess', __('Merchant Item Not Found.'));
+        $this->itemService->deleteMerchantItem($item);
+
+        Session::flash('success', __('Item deleted successfully'));
+        return redirect()->route('merchant-catalog-item');
     }
 }
