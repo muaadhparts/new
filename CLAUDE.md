@@ -4,6 +4,166 @@
 
 ---
 
+## ⚠️ CRITICAL: MULTI-CHANNEL PLATFORM
+
+**هذا المشروع ليس موقع ويب. هذا منصة متعددة القنوات.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    MULTI-CHANNEL PLATFORM                           │
+│                                                                     │
+│    ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐         │
+│    │ Desktop  │  │  Mobile  │  │  Mobile  │  │ WhatsApp │         │
+│    │   Web    │  │   App    │  │ Browser  │  │   Bot    │         │
+│    └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘         │
+│         │             │             │             │                 │
+│         │         ┌───┴───┐         │             │                 │
+│         │         │  API  │         │             │                 │
+│         │         └───┬───┘         │             │                 │
+│         │             │             │             │                 │
+│         └─────────────┴─────────────┴─────────────┘                 │
+│                           │                                         │
+│                   ┌───────▼───────┐                                 │
+│                   │ DisplayService │  ← كل FORMATTING هنا           │
+│                   └───────┬───────┘                                 │
+│                   ┌───────▼───────┐                                 │
+│                   │    Services   │  ← كل LOGIC هنا                 │
+│                   └───────┬───────┘                                 │
+│                   ┌───────▼───────┐                                 │
+│                   │     DTOs      │  ← كل DATA هنا                  │
+│                   └───────────────┘                                 │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### المبادئ الملزمة (MANDATORY)
+
+#### 1. كل منطق يجب أن يكون قابل لإعادة الاستخدام
+```php
+// ❌ FORBIDDEN - كود لا يمكن استخدامه في API
+$purchase->date_formatted = $purchase->created_at->format('d-m-Y');
+
+// ✅ REQUIRED - كود يعمل في Web و API و WhatsApp معاً
+$dto = $displayService->formatPurchase($purchase);
+```
+
+#### 2. Controllers = Orchestration فقط
+```php
+// ❌ FORBIDDEN في Controller
+$data['total'] = number_format($purchase->total, 2);     // formatting
+$data['tax'] = $purchase->total * 0.15;                  // calculation
+$data['status_label'] = __("status.{$purchase->status}"); // display logic
+
+// ✅ REQUIRED - Controller يستدعي Service فقط
+public function show($id) {
+    $purchase = $this->purchaseService->find($id);
+    $dto = $this->displayService->format($purchase);
+    return view('purchase.show', ['data' => $dto]);
+}
+```
+
+#### 3. Formatting/Display Logic = DisplayService أو DTO فقط
+```php
+// ❌ FORBIDDEN - formatting في Controller أو View
+{{ number_format($price, 2) }}
+{{ $date->format('Y-m-d') }}
+{{ PriceHelper::show($amount) }}
+
+// ✅ REQUIRED - DisplayService
+class PurchaseDisplayService {
+    public function format(Purchase $p): array {
+        return [
+            'total_formatted' => monetaryUnit()->format($p->total),
+            'date_formatted' => $p->created_at->format('d-m-Y'),
+            'status_label' => __("status.{$p->status}"),
+        ];
+    }
+}
+```
+
+#### 3.1 تنسيق العملات = monetaryUnit()->format() دائماً
+```php
+// ❌ FORBIDDEN - تنسيق يدوي غير مركزي
+$currencySign . number_format($amount, 2)       // غير مركزي
+'SAR ' . number_format($price, 2)               // غير مركزي
+$currency->sign . number_format($total, 2)      // غير مركزي
+
+// ✅ REQUIRED - مركزي عبر كل القنوات
+monetaryUnit()->format($amount)                 // مركزي ✓
+
+// ❌ FORBIDDEN - تمرير العملة للـ DisplayService
+$this->displayService->format($data, $currencySign);  // لا
+
+// ✅ REQUIRED - DisplayService يستخدم monetaryUnit() داخلياً
+$this->displayService->format($data);  // نعم
+```
+**السبب:** إذا غيرت `monetaryUnit()->format()` ستتغير كل القنوات تلقائياً.
+
+#### 4. Views = Consumers فقط (عرض قيم جاهزة)
+```blade
+{{-- ❌ FORBIDDEN --}}
+{{ number_format($amount, 2) }}
+{{ $model->relationship->name }}
+{{ $date->format('Y-m-d') }}
+@php $total = $items->sum('price'); @endphp
+
+{{-- ✅ REQUIRED --}}
+{{ $dto->totalFormatted }}
+{{ $dto->relationshipName }}
+{{ $dto->dateFormatted }}
+{{ $dto->itemsTotal }}
+```
+
+#### 5. تغيير UI = Blade/CSS/JS فقط
+```
+عند تغيير شكل الصفحات:
+✅ المسموح تغييره:
+   - Blade templates
+   - CSS styles
+   - JavaScript
+
+❌ ممنوع لمس:
+   - Services
+   - DTOs
+   - Business Logic
+```
+
+#### 6. إضافة مسارات Mobile = نفس Service/DTO
+```php
+// Web Route
+Route::get('/purchases/{id}', [WebPurchaseController::class, 'show']);
+
+// Mobile Route - نفس الـ Service!
+Route::get('/m/purchases/{id}', [MobilePurchaseController::class, 'show']);
+
+// كلاهما يستخدم:
+$dto = $this->displayService->format($purchase);
+// الاختلاف فقط في View و UX
+```
+
+#### 7. API/WhatsApp = نفس DisplayService بدون Duplication
+```php
+// Web Controller
+return view('purchase.show', ['data' => $displayService->format($purchase)]);
+
+// API Controller - نفس الـ Service!
+return response()->json($displayService->format($purchase));
+
+// WhatsApp Handler - نفس الـ Service!
+return $this->whatsapp->send($displayService->format($purchase));
+```
+
+#### 8. أي إصلاح = ينتقل لمكانه الصحيح
+```php
+// ❌ FORBIDDEN - ترقيع في Controller
+$purchase->total_formatted = '$' . number_format($purchase->total, 2);
+
+// ✅ REQUIRED - نقل للـ DisplayService
+// في DisplayService:
+'total_formatted' => monetaryUnit()->format($purchase->total),
+```
+
+---
+
 ## GOLDEN RULES
 
 ### 1. CatalogItem-First Display
@@ -103,78 +263,6 @@ function monetaryUnit() { return app(MonetaryUnitService::class); }
 
 **Full Policy:** `docs/rules/DATA_FLOW_POLICY.md`
 **Lint Check:** `php artisan lint:dataflow --ci`
-
-### 9. Multi-Platform Architecture (CRITICAL)
-**This project will serve multiple platforms. ALL code must be reusable.**
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    SINGLE CODEBASE                          │
-│                                                             │
-│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐    │
-│  │ Desktop │   │ Mobile  │   │ Mobile  │   │WhatsApp │    │
-│  │   Web   │   │   App   │   │ Browser │   │  Bot    │    │
-│  └────┬────┘   └────┬────┘   └────┬────┘   └────┬────┘    │
-│       │             │             │             │          │
-│       └─────────────┴──────┬──────┴─────────────┘          │
-│                            │                                │
-│                    ┌───────▼───────┐                        │
-│                    │   Services    │  ← ALL LOGIC HERE      │
-│                    │   (Shared)    │                        │
-│                    └───────────────┘                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Platforms:**
-- 🖥️ Desktop Web (current)
-- 📱 Mobile App (API - future)
-- 📲 Mobile Browser (different routes - future)
-- 💬 WhatsApp Integration (future)
-
-**GOLDEN RULE:** Any logic written MUST be reusable across all platforms.
-
-```php
-// FORBIDDEN - Logic in Controller (not reusable)
-class WebController {
-    public function show($id) {
-        $purchase = Purchase::find($id);
-        $purchase->date_formatted = $purchase->created_at->format('d-m-Y');  // ❌
-        $purchase->total_formatted = PriceHelper::show(...);                  // ❌
-        $items = $this->calculateItems($purchase);                            // ❌
-        return view('...', compact('purchase', 'items'));
-    }
-}
-
-// REQUIRED - Logic in Service (reusable)
-class PurchaseDisplayService {
-    public function getDisplayData(Purchase $purchase): PurchaseDisplayDTO {
-        return new PurchaseDisplayDTO(
-            dateFormatted: $purchase->created_at->format('d-m-Y'),
-            totalFormatted: PriceHelper::show(...),
-            items: $this->calculateItems($purchase),
-        );
-    }
-}
-
-// Web Controller - uses Service
-$dto = $service->getDisplayData($purchase);
-return view('...', ['data' => $dto]);
-
-// API Controller - reuses SAME Service
-$dto = $service->getDisplayData($purchase);
-return response()->json($dto);
-
-// WhatsApp Handler - reuses SAME Service
-$dto = $service->getDisplayData($purchase);
-return $this->formatForWhatsApp($dto);
-```
-
-**When you discover misplaced logic:**
-1. Note it as technical debt
-2. Move it to the correct Service
-3. Update all consumers (Controllers) to use the Service
-
-**Current Technical Debt:** See `WORK_PLAN.md` Phase 5
 
 ---
 

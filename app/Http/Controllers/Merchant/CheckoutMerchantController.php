@@ -7,6 +7,7 @@ use App\Domain\Commerce\Services\MerchantCheckout\MerchantCheckoutService;
 use App\Domain\Commerce\Services\MerchantCheckout\MerchantPurchaseCreator;
 use App\Domain\Commerce\Services\MerchantCheckout\MerchantSessionManager;
 use App\Domain\Commerce\Services\Cart\MerchantCartManager;
+use App\Domain\Commerce\Services\CheckoutDisplayService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -19,6 +20,10 @@ use Illuminate\View\View;
  *
  * NOTE: Checkout is now branch-scoped (branchId parameter),
  *       but payment/shipping methods remain merchant-scoped (from branch->user)
+ *
+ * DATA FLOW POLICY:
+ * - Controller = Orchestration only
+ * - All formatting in CheckoutDisplayService (API-ready)
  */
 class CheckoutMerchantController extends Controller
 {
@@ -26,17 +31,20 @@ class CheckoutMerchantController extends Controller
     protected MerchantPurchaseCreator $purchaseCreator;
     protected MerchantSessionManager $sessionManager;
     protected MerchantCartManager $cartService;
+    protected CheckoutDisplayService $displayService;
 
     public function __construct(
         MerchantCheckoutService $checkoutService,
         MerchantPurchaseCreator $purchaseCreator,
         MerchantSessionManager $sessionManager,
-        MerchantCartManager $cartService
+        MerchantCartManager $cartService,
+        CheckoutDisplayService $displayService
     ) {
         $this->checkoutService = $checkoutService;
         $this->purchaseCreator = $purchaseCreator;
         $this->sessionManager = $sessionManager;
         $this->cartService = $cartService;
+        $this->displayService = $displayService;
 
         $this->middleware('auth');
     }
@@ -92,15 +100,14 @@ class CheckoutMerchantController extends Controller
             'longitude' => $customer['longitude'] ?? '',
         ]);
 
-        // Pre-format cart values for view
-        $cartData = $result['data']['cart'] ?? [];
-        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
+        // Format using DisplayService (API-ready)
+        $formatted = $this->displayService->formatForAddressStep($result);
 
         return view('merchant.checkout.address', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
             'address' => $address,
-            'cart' => $cartData,
+            'cart' => $formatted['cart'],
             'googleMapsApiKey' => $googleMapsApiKey,
             'curr' => $curr,
             'gs' => platformSettings(),
@@ -169,41 +176,17 @@ class CheckoutMerchantController extends Controller
         // Get currency
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
-        // Pre-format cart values
-        $cartData = $result['data']['cart'] ?? [];
-        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
-
-        // Pre-format totals
-        $totalsData = $result['data']['totals'] ?? [];
-        $totalsData['discount_amount_formatted'] = monetaryUnit()->format($totalsData['discount_amount'] ?? 0);
-        $totalsData['tax_amount_formatted'] = monetaryUnit()->format($totalsData['tax_amount'] ?? 0);
-        $totalsData['grand_total_formatted'] = monetaryUnit()->format($totalsData['grand_total'] ?? $cartData['total_price'] ?? 0);
-
-        // Pre-format shipping provider method prices
-        $shippingProviders = $result['data']['shipping_options'] ?? [];
-        foreach ($shippingProviders as &$provider) {
-            if (!empty($provider['methods'])) {
-                foreach ($provider['methods'] as &$method) {
-                    $method['free_above_formatted'] = monetaryUnit()->format($method['free_above'] ?? 0);
-                    $method['original_price_formatted'] = monetaryUnit()->format($method['original_price'] ?? 0);
-                }
-            }
-        }
-
-        // Pre-format courier prices
-        $couriers = $result['data']['courier_options'] ?? [];
-        foreach ($couriers as &$courier) {
-            $courier['delivery_fee_formatted'] = monetaryUnit()->format($courier['delivery_fee'] ?? 0);
-        }
+        // Format using DisplayService (API-ready)
+        $formatted = $this->displayService->formatForShippingStep($result);
 
         return view('merchant.checkout.shipping', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
             'address' => $result['data']['address'] ?? [],
-            'cart' => $cartData,
-            'totals' => $totalsData,
-            'shipping_providers' => $shippingProviders,
-            'couriers' => $couriers,
+            'cart' => $formatted['cart'],
+            'totals' => $formatted['totals'],
+            'shipping_providers' => $formatted['shipping_providers'],
+            'couriers' => $formatted['couriers'],
             'curr' => $curr,
             'gs' => platformSettings(),
         ]);
@@ -340,34 +323,18 @@ class CheckoutMerchantController extends Controller
             return response()->json($result);
         }
 
-        // Get currency and price calculator
-        $priceCalculator = $this->checkoutService->getPriceCalculator();
-        $curr = $priceCalculator->getMonetaryUnit();
+        // Get currency
+        $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
-        // Pre-format cart values
-        $cartData = $result['data']['cart'] ?? [];
-        $cartData['total_price_formatted'] = monetaryUnit()->format($cartData['total_price'] ?? 0);
-
-        // Pre-format totals
-        $totalsData = $result['data']['totals'] ?? [];
-        $totalsData['discount_amount_formatted'] = monetaryUnit()->format($totalsData['discount_amount'] ?? 0);
-        $totalsData['tax_amount_formatted'] = monetaryUnit()->format($totalsData['tax_amount'] ?? 0);
-        $totalsData['shipping_cost_formatted'] = monetaryUnit()->format($totalsData['shipping_cost'] ?? 0);
-        $totalsData['courier_fee_formatted'] = monetaryUnit()->format($totalsData['courier_fee'] ?? 0);
-        $totalsData['grand_total_formatted'] = monetaryUnit()->format($totalsData['grand_total'] ?? 0);
-
-        // Pre-format shipping values
-        $shippingData = $result['data']['shipping'] ?? [];
-        $shippingData['courier_fee_formatted'] = monetaryUnit()->format($shippingData['courier_fee'] ?? 0);
-        $shippingData['shipping_cost_formatted'] = monetaryUnit()->format($shippingData['shipping_cost'] ?? 0);
-        $shippingData['original_shipping_cost_formatted'] = monetaryUnit()->format($shippingData['original_shipping_cost'] ?? 0);
+        // Format using DisplayService (API-ready)
+        $formatted = $this->displayService->formatForPaymentStep($result);
 
         return view('merchant.checkout.payment', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
-            'cart' => $cartData,
-            'totals' => $totalsData,
-            'shipping' => $shippingData,
+            'cart' => $formatted['cart'],
+            'totals' => $formatted['totals'],
+            'shipping' => $formatted['shipping'],
             'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
             'curr' => $curr,
@@ -609,16 +576,13 @@ class CheckoutMerchantController extends Controller
 
         $curr = $priceCalculator->getMonetaryUnit();
 
+        // Format using DisplayService (API-ready)
+        $formatted = $this->displayService->formatPreviewTotals($totals, $curr->sign);
+
         return response()->json([
             'success' => true,
             'totals' => $totals,
-            'formatted' => [
-                'subtotal' => $curr->sign . number_format($totals['subtotal'], 2),
-                'shipping_cost' => $curr->sign . number_format($totals['shipping_cost'], 2),
-                'courier_fee' => $curr->sign . number_format($totals['courier_fee'], 2),
-                'tax_amount' => $curr->sign . number_format($totals['tax_amount'], 2),
-                'grand_total' => $curr->sign . number_format($totals['grand_total'], 2),
-            ],
+            'formatted' => $formatted,
         ]);
     }
 
@@ -649,17 +613,16 @@ class CheckoutMerchantController extends Controller
 
         $curr = $priceCalculator->getMonetaryUnit();
 
+        // Format using DisplayService (API-ready)
+        $formatted = $this->displayService->formatTaxCalculation($subtotal, $taxAmount, $total, $curr->sign);
+
         return response()->json([
             'success' => true,
             'subtotal' => round($subtotal, 2),
             'tax_rate' => $taxInfo['tax_rate'],
             'tax_amount' => round($taxAmount, 2),
             'total' => round($total, 2),
-            'formatted' => [
-                'subtotal' => $curr->sign . number_format($subtotal, 2),
-                'tax_amount' => $curr->sign . number_format($taxAmount, 2),
-                'total' => $curr->sign . number_format($total, 2),
-            ],
+            'formatted' => $formatted,
         ]);
     }
 }

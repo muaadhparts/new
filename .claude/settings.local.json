@@ -110,7 +110,13 @@
       "Bash(Select-String -Pattern \"error|exception|500\" -Context 2,5)",
       "Bash(Select-Object -Last 30)",
       "Bash(timeout:*)",
-      "Bash(cmd /c \"move app\\\\Domain\\\\Commerce\\\\Services\\\\OrderStatusResolverService.php app\\\\Domain\\\\Commerce\\\\Services\\\\PurchaseStatusResolverService.php\")"
+      "Bash(cmd /c \"move app\\\\Domain\\\\Commerce\\\\Services\\\\OrderStatusResolverService.php app\\\\Domain\\\\Commerce\\\\Services\\\\PurchaseStatusResolverService.php\")",
+      "Bash(git check-ignore:*)",
+      "Bash(Select-String -Pattern \"purchase\" -Context 0,2)",
+      "Bash(Select-Object -First 30)",
+      "Bash(Select-String -Pattern \"dashboard\")",
+      "Bash(Select-Object -First 10)",
+      "Bash(for dir in \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Domain\"/*)"
     ]
   }
 }

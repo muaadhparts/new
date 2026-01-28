@@ -223,16 +223,16 @@
                             @forelse($purchases as $purchase)
                             <tr>
                                 <td>
-                                    <a href="{{ route('merchant-purchase-invoice', $purchase->purchase_number) }}">
-                                        {{ $purchase->purchase_number }}
+                                    <a href="{{ route('merchant-purchase-invoice', $purchase['purchase_number']) }}">
+                                        {{ $purchase['purchase_number'] }}
                                     </a>
                                 </td>
-                                <td class="text-end">{{ $purchase->price_formatted }}</td>
-                                <td class="text-end text-danger">-{{ $purchase->commission_amount_formatted }}</td>
-                                <td class="text-end">{{ $purchase->tax_amount_formatted }}</td>
-                                <td class="text-end text-success">{{ $purchase->net_amount_formatted }}</td>
+                                <td class="text-end">{{ $purchase['price_formatted'] }}</td>
+                                <td class="text-end text-danger">-{{ $purchase['commission_amount_formatted'] }}</td>
+                                <td class="text-end">{{ $purchase['tax_amount_formatted'] }}</td>
+                                <td class="text-end text-success">{{ $purchase['net_amount_formatted'] }}</td>
                                 <td class="text-center">
-                                    @if($purchase->payment_owner_id === 0)
+                                    @if($purchase['payment_owner_id'] === 0)
                                         <span class="badge bg-primary" name="@lang('Platform received payment')">
                                             <i class="fas fa-building"></i>
                                         </span>
@@ -243,11 +243,11 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if($purchase->shipping_type === 'courier')
+                                    @if($purchase['shipping_type'] === 'courier')
                                         <span class="badge bg-warning" name="@lang('Courier')">
                                             <i class="fas fa-motorcycle"></i>
                                         </span>
-                                    @elseif($purchase->shipping_owner_id === 0)
+                                    @elseif($purchase['shipping_owner_id'] === 0)
                                         <span class="badge bg-primary" name="@lang('Platform Shipping')">
                                             <i class="fas fa-truck"></i>
                                         </span>
@@ -258,19 +258,19 @@
                                     @endif
                                 </td>
                                 <td class="text-end">
-                                    @if($purchase->platform_owes_merchant > 0)
+                                    @if($purchase['platform_owes_merchant'] > 0)
                                         <span class="text-success" name="@lang('Platform owes you')">
-                                            +{{ $purchase->platform_owes_merchant_formatted }}
+                                            +{{ $purchase['platform_owes_merchant_formatted'] }}
                                         </span>
-                                    @elseif($purchase->merchant_owes_platform > 0)
+                                    @elseif($purchase['merchant_owes_platform'] > 0)
                                         <span class="text-danger" name="@lang('You owe platform')">
-                                            -{{ $purchase->merchant_owes_platform_formatted }}
+                                            -{{ $purchase['merchant_owes_platform_formatted'] }}
                                         </span>
                                     @else
                                         <span class="text-muted">{{ $currencySign }}0.00</span>
                                     @endif
                                 </td>
-                                <td>{{ $purchase->date_formatted }}</td>
+                                <td>{{ $purchase['date_formatted'] }}</td>
                             </tr>
                             @empty
                             <tr>

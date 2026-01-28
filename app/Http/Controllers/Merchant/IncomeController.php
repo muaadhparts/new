@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Accounting\Models\SettlementBatch;
 use App\Domain\Accounting\Services\MerchantAccountingService;
+use App\Domain\Merchant\Services\MerchantDisplayService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,14 +20,17 @@ use Illuminate\Support\Facades\Auth;
  * - owner_id = 0 → Platform service
  * - owner_id > 0 → Merchant/Owner service
  * - Shows merchant's complete financial picture
+ *
+ * DATA FLOW POLICY:
+ * - Controller = Orchestration only
+ * - All formatting in MerchantDisplayService (API-ready)
  */
 class IncomeController extends Controller
 {
-    protected MerchantAccountingService $accountingService;
-
-    public function __construct(MerchantAccountingService $accountingService)
-    {
-        $this->accountingService = $accountingService;
+    public function __construct(
+        protected MerchantAccountingService $accountingService,
+        protected MerchantDisplayService $displayService
+    ) {
     }
 
     /**
@@ -47,80 +51,22 @@ class IncomeController extends Controller
         // Get statement for ledger view
         $statement = $this->accountingService->getMerchantStatement($merchantId, $startDate, $endDate);
 
-        // PRE-COMPUTED: Add formatted values to purchases (DATA_FLOW_POLICY)
-        $report['purchases']->transform(function ($purchase) use ($currencySign) {
-            $purchase->date_formatted = $purchase->created_at?->format('d-m-Y') ?? 'N/A';
-            $purchase->price_formatted = $currencySign . number_format($purchase->price, 2);
-            $purchase->commission_amount_formatted = $currencySign . number_format($purchase->commission_amount, 2);
-            $purchase->tax_amount_formatted = $currencySign . number_format($purchase->tax_amount, 2);
-            $purchase->net_amount_formatted = $currencySign . number_format($purchase->net_amount, 2);
-            $purchase->platform_owes_merchant_formatted = $currencySign . number_format($purchase->platform_owes_merchant, 2);
-            $purchase->merchant_owes_platform_formatted = $currencySign . number_format($purchase->merchant_owes_platform, 2);
-            return $purchase;
-        });
+        // Format using DisplayService (API-ready)
+        $earningsDisplay = $this->displayService->formatEarningsSummary($report, $currencySign);
+        $purchasesDisplay = $this->displayService->formatPurchasesForEarnings($report['purchases'], $currencySign);
 
-        // PRE-COMPUTE: Formatted values for settlement cards (DATA_FLOW_POLICY)
-        $netBalanceFormatted = $currencySign . number_format(abs($report['net_balance']), 2);
-        $platformOwesMerchantFormatted = $currencySign . number_format($report['platform_owes_merchant'], 2);
-        $merchantOwesPlatformFormatted = $currencySign . number_format($report['merchant_owes_platform'], 2);
-        $platformPaymentsTotalFormatted = $currencySign . number_format($report['platform_payments']['total'], 2);
-        $merchantPaymentsTotalFormatted = $currencySign . number_format($report['merchant_payments']['total'], 2);
-        $platformShippingCostFormatted = $currencySign . number_format($report['platform_shipping']['cost'], 2);
-        $merchantShippingCostFormatted = $currencySign . number_format($report['merchant_shipping']['cost'], 2);
-
-        return view('merchant.earning', [
-            'currency' => $currency,
-            'currencySign' => $currencySign,
-            'start_date' => $startDate ?? '',
-            'end_date' => $endDate ?? '',
-
-            // Sales Summary
-            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
-            'total_orders' => $report['total_orders'],
-            'total_qty' => $report['total_qty'],
-
-            // Platform Deductions
-            'total_commission' => $currencySign . number_format($report['total_commission'], 2),
-            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
-            'total_platform_shipping_fee' => $currencySign . number_format($report['total_platform_shipping_fee'], 2),
-
-            // Shipping Costs
-            'total_shipping_cost' => $currencySign . number_format($report['total_shipping_cost'], 2),
-            'total_courier_fee' => $currencySign . number_format($report['total_courier_fee'], 2),
-
-            // Net Amount
-            'total_net' => $currencySign . number_format($report['total_net'], 2),
-
-            // Settlement Balances
-            'platform_owes_merchant' => $report['platform_owes_merchant'],
-            'merchant_owes_platform' => $report['merchant_owes_platform'],
-            'net_balance' => $report['net_balance'],
-            'net_balance_formatted' => $netBalanceFormatted,
-            'platform_owes_merchant_formatted' => $platformOwesMerchantFormatted,
-            'merchant_owes_platform_formatted' => $merchantOwesPlatformFormatted,
-
-            // Payment Method Breakdown
-            'platform_payments' => $report['platform_payments'],
-            'merchant_payments' => $report['merchant_payments'],
-            'platform_payments_total_formatted' => $platformPaymentsTotalFormatted,
-            'merchant_payments_total_formatted' => $merchantPaymentsTotalFormatted,
-
-            // Shipping Breakdown
-            'platform_shipping' => $report['platform_shipping'],
-            'merchant_shipping' => $report['merchant_shipping'],
-            'platform_shipping_cost_formatted' => $platformShippingCostFormatted,
-            'merchant_shipping_cost_formatted' => $merchantShippingCostFormatted,
-            'courier_deliveries' => $report['courier_deliveries'],
-
-            // Raw purchases for table
-            'purchases' => $report['purchases'],
-
-            // Statement for ledger
-            'statement' => $statement,
-
-            // Report object for additional details
-            'report' => $report,
-        ]);
+        return view('merchant.earning', array_merge(
+            [
+                'currency' => $currency,
+                'currencySign' => $currencySign,
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
+                'purchases' => $purchasesDisplay,
+                'statement' => $statement,
+                'report' => $report,
+            ],
+            $earningsDisplay
+        ));
     }
 
     /**
@@ -136,26 +82,21 @@ class IncomeController extends Controller
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->format('Y-m-d') : null;
 
-        // Get tax report from service (NO direct calculations in controller)
+        // Get tax report from service
         $report = $this->accountingService->getMerchantTaxReport($merchantId, $startDate, $endDate);
 
-        // PRE-COMPUTED: Add date_formatted to purchases (DATA_FLOW_POLICY)
-        $report['purchases']->transform(function ($purchase) {
-            $purchase->date_formatted = $purchase->created_at?->format('d-m-Y') ?? 'N/A';
-            return $purchase;
-        });
+        // Format using DisplayService (API-ready)
+        $taxDisplay = $this->displayService->formatTaxReport($report, $report['purchases'], $currencySign);
 
-        return view('merchant.tax_report', [
-            'currency' => $currency,
-            'currencySign' => $currencySign,
-            'start_date' => $startDate ?? '',
-            'end_date' => $endDate ?? '',
-            'purchases' => $report['purchases'],
-            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
-            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
-            'tax_from_platform_payments' => $currencySign . number_format($report['tax_from_platform_payments'], 2),
-            'tax_from_merchant_payments' => $currencySign . number_format($report['tax_from_merchant_payments'], 2),
-        ]);
+        return view('merchant.tax_report', array_merge(
+            [
+                'currency' => $currency,
+                'currencySign' => $currencySign,
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
+            ],
+            $taxDisplay
+        ));
     }
 
     /**
@@ -173,23 +114,20 @@ class IncomeController extends Controller
         // Get statement from accounting service
         $statement = $this->accountingService->getMerchantStatement($merchantId, $startDate, $endDate);
 
-        // PRE-COMPUTED: Add date_formatted to statement entries (DATA_FLOW_POLICY)
-        $statementEntries = collect($statement['statement'])->map(function ($entry) {
-            $entry['date_formatted'] = isset($entry['date']) ? $entry['date']->format('d-m-Y') : 'N/A';
-            return $entry;
-        })->toArray();
+        // Format using DisplayService (API-ready)
+        $statementEntries = $this->displayService->formatStatementEntries($statement['statement']);
+        $statementTotals = $this->displayService->formatStatementTotals($statement, $currencySign);
 
-        return view('merchant.statement', [
-            'currency' => $currency,
-            'currencySign' => $currencySign,
-            'start_date' => $startDate ?? '',
-            'end_date' => $endDate ?? '',
-            'statement' => $statementEntries,
-            'opening_balance' => $statement['opening_balance'],
-            'closing_balance' => $statement['closing_balance'],
-            'total_credit' => $currencySign . number_format($statement['total_credit'], 2),
-            'total_debit' => $currencySign . number_format($statement['total_debit'], 2),
-        ]);
+        return view('merchant.statement', array_merge(
+            [
+                'currency' => $currency,
+                'currencySign' => $currencySign,
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
+                'statement' => $statementEntries,
+            ],
+            $statementTotals
+        ));
     }
 
     /**
@@ -271,33 +209,23 @@ class IncomeController extends Controller
             ]);
         }
 
-        // PRE-COMPUTED: Add date_formatted to statement entries (DATA_FLOW_POLICY)
-        $statementEntries = collect($statement['statement'])->map(function ($entry) {
-            $entry['date_formatted'] = isset($entry['date']) ? $entry['date']->format('d-m-Y') : 'N/A';
-            return $entry;
-        })->toArray();
+        // Format using DisplayService (API-ready)
+        $statementEntries = $this->displayService->formatStatementEntries($statement['statement']);
+        $statementTotals = $this->displayService->formatStatementTotals($statement, $currencySign);
+        $ledgerSummary = $this->displayService->formatMonthlyLedgerSummary($report, $currencySign);
 
-        return view('merchant.monthly_ledger', [
-            'currency' => $currency,
-            'currencySign' => $currencySign,
-            'current_month' => $month->format('Y-m'),
-            'month_label' => $month->translatedFormat('F Y'),
-            'months' => $months,
-
-            // Statement data
-            'statement' => $statementEntries,
-            'opening_balance' => $statement['opening_balance'],
-            'closing_balance' => $statement['closing_balance'],
-            'total_credit' => $currencySign . number_format($statement['total_credit'], 2),
-            'total_debit' => $currencySign . number_format($statement['total_debit'], 2),
-
-            // Summary
-            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
-            'total_commission' => $currencySign . number_format($report['total_commission'], 2),
-            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
-            'total_net' => $currencySign . number_format($report['total_net'], 2),
-            'total_orders' => $report['total_orders'],
-        ]);
+        return view('merchant.monthly_ledger', array_merge(
+            [
+                'currency' => $currency,
+                'currencySign' => $currencySign,
+                'current_month' => $month->format('Y-m'),
+                'month_label' => $month->translatedFormat('F Y'),
+                'months' => $months,
+                'statement' => $statementEntries,
+            ],
+            $statementTotals,
+            $ledgerSummary
+        ));
     }
 
     /**
@@ -355,6 +283,7 @@ class IncomeController extends Controller
             ->first();
 
         $payouts = collect();
+        $payoutsFormatted = collect();
         $pendingAmount = 0;
         $totalReceived = 0;
 
@@ -373,26 +302,21 @@ class IncomeController extends Controller
                 ->where('settlement_status', '!=', 'settled')
                 ->sum('platform_owes_merchant');
 
-            // PRE-COMPUTED: Add formatted display values to payouts (DATA_FLOW_POLICY)
-            $payouts->getCollection()->transform(function ($payout) {
-                $payout->date_formatted = $payout->settlement_date
-                    ? $payout->settlement_date->format('d-m-Y')
-                    : ($payout->created_at ? $payout->created_at->format('d-m-Y') : 'N/A');
-                $payout->amount_formatted = $payout->getFormattedAmount();
-                $payout->status_color = $payout->getStatusColor();
-                $payout->status_name_ar = $payout->getStatusNameAr();
-                return $payout;
-            });
+            // Format using DisplayService (API-ready)
+            $payoutsFormatted = $this->displayService->formatPayouts($payouts->getCollection(), $currencySign);
         }
 
-        return view('merchant.payouts', [
-            'currency' => $currency,
-            'currencySign' => $currencySign,
-            'payouts' => $payouts,
-            'pending_amount' => $currencySign . number_format($pendingAmount, 2),
-            'total_received' => $currencySign . number_format($totalReceived, 2),
-            'pending_raw' => $pendingAmount,
-            'total_received_raw' => $totalReceived,
-        ]);
+        // Format summary using DisplayService (API-ready)
+        $payoutsSummary = $this->displayService->formatPayoutsSummary($pendingAmount, $totalReceived, $currencySign);
+
+        return view('merchant.payouts', array_merge(
+            [
+                'currency' => $currency,
+                'currencySign' => $currencySign,
+                'payouts' => $payouts,
+                'payoutsFormatted' => $payoutsFormatted,
+            ],
+            $payoutsSummary
+        ));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Services\MerchantDisplayService;
 use App\Domain\Shipping\Models\City;
 use App\Domain\Shipping\Models\Country;
 use Illuminate\Http\Request;
@@ -16,41 +17,32 @@ use Datatables;
  *
  * This is where merchants set their shipping origin branches.
  * Used by local couriers to collect orders for delivery to customers.
+ *
+ * API-Ready: Uses MerchantDisplayService for formatting.
+ * DATA FLOW POLICY: Controller → Service → DTO → View/API
+ *
+ * @see docs/rules/DATA_FLOW_POLICY.md
  */
 class MerchantBranchController extends MerchantBaseController
 {
+    protected MerchantDisplayService $displayService;
 
+    public function __construct(MerchantDisplayService $displayService)
+    {
+        parent::__construct();
+        $this->displayService = $displayService;
+    }
 
     public function index()
     {
-        $datas = MerchantBranch::with(['city', 'country'])->where('user_id', $this->user->id)->get();
+        $branches = MerchantBranch::with(['city', 'country'])->where('user_id', $this->user->id)->get();
 
-        // PRE-COMPUTED: Status display data (no @php in view)
-        $datasDisplay = $datas->map(function ($data) {
-            return [
-                'id' => $data->id,
-                'item' => $data,
-                'countryName' => $data->country?->country_name ?? '-',
-                'cityName' => $data->city?->city_name ?? '-',
-                'location' => $data->location,
-                'latitude' => $data->latitude,
-                'longitude' => $data->longitude,
-                'latitude_formatted' => $data->latitude ? number_format($data->latitude, 6) : null,
-                'longitude_formatted' => $data->longitude ? number_format($data->longitude, 6) : null,
-                'status' => $data->status,
-                'statusClass' => $data->status == 1 ? 'active' : 'deactive',
-                'statusActiveSelected' => $data->status == 1 ? 'selected' : '',
-                'statusInactiveSelected' => $data->status == 0 ? 'selected' : '',
-                'statusActiveUrl' => route('merchant-branch-status', ['id' => $data->id, 'status' => 1]),
-                'statusInactiveUrl' => route('merchant-branch-status', ['id' => $data->id, 'status' => 0]),
-                'editUrl' => route('merchant-branch-edit', $data->id),
-                'deleteUrl' => route('merchant-branch-delete', $data->id),
-            ];
-        });
+        // Format using DisplayService (API-ready)
+        $branchesDisplay = $this->displayService->formatBranchesForList($branches);
 
         return view('merchant.branch.index', [
-            'datas' => $datas,
-            'datasDisplay' => $datasDisplay,
+            'datas' => $branches,
+            'datasDisplay' => $branchesDisplay,
         ]);
     }
 

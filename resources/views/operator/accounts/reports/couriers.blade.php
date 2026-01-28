@@ -43,7 +43,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Fees Earned') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $reportDisplay['totals']['fees_earned_formatted'] }}</h3>
                     <small>{{ __('Delivery fees') }}</small>
                 </div>
             </div>
@@ -52,7 +52,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Collected') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $reportDisplay['totals']['cod_collected_formatted'] }}</h3>
                     <small>{{ __('Already collected') }}</small>
                 </div>
             </div>
@@ -61,7 +61,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Pending') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['cod_pending'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $reportDisplay['totals']['cod_pending_formatted'] }}</h3>
                     <small>{{ __('Not yet collected') }}</small>
                 </div>
             </div>
@@ -70,7 +70,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Owes to Platform') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['owes_to_platform'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $reportDisplay['totals']['owes_to_platform_formatted'] }}</h3>
                     <small>{{ __('Pending settlement') }}</small>
                 </div>
             </div>
@@ -81,7 +81,7 @@
     <div class="card">
         <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
             <strong><i class="fas fa-motorcycle me-2"></i>{{ __('All Couriers') }}</strong>
-            <span class="badge bg-dark text-white">{{ $couriers->count() }} {{ __('Couriers') }}</span>
+            <span class="badge bg-dark text-white">{{ $reportDisplay['couriers']->count() }} {{ __('Couriers') }}</span>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -99,20 +99,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($couriers as $data)
+                        @forelse($reportDisplay['couriers'] as $data)
                         <tr>
                             <td>
                                 <strong>{{ $data['courier']->name }}</strong>
                                 <br><small class="text-muted">{{ $data['courier']->code }}</small>
                             </td>
-                            <td class="text-end text-success fw-bold">{{ $currency->sign }}{{ number_format($data['fees_earned'], 2) }}</td>
-                            <td class="text-end text-info">{{ $currency->sign }}{{ number_format($data['cod_collected'], 2) }}</td>
+                            <td class="text-end text-success fw-bold">{{ $data['fees_earned_formatted'] }}</td>
+                            <td class="text-end text-info">{{ $data['cod_collected_formatted'] }}</td>
                             <td class="text-end {{ $data['cod_pending'] > 0 ? 'text-warning fw-bold' : '' }}">
-                                {{ $currency->sign }}{{ number_format($data['cod_pending'], 2) }}
+                                {{ $data['cod_pending_formatted'] }}
                             </td>
-                            <td class="text-end text-muted">{{ $currency->sign }}{{ number_format($data['settlements_made'], 2) }}</td>
+                            <td class="text-end text-muted">{{ $data['settlements_made_formatted'] }}</td>
                             <td class="text-end {{ $data['owes_to_platform'] > 0 ? 'text-danger fw-bold' : 'text-success' }}">
-                                {{ $currency->sign }}{{ number_format($data['owes_to_platform'], 2) }}
+                                {{ $data['owes_to_platform_formatted'] }}
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-secondary">{{ $data['delivery_count'] }}</span>
@@ -138,16 +138,16 @@
                         </tr>
                         @endforelse
                     </tbody>
-                    @if($couriers->count() > 0)
+                    @if($reportDisplay['couriers']->count() > 0)
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <th>{{ __('Total') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['cod_pending'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['settlements_made'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['owes_to_platform'], 2) }}</th>
-                            <th class="text-center">{{ $totals['delivery_count'] }}</th>
+                            <th class="text-end">{{ $reportDisplay['totals']['fees_earned_formatted'] }}</th>
+                            <th class="text-end">{{ $reportDisplay['totals']['cod_collected_formatted'] }}</th>
+                            <th class="text-end">{{ $reportDisplay['totals']['cod_pending_formatted'] }}</th>
+                            <th class="text-end">{{ $reportDisplay['totals']['settlements_made_formatted'] }}</th>
+                            <th class="text-end">{{ $reportDisplay['totals']['owes_to_platform_formatted'] }}</th>
+                            <th class="text-center">{{ $reportDisplay['totals']['delivery_count'] }}</th>
                             <th></th>
                         </tr>
                     </tfoot>

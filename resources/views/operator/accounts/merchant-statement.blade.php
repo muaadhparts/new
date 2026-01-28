@@ -58,7 +58,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Sales') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($statement->summary['total_sales'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $statementDisplay['total_sales_formatted'] }}</h3>
                     <small>{{ __('From Ledger') }}</small>
                 </div>
             </div>
@@ -67,8 +67,8 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Deductions') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($statement->summary['total_commission'] + $statement->summary['total_tax'], 2) }}</h3>
-                    <small>{{ __('Commission') }}: {{ $currency->sign }}{{ number_format($statement->summary['total_commission'], 2) }}</small>
+                    <h3 class="mb-0">{{ $statementDisplay['deductions_formatted'] }}</h3>
+                    <small>{{ __('Commission') }}: {{ $statementDisplay['total_commission_formatted'] }}</small>
                 </div>
             </div>
         </div>
@@ -76,17 +76,17 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Net Receivable') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($statement->summary['net_receivable'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $statementDisplay['net_receivable_formatted'] }}</h3>
                     <small>{{ __('After deductions') }}</small>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card {{ $statement->summary['balance_due'] > 0 ? 'bg-warning' : 'bg-secondary' }} text-white">
+            <div class="card {{ $statementDisplay['balance_due'] > 0 ? 'bg-warning' : 'bg-secondary' }} text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Balance Due') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($statement->summary['balance_due'], 2) }}</h3>
-                    <small>{{ __('Settlements') }}: {{ $currency->sign }}{{ number_format($statement->summary['settlements_received'], 2) }}</small>
+                    <h3 class="mb-0">{{ $statementDisplay['balance_due_formatted'] }}</h3>
+                    <small>{{ __('Settlements') }}: {{ $statementDisplay['settlements_received_formatted'] }}</small>
                 </div>
             </div>
         </div>
@@ -104,19 +104,19 @@
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded text-center">
                                 <h6 class="text-muted">{{ __('Receivable from Platform') }}</h6>
-                                <h4 class="text-success">{{ $currency->sign }}{{ number_format($pendingAmounts['from_platform'], 2) }}</h4>
+                                <h4 class="text-success">{{ $pendingDisplay['from_platform_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded text-center">
                                 <h6 class="text-muted">{{ __('Payable to Platform') }}</h6>
-                                <h4 class="text-danger">{{ $currency->sign }}{{ number_format($pendingAmounts['to_platform'], 2) }}</h4>
+                                <h4 class="text-danger">{{ $pendingDisplay['to_platform_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="p-3 {{ $pendingAmounts['net_receivable'] >= 0 ? 'bg-success' : 'bg-danger' }} text-white rounded text-center">
+                            <div class="p-3 {{ $pendingDisplay['net_receivable'] >= 0 ? 'bg-success' : 'bg-danger' }} text-white rounded text-center">
                                 <h6>{{ __('Net Receivable') }}</h6>
-                                <h4 class="mb-0">{{ $currency->sign }}{{ number_format($pendingAmounts['net_receivable'], 2) }}</h4>
+                                <h4 class="mb-0">{{ $pendingDisplay['net_receivable_formatted'] }}</h4>
                             </div>
                         </div>
                     </div>
@@ -152,11 +152,11 @@
                             <td colspan="4"><strong>{{ __('Opening Balance') }}</strong></td>
                             <td></td>
                             <td></td>
-                            <td class="text-end fw-bold">{{ $currency->sign }}{{ number_format($statement->openingBalance, 2) }}</td>
+                            <td class="text-end fw-bold">{{ $statementDisplay['opening_balance_formatted'] }}</td>
                             <td></td>
                         </tr>
 
-                        @foreach($statement->getFormattedEntries() as $entry)
+                        @foreach($statementDisplay['entries'] as $entry)
                         <tr>
                             <td>{{ $entry['date'] }}</td>
                             <td>
@@ -172,12 +172,12 @@
                             </td>
                             <td>{{ $entry['description_ar'] ?: $entry['description'] }}</td>
                             <td class="text-end {{ $entry['debit'] > 0 ? 'text-danger' : '' }}">
-                                {{ $entry['debit'] > 0 ? $currency->sign . number_format($entry['debit'], 2) : '-' }}
+                                {{ $entry['debit_formatted'] }}
                             </td>
                             <td class="text-end {{ $entry['credit'] > 0 ? 'text-success' : '' }}">
-                                {{ $entry['credit'] > 0 ? $currency->sign . number_format($entry['credit'], 2) : '-' }}
+                                {{ $entry['credit_formatted'] }}
                             </td>
-                            <td class="text-end fw-bold">{{ $currency->sign }}{{ number_format($entry['balance'], 2) }}</td>
+                            <td class="text-end fw-bold">{{ $entry['balance_formatted'] }}</td>
                             <td>
                                 <span class="badge bg-{{ $entry['debt_status'] === 'SETTLED' ? 'success' : ($entry['debt_status'] === 'PENDING' ? 'warning' : 'secondary') }}">
                                     {{ $entry['debt_status_ar'] }}
@@ -191,7 +191,7 @@
                             <td colspan="4"><strong>{{ __('Closing Balance') }}</strong></td>
                             <td></td>
                             <td></td>
-                            <td class="text-end fw-bold">{{ $currency->sign }}{{ number_format($statement->closingBalance, 2) }}</td>
+                            <td class="text-end fw-bold">{{ $statementDisplay['closing_balance_formatted'] }}</td>
                             <td></td>
                         </tr>
                     </tbody>
@@ -211,15 +211,15 @@
                     <table class="table table-sm">
                         <tr>
                             <td>{{ __('Total Sales') }}</td>
-                            <td class="text-end text-success fw-bold">{{ $currency->sign }}{{ number_format($statement->summary['total_sales'], 2) }}</td>
+                            <td class="text-end text-success fw-bold">{{ $statementDisplay['total_sales_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('Shipping Earned') }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($statement->summary['shipping_earned'], 2) }}</td>
+                            <td class="text-end text-success">{{ $statementDisplay['shipping_earned_formatted'] }}</td>
                         </tr>
                         <tr class="table-success">
                             <th>{{ __('Total Credits') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($statement->summary['total_sales'] + $statement->summary['shipping_earned'], 2) }}</th>
+                            <th class="text-end">{{ $statementDisplay['total_credits_formatted'] }}</th>
                         </tr>
                     </table>
                 </div>
@@ -227,19 +227,19 @@
                     <table class="table table-sm">
                         <tr>
                             <td>{{ __('Commission') }}</td>
-                            <td class="text-end text-danger">{{ $currency->sign }}{{ number_format($statement->summary['total_commission'], 2) }}</td>
+                            <td class="text-end text-danger">{{ $statementDisplay['total_commission_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('Tax') }}</td>
-                            <td class="text-end text-danger">{{ $currency->sign }}{{ number_format($statement->summary['total_tax'], 2) }}</td>
+                            <td class="text-end text-danger">{{ $statementDisplay['total_tax_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('Settlements Received') }}</td>
-                            <td class="text-end text-danger">{{ $currency->sign }}{{ number_format($statement->summary['settlements_received'], 2) }}</td>
+                            <td class="text-end text-danger">{{ $statementDisplay['settlements_received_formatted'] }}</td>
                         </tr>
                         <tr class="table-danger">
                             <th>{{ __('Total Debits') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($statement->summary['total_commission'] + $statement->summary['total_tax'] + $statement->summary['settlements_received'], 2) }}</th>
+                            <th class="text-end">{{ $statementDisplay['total_debits_formatted'] }}</th>
                         </tr>
                     </table>
                 </div>

@@ -8,17 +8,27 @@ use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Shipping\Models\CourierServiceArea;
 use App\Domain\Accounting\Services\CourierAccountingService;
+use App\Domain\Shipping\Services\CourierDisplayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * CourierController
+ *
+ * DATA FLOW POLICY:
+ * - Controller = Orchestration only
+ * - All formatting in CourierDisplayService (API-ready)
+ */
 class CourierController extends CourierBaseController
 {
     protected CourierAccountingService $accountingService;
+    protected CourierDisplayService $displayService;
 
     public function __construct()
     {
         parent::__construct();
         $this->accountingService = app(CourierAccountingService::class);
+        $this->displayService = app(CourierDisplayService::class);
     }
 
     public function index()
@@ -33,43 +43,9 @@ class CourierController extends CourierBaseController
         // Get accounting report
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        // PRE-COMPUTED: All display values (DATA_FLOW_POLICY - no helpers in view)
-        $purchasesDisplay = $deliveries->map(function ($delivery) {
-            $purchase = $delivery->purchase;
-            $currencySign = $purchase->currency_sign ?? 'SAR';
-
-            return [
-                'id' => $delivery->id,
-                'purchase_number' => $purchase->purchase_number ?? '-',
-                'customer_city' => $purchase->customer_city ?? '-',
-                'branch_location' => $delivery->merchantBranch->location ?? '-',
-                'total_formatted' => \PriceHelper::showAdminCurrencyPrice(
-                    (float)($delivery->purchase_amount ?? 0),
-                    $currencySign
-                ),
-                'is_cod' => $delivery->payment_method === 'cod',
-                'status' => $this->getDeliveryStatusDisplay($delivery),
-                'details_url' => route('courier-purchase-details', $delivery->id),
-            ];
-        });
-
-        // PRE-COMPUTED: Report display values
-        $reportDisplay = [
-            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
-            'current_balance' => $report['current_balance'] ?? 0,
-            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
-            'has_credit' => ($report['current_balance'] ?? 0) > 0,
-            'total_collected_formatted' => monetaryUnit()->format($report['total_collected'] ?? 0),
-            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
-            'deliveries_count' => $report['deliveries_count'] ?? 0,
-            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
-            'cod_deliveries' => $report['cod_deliveries'] ?? 0,
-            'online_deliveries' => $report['online_deliveries'] ?? 0,
-            'deliveries_pending' => $report['deliveries_pending'] ?? 0,
-            'unsettled_deliveries' => $report['unsettled_deliveries'] ?? 0,
-        ];
-
-        // PRE-COMPUTED: User display
+        // Format using DisplayService (API-ready)
+        $purchasesDisplay = $this->displayService->formatDeliveriesForDashboard($deliveries);
+        $reportDisplay = $this->displayService->formatReportForDashboard($report);
         $userDisplay = userDisplay()->forCard($user);
 
         return view('courier.dashbaord', [
@@ -77,61 +53,6 @@ class CourierController extends CourierBaseController
             'user' => $userDisplay,
             'report' => $reportDisplay,
         ]);
-    }
-
-    /**
-     * Get delivery status display data
-     */
-    private function getDeliveryStatusDisplay(DeliveryCourier $delivery): array
-    {
-        if ($delivery->isPendingApproval()) {
-            return [
-                'label' => __('Awaiting Approval'),
-                'class' => 'bg-warning text-dark',
-                'icon' => 'fa-clock',
-            ];
-        }
-        if ($delivery->isApproved()) {
-            return [
-                'label' => __('Preparing'),
-                'class' => 'bg-info',
-                'icon' => 'fa-box-open',
-            ];
-        }
-        if ($delivery->isReadyForPickup()) {
-            return [
-                'label' => __('Ready for Pickup'),
-                'class' => 'bg-primary',
-                'icon' => 'fa-truck-loading',
-            ];
-        }
-        if ($delivery->isPickedUp()) {
-            return [
-                'label' => __('Picked Up'),
-                'class' => 'bg-info',
-                'icon' => 'fa-truck',
-            ];
-        }
-        if ($delivery->isDelivered()) {
-            return [
-                'label' => __('Delivered'),
-                'class' => 'bg-success',
-                'icon' => 'fa-check-circle',
-            ];
-        }
-        if ($delivery->isRejected()) {
-            return [
-                'label' => __('Rejected'),
-                'class' => 'bg-danger',
-                'icon' => 'fa-times-circle',
-            ];
-        }
-
-        return [
-            'label' => __('Unknown'),
-            'class' => 'bg-secondary',
-            'icon' => 'fa-question-circle',
-        ];
     }
 
     public function profile()
@@ -211,20 +132,11 @@ class CourierController extends CourierBaseController
             ->with(['city.country'])
             ->paginate(10);
 
-        // PRE-COMPUTED: Transform service areas for display (DATA_FLOW_POLICY)
-        $service_areas->through(function ($area) {
-            $area->country_name = $area->city?->country?->country_name ?? '-';
-            $area->city_name = $area->city?->city_name ?? '-';
-            $area->radius_display = $area->service_radius_km ?? 0;
-            $area->price_formatted = monetaryUnit()->format($area->price);
-            $area->coordinates_display = ($area->latitude && $area->longitude)
-                ? number_format($area->latitude, 4) . ', ' . number_format($area->longitude, 4)
-                : null;
-            return $area;
-        });
+        // Format using DisplayService (API-ready)
+        $serviceAreasDisplay = $this->displayService->formatServiceAreas($service_areas);
 
         return view('courier.service-area', [
-            'service_area' => $service_areas,
+            'service_area' => $serviceAreasDisplay,
             'cities' => $cities,
         ]);
     }
@@ -509,29 +421,8 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         }
 
-        // PRE-COMPUTED: Transform delivery data for view (DATA_FLOW_POLICY)
-        $purchasesDisplay = $purchases->through(function ($delivery) {
-            $purchase = $delivery->purchase;
-            $merchant = $delivery->merchant;
-
-            // Pre-compute all display values
-            $delivery->purchase_number = $purchase->purchase_number ?? 'N/A';
-            $delivery->created_at_formatted = $delivery->created_at?->format('Y-m-d H:i') ?? 'N/A';
-            $delivery->merchant_name = $merchant->shop_name ?? $merchant->name ?? 'N/A';
-            $delivery->merchant_phone = $merchant?->shop_phone;
-            $delivery->branch_location = $delivery->merchantBranch?->location
-                ? \Illuminate\Support\Str::limit($delivery->merchantBranch->location, 25)
-                : null;
-            $delivery->customer_name = $purchase->customer_name ?? 'N/A';
-            $delivery->customer_phone = $purchase->customer_phone ?? 'N/A';
-            $delivery->customer_city = $purchase->customer_city ?? 'N/A';
-            $delivery->delivery_fee_formatted = \PriceHelper::showAdminCurrencyPrice($delivery->delivery_fee ?? 0);
-            $delivery->purchase_amount_formatted = \PriceHelper::showAdminCurrencyPrice($delivery->purchase_amount ?? 0);
-            $delivery->is_cod = $delivery->isCod();
-            $delivery->delivered_at_formatted = $delivery->delivered_at?->format('Y-m-d H:i');
-
-            return $delivery;
-        });
+        // Format using DisplayService (API-ready)
+        $purchasesDisplay = $this->displayService->formatDeliveriesForOrders($purchases);
 
         return view('courier.orders', [
             'purchases' => $purchasesDisplay,
@@ -553,123 +444,21 @@ class CourierController extends CourierBaseController
             return redirect()->route('courier-purchases')->with('unsuccess', __('Purchase not found'));
         }
 
-        // PRE-COMPUTED: Purchase from relationship (DATA_FLOW_POLICY - no @php in view)
         $purchase = $data->purchase;
 
-        // PRE-COMPUTED: Delivery DTO for workflow display (DATA_FLOW_POLICY)
-        $deliveryDto = $this->buildDeliveryDto($data);
-
-        // PRE-COMPUTED: Merchant display values (DATA_FLOW_POLICY)
-        $merchant = $data->merchant;
-        $data->merchant_name = $merchant->shop_name ?? $merchant->name ?? 'N/A';
-        $data->merchant_phone = $merchant?->phone;
-        $data->merchant_address = $merchant?->address;
-        $data->branch_location = $data->merchantBranch?->location;
-        $data->delivered_at_formatted = $data->delivered_at?->format('Y-m-d H:i');
-
-        // PRE-COMPUTED: Price values (DATA_FLOW_POLICY)
-        $currencySign = $purchase->currency_sign;
-        $data->cod_amount_formatted = \PriceHelper::showAdminCurrencyPrice($data->cod_amount, $currencySign);
-        $data->delivery_fee_formatted = \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $currencySign);
-
-        // PRE-COMPUTED: Cart items with localized names (DATA_FLOW_POLICY)
+        // Format using DisplayService (API-ready)
+        $deliveryDto = $this->displayService->buildDeliveryDto($data);
+        $deliveryDetails = $this->displayService->formatDeliveryDetails($data);
         $cartItems = $purchase->getCartItems();
-        $merchantId = $data->merchant_id;
-        $cartItemsDisplay = collect($cartItems)->filter(function ($item) use ($merchantId) {
-            return ($item['user_id'] ?? null) == $merchantId;
-        })->map(function ($item) {
-            return [
-                'id' => $item['item']['id'] ?? 'N/A',
-                'name' => isset($item['item']) ? getLocalizedCatalogItemName($item['item'], 50) : 'N/A',
-                'qty' => $item['qty'] ?? 1,
-            ];
-        })->values();
+        $cartItemsDisplay = $this->displayService->formatCartItemsForDelivery($cartItems, $data->merchant_id);
 
         return view('courier.purchase_details', [
             'data' => $data,
             'purchase' => $purchase,
             'deliveryDto' => $deliveryDto,
+            'deliveryDetails' => $deliveryDetails,
             'cartItems' => $cartItemsDisplay,
         ]);
-    }
-
-    /**
-     * Build delivery DTO for workflow display (DATA_FLOW_POLICY)
-     */
-    private function buildDeliveryDto(DeliveryCourier $delivery): array
-    {
-        $nextAction = $delivery->next_action ?? ['actor' => 'none', 'action' => ''];
-        $step = $delivery->workflow_step ?? 1;
-
-        return [
-            'isRejected' => $delivery->isRejected(),
-            'rejectionReason' => $delivery->rejection_reason ?? null,
-            'workflowStep' => $step,
-            'progressPercent' => $this->calculateWorkflowProgress($step),
-            'stepsDisplay' => $this->buildWorkflowStepsDisplay($step),
-            'approvedAt' => $delivery->approved_at?->format('d/m H:i'),
-            'readyAt' => $delivery->ready_at?->format('d/m H:i'),
-            'pickedUpAt' => $delivery->picked_up_at?->format('d/m H:i'),
-            'deliveredAtShort' => $delivery->delivered_at?->format('d/m H:i'),
-            'confirmedAtShort' => $delivery->confirmed_at?->format('d/m H:i'),
-            'isCod' => $delivery->isCod(),
-            'codAmount' => (float)($delivery->cod_amount ?? $delivery->purchase_amount ?? 0),
-            'hasNextAction' => ($nextAction['actor'] ?? 'none') !== 'none',
-            'nextActionActor' => $nextAction['actor'] ?? 'none',
-            'nextActionText' => $nextAction['action'] ?? '',
-        ];
-    }
-
-    /**
-     * Calculate workflow progress percent (DATA_FLOW_POLICY)
-     */
-    private function calculateWorkflowProgress(int $step): int
-    {
-        return match (true) {
-            $step >= 6 => 100,
-            $step >= 5 => 80,
-            $step >= 4 => 60,
-            $step >= 3 => 40,
-            $step >= 2 => 20,
-            default => 0,
-        };
-    }
-
-    /**
-     * Build workflow steps display array (DATA_FLOW_POLICY)
-     */
-    private function buildWorkflowStepsDisplay(int $currentStep): array
-    {
-        $stepDefinitions = [
-            ['key' => 'pending_approval', 'label' => __('Approval'), 'icon' => 'fa-clock', 'description' => __('Courier Approval'), 'step' => 1],
-            ['key' => 'approved', 'label' => __('Preparing'), 'icon' => 'fa-box-open', 'description' => __('Merchant Preparing'), 'step' => 2],
-            ['key' => 'ready_for_pickup', 'label' => __('Ready'), 'icon' => 'fa-box', 'description' => __('Ready for Pickup'), 'step' => 3],
-            ['key' => 'picked_up', 'label' => __('Picked Up'), 'icon' => 'fa-handshake', 'description' => __('Courier Picked Up'), 'step' => 4],
-            ['key' => 'delivered', 'label' => __('Delivered'), 'icon' => 'fa-truck', 'description' => __('Delivered to Customer'), 'step' => 5],
-            ['key' => 'confirmed', 'label' => __('Confirmed'), 'icon' => 'fa-check-double', 'description' => __('Customer Confirmed'), 'step' => 6],
-        ];
-
-        $result = [];
-        foreach ($stepDefinitions as $s) {
-            $isActive = $currentStep >= $s['step'];
-            $isCurrent = $currentStep == $s['step'];
-
-            $result[] = [
-                'key' => $s['key'],
-                'label' => $s['label'],
-                'icon' => $s['icon'],
-                'description' => $s['description'],
-                'step' => $s['step'],
-                'isActive' => $isActive,
-                'isCurrent' => $isCurrent,
-                'circleBackground' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--surface-secondary, #f3f4f6)'),
-                'circleColor' => $isActive ? '#fff' : 'var(--text-tertiary, #9ca3af)',
-                'circleBorder' => $isCurrent ? 'var(--action-primary, #3b82f6)' : ($isActive ? 'var(--action-success, #22c55e)' : 'var(--border-default, #e5e7eb)'),
-                'labelColor' => $isActive ? 'var(--text-primary, #111827)' : 'var(--text-tertiary, #9ca3af)',
-            ];
-        }
-
-        return $result;
     }
 
     /**
@@ -751,25 +540,12 @@ class CourierController extends CourierBaseController
         $deliveries = $query->paginate(20);
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        // PRE-COMPUTED: Transform deliveries for display (DATA_FLOW_POLICY)
-        $deliveries->through(function ($delivery) {
-            $delivery->purchase_number = $delivery->purchase?->purchase_number ?? '-';
-            $delivery->purchase_amount_formatted = monetaryUnit()->format($delivery->purchase_amount ?? 0);
-            $delivery->delivery_fee_formatted = monetaryUnit()->format($delivery->delivery_fee ?? 0);
-            $delivery->created_at_formatted = $delivery->created_at?->format('d-m-Y H:i') ?? 'N/A';
-            return $delivery;
-        });
-
-        // PRE-COMPUTED: Report values (DATA_FLOW_POLICY)
-        $reportDisplay = [
-            'deliveries_count' => $report['deliveries_count'] ?? 0,
-            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
-            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
-            'total_delivery_fees_formatted' => monetaryUnit()->format($report['total_delivery_fees'] ?? 0),
-        ];
+        // Format using DisplayService (API-ready)
+        $deliveriesDisplay = $this->displayService->formatDeliveriesForTransactions($deliveries);
+        $reportDisplay = $this->displayService->formatReportForTransactions($report);
 
         return view('courier.transactions', [
-            'deliveries' => $deliveries,
+            'deliveries' => $deliveriesDisplay,
             'report' => $reportDisplay,
         ]);
     }
@@ -783,40 +559,10 @@ class CourierController extends CourierBaseController
         $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        // PRE-COMPUTED: Net amount for display (DATA_FLOW_POLICY - no @php in view)
-        $netAmount = $settlementCalc['net_amount'] ?? 0;
-
-        // PRE-COMPUTED: Report values (DATA_FLOW_POLICY)
-        $reportDisplay = [
-            'current_balance' => $report['current_balance'] ?? 0,
-            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
-            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
-            'has_credit' => ($report['current_balance'] ?? 0) > 0,
-            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
-            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
-        ];
-
-        // PRE-COMPUTED: Settlement calc values (DATA_FLOW_POLICY)
-        $settlementDisplay = [
-            'cod_amount_formatted' => monetaryUnit()->format($settlementCalc['cod_amount'] ?? 0),
-            'fees_earned_online_formatted' => monetaryUnit()->format($settlementCalc['fees_earned_online'] ?? 0),
-            'fees_earned_cod_formatted' => monetaryUnit()->format($settlementCalc['fees_earned_cod'] ?? 0),
-            'net_amount' => $netAmount,
-            'net_amount_formatted' => monetaryUnit()->format(abs($netAmount)),
-            'is_positive' => $netAmount >= 0,
-        ];
-
-        // PRE-COMPUTED: Transform unsettled deliveries (DATA_FLOW_POLICY)
-        $deliveriesDisplay = collect($unsettledDeliveries)->map(function ($delivery) {
-            return [
-                'id' => $delivery->id,
-                'purchase_number' => $delivery->purchase?->purchase_number ?? '-',
-                'payment_method' => $delivery->payment_method,
-                'purchase_amount_formatted' => monetaryUnit()->format($delivery->purchase_amount ?? 0),
-                'delivery_fee_formatted' => monetaryUnit()->format($delivery->delivery_fee ?? 0),
-                'date_formatted' => $delivery->delivered_at?->format('d-m-Y') ?? $delivery->created_at?->format('d-m-Y') ?? 'N/A',
-            ];
-        });
+        // Format using DisplayService (API-ready)
+        $reportDisplay = $this->displayService->formatReportForSettlements($report);
+        $settlementDisplay = $this->displayService->formatSettlementCalc($settlementCalc);
+        $deliveriesDisplay = $this->displayService->formatUnsettledDeliveries(collect($unsettledDeliveries));
 
         return view('courier.settlements', [
             'settlementCalc' => $settlementDisplay,
@@ -835,31 +581,8 @@ class CourierController extends CourierBaseController
 
         $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
 
-        // PRE-COMPUTED: Format all monetary values (DATA_FLOW_POLICY)
-        $reportDisplay = [
-            // Monetary values - pre-formatted
-            'current_balance' => $report['current_balance'] ?? 0,
-            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
-            'total_collected' => $report['total_collected'] ?? 0,
-            'total_collected_formatted' => monetaryUnit()->format($report['total_collected'] ?? 0),
-            'total_fees_earned' => $report['total_fees_earned'] ?? 0,
-            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
-            'total_delivery_fees_formatted' => monetaryUnit()->format($report['total_delivery_fees'] ?? 0),
-            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
-            'total_delivered_formatted' => monetaryUnit()->format($report['total_delivered'] ?? 0),
-
-            // Boolean flags
-            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
-            'has_credit' => ($report['current_balance'] ?? 0) > 0,
-
-            // Count values with defaults
-            'deliveries_count' => $report['deliveries_count'] ?? 0,
-            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
-            'deliveries_pending' => $report['deliveries_pending'] ?? 0,
-            'unsettled_deliveries' => $report['unsettled_deliveries'] ?? 0,
-            'cod_deliveries' => $report['cod_deliveries'] ?? 0,
-            'online_deliveries' => $report['online_deliveries'] ?? 0,
-        ];
+        // Format using DisplayService (API-ready)
+        $reportDisplay = $this->displayService->formatFinancialReport($report);
 
         return view('courier.financial_report', [
             'report' => $reportDisplay,

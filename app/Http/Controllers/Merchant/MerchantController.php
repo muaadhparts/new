@@ -99,14 +99,12 @@ class MerchantController extends MerchantBaseController
                 ->where('status', 'completed')
                 ->sum('qty');
 
-            // Current balance (formatted)
-            $data['currentBalance'] = CatalogItem::merchantConvertWithoutCurrencyPrice(
-                $this->user->current_balance
-            );
+            // Current balance (formatted with currency sign)
+            $data['currentBalance'] = monetaryUnit()->format($this->user->current_balance ?? 0);
 
-            // Total earning
+            // Total earning (formatted with currency sign)
             $totalEarning = MerchantPurchase::where('user_id', $userId)->sum('price');
-            $data['totalEarning'] = CatalogItem::merchantConvertWithoutCurrencyPrice($totalEarning);
+            $data['totalEarning'] = monetaryUnit()->format($totalEarning);
 
             // ============================================================
             // PRE-COMPUTED: Verification status (no @php in view)

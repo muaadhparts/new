@@ -43,7 +43,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Sales') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_sales'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totals']['total_sales_formatted'] }}</h3>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Commission') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_commission'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totals']['total_commission_formatted'] }}</h3>
                 </div>
             </div>
         </div>
@@ -59,7 +59,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Tax') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_tax'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totals']['total_tax_formatted'] }}</h3>
                 </div>
             </div>
         </div>
@@ -67,7 +67,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Balance Due') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['balance_due'], 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totals']['balance_due_formatted'] }}</h3>
                 </div>
             </div>
         </div>
@@ -96,19 +96,19 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($merchants as $data)
+                        @forelse($summaryDisplay['merchants'] as $data)
                         <tr>
                             <td>
                                 <strong>{{ $data['merchant']->name }}</strong>
                                 <br><small class="text-muted">{{ $data['merchant']->code }}</small>
                             </td>
-                            <td class="text-end text-success fw-bold">{{ $currency->sign }}{{ number_format($data['total_sales'], 2) }}</td>
-                            <td class="text-end text-primary">{{ $currency->sign }}{{ number_format($data['total_commission'], 2) }}</td>
-                            <td class="text-end text-info">{{ $currency->sign }}{{ number_format($data['total_tax'], 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($data['net_receivable'], 2) }}</td>
-                            <td class="text-end text-muted">{{ $currency->sign }}{{ number_format($data['settlements_received'], 2) }}</td>
+                            <td class="text-end text-success fw-bold">{{ $data['total_sales_formatted'] }}</td>
+                            <td class="text-end text-primary">{{ $data['total_commission_formatted'] }}</td>
+                            <td class="text-end text-info">{{ $data['total_tax_formatted'] }}</td>
+                            <td class="text-end">{{ $data['net_receivable_formatted'] }}</td>
+                            <td class="text-end text-muted">{{ $data['settlements_received_formatted'] }}</td>
                             <td class="text-end {{ $data['balance_due'] > 0 ? 'text-warning fw-bold' : 'text-success' }}">
-                                {{ $currency->sign }}{{ number_format($data['balance_due'], 2) }}
+                                {{ $data['balance_due_formatted'] }}
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-secondary">{{ $data['transaction_count'] }}</span>
@@ -134,17 +134,17 @@
                         </tr>
                         @endforelse
                     </tbody>
-                    @if($merchants->count() > 0)
+                    @if($summaryDisplay['merchants']->count() > 0)
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <th>{{ __('Total') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_sales'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_commission'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_tax'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['net_amount'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['settlements_received'], 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['balance_due'], 2) }}</th>
-                            <th class="text-center">{{ $totals['transaction_count'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['total_sales_formatted'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['total_commission_formatted'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['total_tax_formatted'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['net_amount_formatted'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['settlements_received_formatted'] }}</th>
+                            <th class="text-end">{{ $summaryDisplay['totals']['balance_due_formatted'] }}</th>
+                            <th class="text-center">{{ $summaryDisplay['totals']['transaction_count'] }}</th>
                             <th></th>
                         </tr>
                     </tfoot>

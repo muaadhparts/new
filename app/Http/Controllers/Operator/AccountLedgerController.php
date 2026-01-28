@@ -11,6 +11,7 @@ use App\Domain\Accounting\Services\AccountLedgerService;
 use App\Domain\Accounting\Services\AccountingEntryService;
 use App\Domain\Accounting\Services\AccountingReportService;
 use App\Domain\Accounting\Services\MerchantStatementService;
+use App\Domain\Platform\Services\OperatorDisplayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,11 @@ use Illuminate\Http\Request;
  * - شركات الدفع
  *
  * القاعدة: كل الأرقام من Ledger فقط - لا قراءة مباشرة من الطلبات
+ *
+ * API-Ready: Uses OperatorDisplayService for formatting.
+ * DATA FLOW POLICY: Controller → Service → DTO → View/API
+ *
+ * @see docs/rules/DATA_FLOW_POLICY.md
  */
 class AccountLedgerController extends OperatorBaseController
 {
@@ -31,18 +37,21 @@ class AccountLedgerController extends OperatorBaseController
     protected AccountingEntryService $entryService;
     protected AccountingReportService $reportService;
     protected MerchantStatementService $statementService;
+    protected OperatorDisplayService $displayService;
 
     public function __construct(
         AccountLedgerService $ledgerService,
         AccountingEntryService $entryService,
         AccountingReportService $reportService,
-        MerchantStatementService $statementService
+        MerchantStatementService $statementService,
+        OperatorDisplayService $displayService
     ) {
         parent::__construct();
         $this->ledgerService = $ledgerService;
         $this->entryService = $entryService;
         $this->reportService = $reportService;
         $this->statementService = $statementService;
+        $this->displayService = $displayService;
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -659,13 +668,15 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $report = $this->reportService->getPlatformReport($startDate, $endDate);
-        $currency = monetaryUnit()->getDefault();
+
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $reportDisplay = $this->displayService->formatPlatformReport($report);
 
         return view('operator.accounts.reports.platform', [
             'report' => $report,
+            'reportDisplay' => $reportDisplay,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
-            'currency' => $currency,
         ]);
     }
 
@@ -678,7 +689,6 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $merchants = $this->reportService->getMerchantsSummaryReport($startDate, $endDate);
-        $currency = monetaryUnit()->getDefault();
 
         // Pre-compute totals for view (DATA_FLOW_POLICY)
         $totalSales = $merchants->sum('total_sales');
@@ -694,12 +704,13 @@ class AccountLedgerController extends OperatorBaseController
             'transaction_count' => $merchants->sum('transaction_count'),
         ];
 
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $summaryDisplay = $this->displayService->formatMerchantsSummaryReport($merchants, $totals);
+
         return view('operator.accounts.reports.merchants-summary', [
-            'merchants' => $merchants,
-            'totals' => $totals,
+            'summaryDisplay' => $summaryDisplay,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
-            'currency' => $currency,
         ]);
     }
 
@@ -713,14 +724,17 @@ class AccountLedgerController extends OperatorBaseController
 
         $statement = $this->statementService->generateStatement($merchantId, $startDate, $endDate);
         $pendingAmounts = $this->statementService->getPendingAmounts($merchantId);
-        $currency = monetaryUnit()->getDefault();
+
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $statementDisplay = $this->displayService->formatMerchantStatement($statement);
+        $pendingDisplay = $this->displayService->formatPendingAmounts($pendingAmounts);
 
         return view('operator.accounts.merchant-statement', [
             'statement' => $statement,
-            'pendingAmounts' => $pendingAmounts,
+            'statementDisplay' => $statementDisplay,
+            'pendingDisplay' => $pendingDisplay,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
-            'currency' => $currency,
         ]);
     }
 
@@ -733,7 +747,6 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $couriers = $this->reportService->getCouriersReport($startDate, $endDate);
-        $currency = monetaryUnit()->getDefault();
 
         // Pre-compute totals for view (DATA_FLOW_POLICY)
         $totals = [
@@ -746,12 +759,13 @@ class AccountLedgerController extends OperatorBaseController
             'delivery_count' => $couriers->sum('delivery_count'),
         ];
 
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $reportDisplay = $this->displayService->formatCouriersReport($couriers, $totals);
+
         return view('operator.accounts.reports.couriers', [
-            'couriers' => $couriers,
-            'totals' => $totals,
+            'reportDisplay' => $reportDisplay,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
-            'currency' => $currency,
         ]);
     }
 
@@ -764,7 +778,6 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $companies = $this->reportService->getShippingCompaniesReport($startDate, $endDate);
-        $currency = monetaryUnit()->getDefault();
 
         // Pre-compute totals for view (DATA_FLOW_POLICY)
         $receivable = $companies->sum('receivable_from_platform');
@@ -778,12 +791,13 @@ class AccountLedgerController extends OperatorBaseController
             'shipment_count' => $companies->sum('shipment_count'),
         ];
 
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $reportDisplay = $this->displayService->formatShippingCompaniesReport($companies, $totals);
+
         return view('operator.accounts.reports.shipping-companies', [
-            'companies' => $companies,
-            'totals' => $totals,
+            'reportDisplay' => $reportDisplay,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
-            'currency' => $currency,
         ]);
     }
 
@@ -793,11 +807,13 @@ class AccountLedgerController extends OperatorBaseController
     public function receivablesPayablesReport(Request $request)
     {
         $report = $this->reportService->getReceivablesPayablesReport();
-        $currency = monetaryUnit()->getDefault();
+
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $reportDisplay = $this->displayService->formatReceivablesPayablesReport($report);
 
         return view('operator.accounts.reports.receivables-payables', [
             'report' => $report,
-            'currency' => $currency,
+            'reportDisplay' => $reportDisplay,
         ]);
     }
 
@@ -818,7 +834,6 @@ class AccountLedgerController extends OperatorBaseController
     {
         $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now();
-        $currency = monetaryUnit()->getDefault();
 
         // === جلب جميع الشحنات لهذه الشركة ===
         $query = \App\Domain\Commerce\Models\MerchantPurchase::where('delivery_provider', $providerCode)
@@ -904,15 +919,32 @@ class AccountLedgerController extends OperatorBaseController
             'failed' => $purchases->where('purchase.delivery_status', 'failed')->count(),
         ];
 
+        $netBalance = $totalShippingFees - $totalCodCollected;
+
+        // Format using DisplayService (MULTI-CHANNEL: centralized via monetaryUnit)
+        $summaryDisplay = $this->displayService->formatShippingCompanyStatement([
+            'totalShippingFees' => $totalShippingFees,
+            'totalCodCollected' => $totalCodCollected,
+            'owesToPlatform' => $owesToPlatform,
+            'owesToMerchant' => $owesToMerchant,
+            'pendingToPlatform' => $pendingToPlatform,
+            'pendingToMerchant' => $pendingToMerchant,
+            'settledToPlatform' => $settledToPlatform,
+            'settledToMerchant' => $settledToMerchant,
+            'netBalance' => $netBalance,
+        ]);
+        $entriesDisplay = $this->displayService->formatShippingCompanyEntries($statement);
+
         return view('operator.accounts.shipping-company-statement', [
             'providerCode' => $providerCode,
             'companyName' => $companyName,
             'statement' => $statement,
-            'currency' => $currency,
+            'entriesDisplay' => $entriesDisplay,
+            'summaryDisplay' => $summaryDisplay,
             'startDate' => $startDate->format('Y-m-d'),
             'endDate' => $endDate->format('Y-m-d'),
 
-            // Summary
+            // Summary (raw values for backward compatibility)
             'totalShipments' => $totalShipments,
             'totalShippingFees' => $totalShippingFees,
             'totalCodCollected' => $totalCodCollected,
@@ -922,7 +954,7 @@ class AccountLedgerController extends OperatorBaseController
             'pendingToMerchant' => $pendingToMerchant,
             'settledToPlatform' => $settledToPlatform,
             'settledToMerchant' => $settledToMerchant,
-            'netBalance' => $totalShippingFees - $totalCodCollected,
+            'netBalance' => $netBalance,
             'statusBreakdown' => $statusBreakdown,
         ]);
     }

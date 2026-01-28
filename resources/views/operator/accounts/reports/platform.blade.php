@@ -50,21 +50,21 @@
                         <div class="col-md-4">
                             <div class="text-center p-3 bg-light rounded">
                                 <h6 class="text-muted">{{ __('Commission Earned') }}</h6>
-                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['commission_earned'], 2) }}</h3>
+                                <h3 class="text-success mb-0">{{ $reportDisplay['revenue']['commission_earned_formatted'] }}</h3>
                                 <small class="text-muted">{{ __('From merchant sales') }}</small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="text-center p-3 bg-light rounded">
                                 <h6 class="text-muted">{{ __('Shipping Fee Earned') }}</h6>
-                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['shipping_fee_earned'] ?? 0, 2) }}</h3>
+                                <h3 class="text-success mb-0">{{ $reportDisplay['revenue']['shipping_fee_earned_formatted'] }}</h3>
                                 <small class="text-muted">{{ __('From platform shipping') }}</small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="text-center p-3 bg-success text-white rounded">
                                 <h6>{{ __('Total Platform Revenue') }}</h6>
-                                <h3 class="mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['total'], 2) }}</h3>
+                                <h3 class="mb-0">{{ $reportDisplay['revenue']['total_formatted'] }}</h3>
                                 <small>{{ __('Commission + Services') }}</small>
                             </div>
                         </div>
@@ -87,38 +87,38 @@
                         <div class="col-md-3">
                             <div class="text-center p-3 border rounded">
                                 <h6 class="text-muted">{{ __('Total Collected') }}</h6>
-                                <h4 class="text-info">{{ $currency->sign }}{{ number_format($report['collections']['total_collected'], 2) }}</h4>
+                                <h4 class="text-info">{{ $reportDisplay['collections']['total_collected_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center p-3 border rounded">
                                 <h6 class="text-muted">{{ __('For Merchants') }}</h6>
-                                <h4>{{ $currency->sign }}{{ number_format($report['collections']['for_merchants'], 2) }}</h4>
+                                <h4>{{ $reportDisplay['collections']['for_merchants_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center p-3 border rounded">
                                 <h6 class="text-muted">{{ __('For Tax Authority') }}</h6>
-                                <h4>{{ $currency->sign }}{{ number_format($report['collections']['for_tax_authority'], 2) }}</h4>
+                                <h4>{{ $reportDisplay['collections']['for_tax_authority_formatted'] }}</h4>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center p-3 border rounded">
                                 <h6 class="text-muted">{{ __('For Shipping') }}</h6>
-                                <h4>{{ $currency->sign }}{{ number_format($report['collections']['for_shipping_companies'], 2) }}</h4>
+                                <h4>{{ $reportDisplay['collections']['for_shipping_companies_formatted'] }}</h4>
                             </div>
                         </div>
                     </div>
-                    @if($report['collections']['cod_collected'] > 0 || ($report['collections']['cod_pending'] ?? 0) > 0)
+                    @if($reportDisplay['collections']['cod_collected'] > 0 || $reportDisplay['collections']['cod_pending'] > 0)
                     <div class="mt-3 p-3 bg-light rounded">
                         <div class="row">
                             <div class="col-md-6">
                                 <strong>{{ __('COD Collected') }}:</strong>
-                                <span class="text-success">{{ $currency->sign }}{{ number_format($report['collections']['cod_collected'], 2) }}</span>
+                                <span class="text-success">{{ $reportDisplay['collections']['cod_collected_formatted'] }}</span>
                             </div>
                             <div class="col-md-6">
                                 <strong>{{ __('COD Pending') }}:</strong>
-                                <span class="text-warning">{{ $currency->sign }}{{ number_format($report['collections']['cod_pending'] ?? 0, 2) }}</span>
+                                <span class="text-warning">{{ $reportDisplay['collections']['cod_pending_formatted'] }}</span>
                             </div>
                         </div>
                     </div>
@@ -139,19 +139,19 @@
                     <table class="table table-sm">
                         <tr>
                             <td>{{ __('To Merchants') }}</td>
-                            <td class="text-end text-danger fw-bold">{{ $currency->sign }}{{ number_format($report['liabilities']['to_merchants'], 2) }}</td>
+                            <td class="text-end text-danger fw-bold">{{ $reportDisplay['liabilities']['to_merchants_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('To Tax Authority') }}</td>
-                            <td class="text-end text-danger fw-bold">{{ $currency->sign }}{{ number_format($report['liabilities']['to_tax_authority'], 2) }}</td>
+                            <td class="text-end text-danger fw-bold">{{ $reportDisplay['liabilities']['to_tax_authority_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('To Shipping Companies') }}</td>
-                            <td class="text-end text-danger fw-bold">{{ $currency->sign }}{{ number_format($report['liabilities']['to_shipping_companies'], 2) }}</td>
+                            <td class="text-end text-danger fw-bold">{{ $reportDisplay['liabilities']['to_shipping_companies_formatted'] }}</td>
                         </tr>
                         <tr class="table-danger">
                             <th>{{ __('Total Liabilities') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($report['liabilities']['total'], 2) }}</th>
+                            <th class="text-end">{{ $reportDisplay['liabilities']['total_formatted'] }}</th>
                         </tr>
                     </table>
                 </div>
@@ -168,15 +168,15 @@
                     <table class="table table-sm">
                         <tr>
                             <td>{{ __('From Couriers') }}</td>
-                            <td class="text-end text-primary fw-bold">{{ $currency->sign }}{{ number_format($report['receivables']['from_couriers'], 2) }}</td>
+                            <td class="text-end text-primary fw-bold">{{ $reportDisplay['receivables']['from_couriers_formatted'] }}</td>
                         </tr>
                         <tr>
                             <td>{{ __('From Shipping Companies') }}</td>
-                            <td class="text-end text-primary fw-bold">{{ $currency->sign }}{{ number_format($report['receivables']['from_shipping_companies'], 2) }}</td>
+                            <td class="text-end text-primary fw-bold">{{ $reportDisplay['receivables']['from_shipping_companies_formatted'] }}</td>
                         </tr>
                         <tr class="table-primary">
                             <th>{{ __('Total Receivables') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($report['receivables']['total'], 2) }}</th>
+                            <th class="text-end">{{ $reportDisplay['receivables']['total_formatted'] }}</th>
                         </tr>
                     </table>
                 </div>
@@ -187,11 +187,11 @@
     {{-- Net Position --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card {{ $report['net_position'] >= 0 ? 'border-success' : 'border-danger' }}">
+            <div class="card {{ $reportDisplay['net_position'] >= 0 ? 'border-success' : 'border-danger' }}">
                 <div class="card-body text-center">
                     <h5 class="text-muted mb-3">{{ __('Net Financial Position') }}</h5>
-                    <h1 class="{{ $report['net_position'] >= 0 ? 'text-success' : 'text-danger' }}">
-                        {{ $currency->sign }}{{ number_format($report['net_position'], 2) }}
+                    <h1 class="{{ $reportDisplay['net_position'] >= 0 ? 'text-success' : 'text-danger' }}">
+                        {{ $reportDisplay['net_position_formatted'] }}
                     </h1>
                     <p class="text-muted mb-0">
                         {{ __('Revenue + Receivables - Liabilities') }}

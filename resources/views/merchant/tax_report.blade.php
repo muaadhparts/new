@@ -110,20 +110,20 @@
                             @forelse($purchases as $purchase)
                             <tr>
                                 <td>
-                                    <a href="{{ route('merchant-purchase-invoice', $purchase->purchase_number) }}">
-                                        {{ $purchase->purchase_number }}
+                                    <a href="{{ route('merchant-purchase-invoice', $purchase['purchase_number']) }}">
+                                        {{ $purchase['purchase_number'] }}
                                     </a>
                                 </td>
-                                <td class="text-end">{{ $currencySign }}{{ number_format($purchase->price, 2) }}</td>
-                                <td class="text-end text-info">{{ $currencySign }}{{ number_format($purchase->tax_amount, 2) }}</td>
+                                <td class="text-end">{{ $purchase['price_formatted'] }}</td>
+                                <td class="text-end text-info">{{ $purchase['tax_amount_formatted'] }}</td>
                                 <td class="text-center">
-                                    @if($purchase->payment_owner_id === 0)
+                                    @if($purchase['payment_owner_id'] === 0)
                                         <span class="badge bg-primary">@lang('Platform')</span>
                                     @else
                                         <span class="badge bg-success">@lang('You')</span>
                                     @endif
                                 </td>
-                                <td>{{ $purchase->date_formatted }}</td>
+                                <td>{{ $purchase['date_formatted'] }}</td>
                             </tr>
                             @empty
                             <tr>

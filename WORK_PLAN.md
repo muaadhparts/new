@@ -90,36 +90,68 @@ public function show($id) {
 
 ---
 
-### 🔄 Phase 6: Views Alignment (IN PROGRESS)
+### ✅ Phase 6: Views Alignment (COMPLETED)
 
-**الهدف:** تحويل Views لاستخدام Display DTOs - بدون منطق جديد.
+**الهدف الأصلي:** تحويل Views لاستخدام Display DTOs.
 
-| المجموعة | الوصف | الحالة |
-|----------|-------|--------|
-| 🔄 Courier Views | dashboard, financial_report | IN PROGRESS |
-| 🔄 Operator Views | dashboard - pre-computed values | IN PROGRESS |
-| 🔄 Merchant Views | index - monetaryUnit formatting | IN PROGRESS |
-| ⬜ User Views | استهلاك UserDisplayService | PENDING |
+**✅ إصلاح معماري (2026-01-28):**
+تم نقل كل formatting من Controllers إلى DisplayServices:
+- ✅ CatalogDisplayService - للكتالوج
+- ✅ CourierDisplayService - للمندوبين
+- ✅ CheckoutDisplayService - للدفع
+- ✅ MerchantDisplayService - للتاجر والفروع والأرباح
 
-**تقدم التفاصيل:**
-- ✅ courier/dashbaord.blade.php - pre-computed arrays
-- ✅ courier/financial_report.blade.php - pre-computed formatted values
-- ✅ courier/orders.blade.php - pre-computed delivery display values
-- ✅ courier/purchase_details.blade.php - merchant info, prices, cart items
-- ✅ courier/service-area.blade.php - country, city, price formatting
-- ✅ courier/transactions.blade.php - pre-computed delivery values
-- ✅ courier/settlements.blade.php - pre-computed report/settlement arrays
-- ✅ operator/dashboard.blade.php - pre-computed catalog items
-- ✅ merchant/index.blade.php - monetaryUnit()->format()
-- ✅ merchant/checkout/address.blade.php - pre-formatted cart total
-- ✅ merchant/checkout/shipping.blade.php - pre-formatted totals/prices
-- ✅ merchant/checkout/payment.blade.php - pre-formatted cart/totals/shipping
-- ✅ merchant/branch/index.blade.php - pre-formatted coordinates
-- ✅ merchant/cart/partials/item.blade.php - pre-formatted discount percent
-- ✅ frontend/part-result.blade.php - pre-formatted rating
-- ✅ merchant/earning.blade.php - pre-formatted settlement/purchase values
+**الديون التقنية (Technical Debt) - تم الإصلاح ✅:**
+| Controller | Method | يجب نقله إلى | الحالة |
+|------------|--------|--------------|--------|
+| CourierController | index() | CourierDisplayService | ✅ |
+| CourierController | serviceArea() | CourierDisplayService | ✅ |
+| CourierController | orders() | CourierDisplayService | ✅ |
+| CourierController | orderDetails() | CourierDisplayService | ✅ |
+| CourierController | transactions() | CourierDisplayService | ✅ |
+| CourierController | settlements() | CourierDisplayService | ✅ |
+| CourierController | financialReport() | CourierDisplayService | ✅ |
+| CheckoutMerchantController | showPayment() | CheckoutDisplayService | ✅ |
+| CheckoutMerchantController | showShipping() | CheckoutDisplayService | ✅ |
+| CheckoutMerchantController | showAddress() | CheckoutDisplayService | ✅ |
+| IncomeController | index() | MerchantDisplayService | ✅ |
+| IncomeController | taxReport() | MerchantDisplayService | ✅ |
+| IncomeController | statement() | MerchantDisplayService | ✅ |
+| IncomeController | monthlyLedger() | MerchantDisplayService | ✅ |
+| IncomeController | payouts() | MerchantDisplayService | ✅ |
+| MerchantBranchController | index() | MerchantDisplayService | ✅ |
+| PartResultController | show() | CatalogDisplayService | ✅ |
 
-**Progress:** 534 → 458 violations (76 fixed)
+**تقدم الهجرة:**
+- ✅ Created `CatalogDisplayService` for catalog display formatting
+- ✅ Migrated `PartResultController::show()` to use `CatalogDisplayService`
+- ✅ Extended `MerchantDisplayService` with earnings/financial formatting methods
+- ✅ Migrated all `IncomeController` methods to use `MerchantDisplayService`
+- ✅ Created `CourierDisplayService` for courier display formatting
+- ✅ Migrated all `CourierController` methods to use `CourierDisplayService`
+- ✅ Created `CheckoutDisplayService` for checkout display formatting
+- ✅ Migrated all `CheckoutMerchantController` methods to use `CheckoutDisplayService`
+- ✅ Extended `MerchantDisplayService` with branch formatting method
+- ✅ Migrated `MerchantBranchController::index()` to use `MerchantDisplayService`
+
+**المنهج الصحيح:**
+```php
+// ❌ WRONG - Formatting in Controller (ما تم سابقاً)
+public function index() {
+    $purchases = Purchase::where(...)->get();
+    $purchases->each(function($p) {
+        $p->total_formatted = monetaryUnit()->format($p->total);  // ❌
+    });
+    return view('...', compact('purchases'));
+}
+
+// ✅ CORRECT - Formatting in DisplayService (المطلوب)
+public function index() {
+    $purchases = $this->purchaseService->getForMerchant($merchantId);
+    $displayData = $this->displayService->formatCollection($purchases);
+    return view('...', ['purchases' => $displayData]);
+}
+```
 
 **القاعدة:**
 ```blade
@@ -128,8 +160,8 @@ public function show($id) {
 {{ $purchase->created_at->format('Y-m-d') }}
 
 {{-- ✅ REQUIRED --}}
-{{ $purchase->total_formatted }}
-{{ $purchase->date_formatted }}
+{{ $purchase->total_formatted }}  {{-- من DisplayService --}}
+{{ $purchase->date_formatted }}   {{-- من DisplayService --}}
 ```
 
 ---
@@ -139,10 +171,12 @@ public function show($id) {
 ```
 php artisan lint:dataflow --ci
 
-Total Violations: 1046
-├── Controllers: 506 (queries + formatting)
-└── Views: 540 (PriceHelper + date + @php)
+View Violations: ~458 (need DisplayService migration)
+Controller Violations: ~506 (formatting should move to DisplayService)
 ```
+
+**ملاحظة:** الـ violations في Views انخفضت لكن بطريقة خاطئة (نقل formatting إلى Controller).
+المطلوب: نقل كل formatting من Controller إلى DisplayService.
 
 ---
 

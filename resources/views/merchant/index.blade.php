@@ -104,7 +104,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_2.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Current Balance')</p>
-                        <h3 class="value">{{ $curr->sign }}<span class="counter">{{ $currentBalance }}</span></h3>
+                        <h3 class="value">{{ $currentBalance }}</h3>
                     </div>
                 </div>
             </div>
@@ -113,7 +113,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Earning')</p>
-                        <h3 class="value">{{ $curr->sign }}<span class="counter">{{ $totalEarning }}</span></h3>
+                        <h3 class="value">{{ $totalEarning }}</h3>
                     </div>
                 </div>
             </div>

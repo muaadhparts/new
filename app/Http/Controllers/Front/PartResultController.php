@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Services\AlternativeService;
+use App\Domain\Catalog\Services\CatalogDisplayService;
 use App\Domain\Catalog\Services\CatalogItemOffersService;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,8 @@ class PartResultController extends FrontBaseController
 {
     public function __construct(
         private CatalogItemOffersService $offersService,
-        private AlternativeService $alternativeService
+        private AlternativeService $alternativeService,
+        private CatalogDisplayService $displayService
     ) {
         parent::__construct();
     }
@@ -50,22 +52,8 @@ class PartResultController extends FrontBaseController
         // Get grouped offers using existing service with sort
         $offersData = $this->offersService->getGroupedOffers($catalogItem->id, $sort);
 
-        // Extract fitment brands for breadcrumb
-        $fitmentBrands = [];
-        if ($catalogItem->fitments && $catalogItem->fitments->count() > 0) {
-            $fitmentBrands = $catalogItem->fitments
-                ->map(fn($f) => $f->brand)
-                ->filter()
-                ->unique('id')
-                ->values()
-                ->map(fn($brand) => [
-                    'id' => $brand->id,
-                    'name' => $brand->localized_name,
-                    'logo' => $brand->photo_url,
-                    'slug' => $brand->slug,
-                ])
-                ->toArray();
-        }
+        // Get display data from DisplayService (API-ready)
+        $catalogDisplayData = $this->displayService->forPartResult($catalogItem);
 
         // Get alternatives using group_id
         $alternatives = $this->alternativeService->getAlternatives(
@@ -74,16 +62,12 @@ class PartResultController extends FrontBaseController
             returnSelfIfNoAlternatives: false
         );
 
-        // Pre-format rating for display
-        $catalogItem->rating_formatted = $catalogItem->catalog_reviews_count > 0
-            ? number_format($catalogItem->catalog_reviews_avg_rating ?? 0, 1)
-            : null;
-
         $viewData = [
             'catalogItem' => $catalogItem,
             'part_number' => $part_number,
             'offersData' => $offersData,
-            'fitmentBrands' => $fitmentBrands,
+            'fitmentBrands' => $catalogDisplayData['fitment_brands'],
+            'catalogDisplayData' => $catalogDisplayData,
             'alternatives' => $alternatives,
             'currentSort' => $sort,
             'gs' => $this->gs,

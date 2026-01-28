@@ -426,4 +426,209 @@ class MerchantDisplayService
     {
         return MerchantCardDTO::fromCollection($merchants);
     }
+
+    // =========================================================================
+    // EARNINGS & FINANCIAL FORMATTING
+    // =========================================================================
+
+    /**
+     * Format earnings summary from accounting report
+     * Used by IncomeController::index()
+     */
+    public function formatEarningsSummary(array $report, string $currencySign): array
+    {
+        return [
+            // Sales Summary
+            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
+            'total_orders' => $report['total_orders'],
+            'total_qty' => $report['total_qty'],
+
+            // Platform Deductions
+            'total_commission' => $currencySign . number_format($report['total_commission'], 2),
+            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
+            'total_platform_shipping_fee' => $currencySign . number_format($report['total_platform_shipping_fee'], 2),
+
+            // Shipping Costs
+            'total_shipping_cost' => $currencySign . number_format($report['total_shipping_cost'], 2),
+            'total_courier_fee' => $currencySign . number_format($report['total_courier_fee'], 2),
+
+            // Net Amount
+            'total_net' => $currencySign . number_format($report['total_net'], 2),
+
+            // Settlement Balances (raw values for conditionals + formatted)
+            'platform_owes_merchant' => $report['platform_owes_merchant'],
+            'merchant_owes_platform' => $report['merchant_owes_platform'],
+            'net_balance' => $report['net_balance'],
+            'net_balance_formatted' => $currencySign . number_format(abs($report['net_balance']), 2),
+            'platform_owes_merchant_formatted' => $currencySign . number_format($report['platform_owes_merchant'], 2),
+            'merchant_owes_platform_formatted' => $currencySign . number_format($report['merchant_owes_platform'], 2),
+
+            // Payment Method Breakdown
+            'platform_payments' => $report['platform_payments'],
+            'merchant_payments' => $report['merchant_payments'],
+            'platform_payments_total_formatted' => $currencySign . number_format($report['platform_payments']['total'], 2),
+            'merchant_payments_total_formatted' => $currencySign . number_format($report['merchant_payments']['total'], 2),
+
+            // Shipping Breakdown
+            'platform_shipping' => $report['platform_shipping'],
+            'merchant_shipping' => $report['merchant_shipping'],
+            'platform_shipping_cost_formatted' => $currencySign . number_format($report['platform_shipping']['cost'], 2),
+            'merchant_shipping_cost_formatted' => $currencySign . number_format($report['merchant_shipping']['cost'], 2),
+            'courier_deliveries' => $report['courier_deliveries'],
+        ];
+    }
+
+    /**
+     * Format purchases for earnings table
+     */
+    public function formatPurchasesForEarnings(Collection $purchases, string $currencySign): Collection
+    {
+        return $purchases->map(function ($purchase) use ($currencySign) {
+            return [
+                'id' => $purchase->id,
+                'purchase_number' => $purchase->purchase_number,
+                'payment_owner_id' => $purchase->payment_owner_id,
+                'shipping_owner_id' => $purchase->shipping_owner_id,
+                'shipping_type' => $purchase->shipping_type,
+                'platform_owes_merchant' => $purchase->platform_owes_merchant,
+                'merchant_owes_platform' => $purchase->merchant_owes_platform,
+                'date_formatted' => $purchase->created_at?->format('d-m-Y') ?? 'N/A',
+                'price_formatted' => $currencySign . number_format($purchase->price, 2),
+                'commission_amount_formatted' => $currencySign . number_format($purchase->commission_amount, 2),
+                'tax_amount_formatted' => $currencySign . number_format($purchase->tax_amount, 2),
+                'net_amount_formatted' => $currencySign . number_format($purchase->net_amount, 2),
+                'platform_owes_merchant_formatted' => $currencySign . number_format($purchase->platform_owes_merchant, 2),
+                'merchant_owes_platform_formatted' => $currencySign . number_format($purchase->merchant_owes_platform, 2),
+            ];
+        });
+    }
+
+    /**
+     * Format statement entries for ledger view
+     */
+    public function formatStatementEntries(array $statement): array
+    {
+        return collect($statement)->map(function ($entry) {
+            $entry['date_formatted'] = isset($entry['date']) ? $entry['date']->format('d-m-Y') : 'N/A';
+            return $entry;
+        })->toArray();
+    }
+
+    /**
+     * Format tax report data
+     */
+    public function formatTaxReport(array $report, Collection $purchases, string $currencySign): array
+    {
+        return [
+            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
+            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
+            'tax_from_platform_payments' => $currencySign . number_format($report['tax_from_platform_payments'], 2),
+            'tax_from_merchant_payments' => $currencySign . number_format($report['tax_from_merchant_payments'], 2),
+            'purchases' => $purchases->map(function ($purchase) use ($currencySign) {
+                return [
+                    'id' => $purchase->id,
+                    'purchase_number' => $purchase->purchase_number,
+                    'price' => $purchase->price,
+                    'tax_amount' => $purchase->tax_amount,
+                    'payment_owner_id' => $purchase->payment_owner_id,
+                    'price_formatted' => $currencySign . number_format($purchase->price, 2),
+                    'tax_amount_formatted' => $currencySign . number_format($purchase->tax_amount, 2),
+                    'date_formatted' => $purchase->created_at?->format('d-m-Y') ?? 'N/A',
+                ];
+            }),
+        ];
+    }
+
+    /**
+     * Format statement totals
+     */
+    public function formatStatementTotals(array $statement, string $currencySign): array
+    {
+        return [
+            'total_credit' => $currencySign . number_format($statement['total_credit'], 2),
+            'total_debit' => $currencySign . number_format($statement['total_debit'], 2),
+            'opening_balance' => $statement['opening_balance'],
+            'closing_balance' => $statement['closing_balance'],
+        ];
+    }
+
+    /**
+     * Format monthly ledger summary
+     */
+    public function formatMonthlyLedgerSummary(array $report, string $currencySign): array
+    {
+        return [
+            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
+            'total_commission' => $currencySign . number_format($report['total_commission'], 2),
+            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
+            'total_net' => $currencySign . number_format($report['total_net'], 2),
+            'total_orders' => $report['total_orders'],
+        ];
+    }
+
+    /**
+     * Format payouts summary
+     */
+    public function formatPayoutsSummary(float $pendingAmount, float $totalReceived, string $currencySign): array
+    {
+        return [
+            'pending_amount' => $currencySign . number_format($pendingAmount, 2),
+            'total_received' => $currencySign . number_format($totalReceived, 2),
+            'pending_raw' => $pendingAmount,
+            'total_received_raw' => $totalReceived,
+        ];
+    }
+
+    /**
+     * Format payouts/settlements data
+     */
+    public function formatPayouts($payouts, string $currencySign): Collection
+    {
+        return $payouts->map(function ($payout) {
+            return [
+                'id' => $payout->id,
+                'batch_number' => $payout->batch_number,
+                'status' => $payout->status,
+                'total_amount' => $payout->total_amount,
+                'date_formatted' => $payout->settlement_date
+                    ? $payout->settlement_date->format('d-m-Y')
+                    : ($payout->created_at ? $payout->created_at->format('d-m-Y') : 'N/A'),
+                'amount_formatted' => $payout->getFormattedAmount(),
+                'status_color' => $payout->getStatusColor(),
+                'status_name_ar' => $payout->getStatusNameAr(),
+            ];
+        });
+    }
+
+    // =========================================================================
+    // BRANCH DISPLAY FORMATTING
+    // =========================================================================
+
+    /**
+     * Format branches for list display
+     */
+    public function formatBranchesForList(Collection $branches): Collection
+    {
+        return $branches->map(function ($branch) {
+            return [
+                'id' => $branch->id,
+                'item' => $branch,
+                'countryName' => $branch->country?->country_name ?? '-',
+                'cityName' => $branch->city?->city_name ?? '-',
+                'location' => $branch->location,
+                'latitude' => $branch->latitude,
+                'longitude' => $branch->longitude,
+                'latitude_formatted' => $branch->latitude ? number_format($branch->latitude, 6) : null,
+                'longitude_formatted' => $branch->longitude ? number_format($branch->longitude, 6) : null,
+                'status' => $branch->status,
+                'statusClass' => $branch->status == 1 ? 'active' : 'deactive',
+                'statusActiveSelected' => $branch->status == 1 ? 'selected' : '',
+                'statusInactiveSelected' => $branch->status == 0 ? 'selected' : '',
+                'statusActiveUrl' => route('merchant-branch-status', ['id' => $branch->id, 'status' => 1]),
+                'statusInactiveUrl' => route('merchant-branch-status', ['id' => $branch->id, 'status' => 0]),
+                'editUrl' => route('merchant-branch-edit', $branch->id),
+                'deleteUrl' => route('merchant-branch-delete', $branch->id),
+            ];
+        });
+    }
 }

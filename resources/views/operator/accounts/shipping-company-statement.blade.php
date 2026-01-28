@@ -67,7 +67,7 @@
             <div class="card h-100 bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Shipping Fees') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalShippingFees, 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totalShippingFees_formatted'] }}</h3>
                     <small>{{ __('Due to company') }}</small>
                 </div>
             </div>
@@ -76,7 +76,7 @@
             <div class="card h-100 bg-warning text-dark">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Collected') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['totalCodCollected_formatted'] }}</h3>
                     <small>{{ __('Cash on Delivery') }}</small>
                 </div>
             </div>
@@ -85,7 +85,7 @@
             <div class="card h-100 bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Owes Platform') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($owesToPlatform, 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['owesToPlatform_formatted'] }}</h3>
                     <small>{{ __('Company owes platform') }}</small>
                 </div>
             </div>
@@ -94,7 +94,7 @@
             <div class="card h-100 bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Owes Merchants') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($owesToMerchant, 2) }}</h3>
+                    <h3 class="mb-0">{{ $summaryDisplay['owesToMerchant_formatted'] }}</h3>
                     <small>{{ __('Company owes merchants') }}</small>
                 </div>
             </div>
@@ -111,16 +111,16 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('To Platform') }}:</span>
-                        <span class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($pendingToPlatform, 2) }}</span>
+                        <span class="text-danger fw-bold">{{ $summaryDisplay['pendingToPlatform_formatted'] }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('To Merchants') }}:</span>
-                        <span class="text-warning fw-bold">{{ $currency->sign }}{{ number_format($pendingToMerchant, 2) }}</span>
+                        <span class="text-warning fw-bold">{{ $summaryDisplay['pendingToMerchant_formatted'] }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>{{ __('Total Pending') }}:</strong>
-                        <strong class="text-danger">{{ $currency->sign }}{{ number_format($pendingToPlatform + $pendingToMerchant, 2) }}</strong>
+                        <strong class="text-danger">{{ $summaryDisplay['totalPending_formatted'] }}</strong>
                     </div>
                 </div>
             </div>
@@ -133,16 +133,16 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('To Platform') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($settledToPlatform, 2) }}</span>
+                        <span class="text-success fw-bold">{{ $summaryDisplay['settledToPlatform_formatted'] }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('To Merchants') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($settledToMerchant, 2) }}</span>
+                        <span class="text-success fw-bold">{{ $summaryDisplay['settledToMerchant_formatted'] }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>{{ __('Total Settled') }}:</strong>
-                        <strong class="text-success">{{ $currency->sign }}{{ number_format($settledToPlatform + $settledToMerchant, 2) }}</strong>
+                        <strong class="text-success">{{ $summaryDisplay['totalSettled_formatted'] }}</strong>
                     </div>
                 </div>
             </div>
@@ -155,18 +155,18 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Shipping Fees') }}:</span>
-                        <span class="text-success">+{{ $currency->sign }}{{ number_format($totalShippingFees, 2) }}</span>
+                        <span class="text-success">{{ $summaryDisplay['shippingFees_plus_formatted'] }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('COD Collected') }}:</span>
-                        <span class="text-danger">-{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</span>
+                        <span class="text-danger">{{ $summaryDisplay['codCollected_minus_formatted'] }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <strong>{{ __('Net') }}:</strong>
-                        <strong class="{{ $netBalance >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
-                            @if($netBalance >= 0)
+                        <strong class="{{ $summaryDisplay['netBalance'] >= 0 ? 'text-success' : 'text-danger' }}">
+                            {{ $summaryDisplay['netBalance_formatted'] }}
+                            @if($summaryDisplay['netBalance'] >= 0)
                                 <small class="badge bg-success">{{ __('Platform owes company') }}</small>
                             @else
                                 <small class="badge bg-danger">{{ __('Company owes platform') }}</small>
@@ -241,7 +241,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($statement as $entry)
+                        @forelse($entriesDisplay as $entry)
                         <tr>
                             <td>{{ $entry['date']->format('d-m-Y') }}</td>
                             <td>
@@ -272,26 +272,10 @@
                                     <br><small class="badge bg-success mt-1">{{ __('COD Collected') }}</small>
                                 @endif
                             </td>
-                            <td class="text-end text-success">
-                                @if($entry['shipping_fee'] > 0)
-                                    {{ $currency->sign }}{{ number_format($entry['shipping_fee'], 2) }}
-                                @endif
-                            </td>
-                            <td class="text-end text-warning">
-                                @if($entry['cod_collected'] > 0)
-                                    {{ $currency->sign }}{{ number_format($entry['cod_collected'], 2) }}
-                                @endif
-                            </td>
-                            <td class="text-end text-danger">
-                                @if($entry['owes_platform'] > 0)
-                                    {{ $currency->sign }}{{ number_format($entry['owes_platform'], 2) }}
-                                @endif
-                            </td>
-                            <td class="text-end text-info">
-                                @if($entry['owes_merchant'] > 0)
-                                    {{ $currency->sign }}{{ number_format($entry['owes_merchant'], 2) }}
-                                @endif
-                            </td>
+                            <td class="text-end text-success">{{ $entry['shipping_fee_formatted'] }}</td>
+                            <td class="text-end text-warning">{{ $entry['cod_collected_formatted'] }}</td>
+                            <td class="text-end text-danger">{{ $entry['owes_platform_formatted'] }}</td>
+                            <td class="text-end text-info">{{ $entry['owes_merchant_formatted'] }}</td>
                             <td class="text-center">
                                 @if($entry['settlement_status'] === 'settled')
                                     <span class="badge bg-success">{{ __('Settled') }}</span>
@@ -300,7 +284,7 @@
                                 @endif
                             </td>
                             <td class="text-end {{ $entry['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                <strong>{{ $currency->sign }}{{ number_format(abs($entry['balance']), 2) }}</strong>
+                                <strong>{{ $entry['balance_formatted'] }}</strong>
                                 @if($entry['balance'] >= 0)
                                     <small class="badge bg-success">CR</small>
                                 @else
@@ -317,18 +301,18 @@
                         </tr>
                         @endforelse
                     </tbody>
-                    @if(count($statement) > 0)
+                    @if(count($entriesDisplay) > 0)
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <td colspan="4">{{ __('Totals') }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalShippingFees, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($owesToPlatform, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($owesToMerchant, 2) }}</td>
+                            <td class="text-end">{{ $summaryDisplay['totalShippingFees_formatted'] }}</td>
+                            <td class="text-end">{{ $summaryDisplay['totalCodCollected_formatted'] }}</td>
+                            <td class="text-end">{{ $summaryDisplay['owesToPlatform_formatted'] }}</td>
+                            <td class="text-end">{{ $summaryDisplay['owesToMerchant_formatted'] }}</td>
                             <td></td>
                             <td class="text-end">
-                                {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
-                                @if($netBalance >= 0)
+                                {{ $summaryDisplay['netBalance_formatted'] }}
+                                @if($summaryDisplay['netBalance'] >= 0)
                                     <small class="badge bg-success">CR</small>
                                 @else
                                     <small class="badge bg-danger">DR</small>
@@ -380,7 +364,7 @@
         <a href="{{ route('operator.accounts.settlements.shipping.pending', $providerCode) }}" class="btn btn-warning">
             <i class="fas fa-clock me-1"></i> {{ __('View Pending Settlements') }}
         </a>
-        @if($pendingToPlatform > 0 || $pendingToMerchant > 0)
+        @if($summaryDisplay['pendingToPlatform'] > 0 || $summaryDisplay['pendingToMerchant'] > 0)
         <a href="{{ route('operator.accounts.settlements.create', ['party_type' => 'shipping', 'provider_code' => $providerCode]) }}" class="btn btn-success">
             <i class="fas fa-money-bill-wave me-1"></i> {{ __('Record Settlement') }}
         </a>
