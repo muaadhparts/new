@@ -103,7 +103,9 @@ class MerchantCartButton extends Component
 
         // CatalogItem info (for display only)
         $catalogItem = $mp->catalogItem;
-        $this->catalogItemDisplayName = $catalogItem ? $catalogItem->showName() : '';
+        $this->catalogItemDisplayName = $catalogItem 
+            ? app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->getDisplayName($catalogItem)
+            : '';
 
         // Unique ID for this instance
         $this->uniqueId = 'cart_' . $this->mpId . '_' . uniqid();

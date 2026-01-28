@@ -121,7 +121,7 @@
                                                 data-merchant-id="{{ $branchData['offer']['user_id'] }}"
                                                 data-branch-id="{{ $branchData['offer']['branch_id'] }}"
                                                 data-weight="{{ $catalogItem->weight }}"
-                                                data-catalog-item-name="{{ $catalogItem->showName() }}"
+                                                data-catalog-item-name="{{ $catalogItem->localized_name }}"
                                                 title="@lang('احسب الشحن')">
                                             <i class="fas fa-truck"></i>
                                         </button>

@@ -60,6 +60,49 @@ class CatalogItem extends Model
     ];
 
     /* =========================================================================
+     |  ACCESSORS (Display only - no business logic)
+     | ========================================================================= */
+
+    /**
+     * Get localized name based on current locale.
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $locale = app()->getLocale();
+        
+        if ($locale === 'ar') {
+            return $this->label_ar ?: $this->label_en ?: $this->name;
+        }
+        
+        return $this->label_en ?: $this->name;
+    }
+
+    /**
+     * Get full photo URL.
+     */
+    public function getPhotoUrlAttribute(): string
+    {
+        if (empty($this->photo)) {
+            return asset('assets/images/noimage.png');
+        }
+        
+        if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
+            return $this->photo;
+        }
+        
+        return \Illuminate\Support\Facades\Storage::disk('s3')->url($this->photo);
+    }
+
+    /**
+     * Get thumbnail URL.
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        // For now, same as photo_url
+        return $this->photo_url;
+    }
+
+    /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */
 

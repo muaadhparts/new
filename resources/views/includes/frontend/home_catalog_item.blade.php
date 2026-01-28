@@ -120,7 +120,7 @@
         $hasMerchant = $merchantItem && $merchantItem->user_id > 0;
 
         if ($merchantItem) {
-            $priceFormatted = method_exists($merchantItem, 'showPrice') ? $merchantItem->showPrice() : \App\Domain\Catalog\Models\CatalogItem::convertPrice($merchantItem->price);
+            $priceFormatted = method_exists($merchantItem, 'showPrice') ? app(\App\Domain\Merchant\Services\MerchantItemDisplayService::class)->formatPrice($merchantItem) : \App\Domain\Catalog\Models\CatalogItem::convertPrice($merchantItem->price);
             $previousPrice = $merchantItem->previous_price ?? 0;
             $previousPriceFormatted = $previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : '';
         } else {

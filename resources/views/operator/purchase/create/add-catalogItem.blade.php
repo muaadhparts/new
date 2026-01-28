@@ -7,7 +7,7 @@
     <div class="price-and-discount">
       <div class="price">
         <div class="current-price" id="sizeprice">
-          {{ $catalogItem->showPrice() }}
+          {{ app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($catalogItem, $catalogItem->lowest_price ?? 0) }}
         </div>
       </div>
     </div>

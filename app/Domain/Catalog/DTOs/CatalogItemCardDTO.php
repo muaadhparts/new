@@ -257,7 +257,7 @@ class CatalogItemCardDTO
             $dto->merchantItemId = $bestMerchant->id;
             $dto->merchantId = $bestMerchant->user_id;
             $dto->price = (float) $bestMerchant->price;
-            $dto->priceFormatted = $bestMerchant->showPrice();
+            $dto->priceFormatted = app(MerchantItemDisplayService::class)->formatPrice($bestMerchant);
             $dto->previousPrice = (float) ($bestMerchant->previous_price ?? 0);
             $dto->previousPriceFormatted = $dto->previousPrice > 0
                 ? CatalogItem::convertPrice($dto->previousPrice)
