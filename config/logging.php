@@ -137,6 +137,18 @@ return [
             'days' => 30,
             'replace_placeholders' => true,
         ],
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DOMAIN EVENTS LOG - Event-Driven Architecture
+        // Logs all domain events for auditing and debugging
+        // ═══════════════════════════════════════════════════════════════════
+        'domain' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/domain-events.log'),
+            'level' => 'debug',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
     ],
 
 ];

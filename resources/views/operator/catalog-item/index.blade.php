@@ -26,6 +26,10 @@
                 <div class="col-lg-12">
                     <div class="mr-table allproduct">
                         @include('alerts.operator.form-success')
+                        <div class="alert alert-danger validation" style="display: none;">
+                            <button type="button" class="close alert-close"><span>×</span></button>
+                            <p class="text-left"></p>
+                        </div>
 
                         <div class="table-responsive">
                             <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
@@ -35,12 +39,7 @@
                                         <th>{{ __('Part Number') }}</th>
                                         <th>{{ __('Name') }}</th>
                                         <th>{{ __('Brand') }}</th>
-                                        <th>{{ __('Quality Brand') }}</th>
-                                        <th>{{ __('Merchant') }}</th>
-                                        <th>{{ __('Branch') }}</th>
-                                        <th>{{ __('Stock') }}</th>
-                                        <th>{{ __('Price') }}</th>
-                                        <th>{{ __('Status') }}</th>
+                                        <th>{{ __('Offers') }}</th>
                                         <th>{{ __('Options') }}</th>
                                     </tr>
                                 </thead>
@@ -134,18 +133,13 @@
                 ordering: false,
                 processing: true,
                 serverSide: true,
-                ajax: '{{ route('operator-catalog-item-datatables') }}?type=all',
+                ajax: '{{ route('operator-catalog-item-datatables') }}',
                 columns: [
-					{ data: 'photo', name: 'photo' },
-					{ data: 'part_number', name: 'part_number' },
-					{ data: 'name', name: 'name' },
-                    { data: 'brand', name: 'brand' },
-                    { data: 'quality_brand', name: 'quality_brand' },
-                    { data: 'merchant', name: 'merchant' },
-                    { data: 'branch', name: 'branch' },
-                    { data: 'stock', name: 'stock' },
-                    { data: 'price', name: 'price' },
-                    { data: 'status', searchable: false, orderable: false },
+                    { data: 'photo', name: 'photo', searchable: false, orderable: false },
+                    { data: 'part_number', name: 'part_number' },
+                    { data: 'name', name: 'name' },
+                    { data: 'brand', name: 'brand', searchable: false },
+                    { data: 'offers_count', name: 'offers_count', searchable: false, orderable: false },
                     { data: 'action', searchable: false, orderable: false }
                 ],
                 language: {
@@ -162,6 +156,37 @@
                     '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __('Add CatalogItem') }}<span>' +
                     '</a>' +
                     '</div>');
+            });
+
+            // Override delete form submission to handle errors
+            $("#confirm-delete .delete-form").off('submit').on("submit", function (e) {
+                e.preventDefault();
+                var $form = $(this);
+
+                $.ajax({
+                    method: "POST",
+                    url: $form.attr('action'),
+                    data: new FormData(this),
+                    dataType: "JSON",
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    success: function (data) {
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete')).hide();
+                        $("#muaadhtable").DataTable().ajax.reload();
+                        $(".alert-danger").hide();
+                        $(".alert-success").show();
+                        $(".alert-success p").html(data);
+                    },
+                    error: function(xhr) {
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete')).hide();
+                        var response = xhr.responseJSON;
+                        var message = response && response.message ? response.message : '{{ __("Delete failed") }}';
+                        $(".alert-success").hide();
+                        $(".alert-danger").show();
+                        $(".alert-danger p").html(message);
+                    }
+                });
             });
 
         })(jQuery);

@@ -44,10 +44,10 @@
                 <div class="catalog-quickview-rating">
                     <div class="catalog-star-rating">
                         @for($i = 1; $i <= 5; $i++)
-                            <span class="star {{ $i <= round($quickView->avgRating) ? 'filled' : '' }}">★</span>
+                            <span class="star {{ $i <= $quickView->roundedRating ? 'filled' : '' }}">★</span>
                         @endfor
                     </div>
-                    <span class="catalog-rating-value">{{ number_format($quickView->avgRating, 1) }}</span>
+                    <span class="catalog-rating-value">{{ $quickView->formattedRating }}</span>
                 </div>
             @endif
 

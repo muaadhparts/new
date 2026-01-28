@@ -55,7 +55,7 @@
                 <div class="summary-box">
                     <h6 class="text-muted">{{ __('Net Platform Balance') }}</h6>
                     <h3 class="{{ ($report['total_balance'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
-                        {{ $currency->sign }}{{ number_format(abs($report['total_balance'] ?? 0), 2) }}
+                        {{ $currency->formatAmount(abs($report['total_balance'] ?? 0)) }}
                     </h3>
                     <small class="text-muted">
                         @if(($report['total_balance'] ?? 0) >= 0)
@@ -103,11 +103,11 @@
                             </td>
                             <td>
                                 <span class="{{ $courier['current_balance'] >= 0 ? 'balance-positive' : 'balance-negative' }}">
-                                    <strong>{{ $currency->sign }}{{ number_format($courier['current_balance'], 2) }}</strong>
+                                    <strong>{{ $currency->formatAmount($courier['current_balance']) }}</strong>
                                 </span>
                             </td>
-                            <td>{{ $currency->sign }}{{ number_format($courier['total_collected'], 2) }}</td>
-                            <td class="text-success">{{ $currency->sign }}{{ number_format($courier['total_fees_earned'], 2) }}</td>
+                            <td>{{ $currency->formatAmount($courier['total_collected']) }}</td>
+                            <td class="text-success">{{ $currency->formatAmount($courier['total_fees_earned']) }}</td>
                             <td>
                                 <span class="badge bg-success">{{ $courier['deliveries_completed'] }}</span>
                             </td>

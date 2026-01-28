@@ -85,7 +85,7 @@ class UserDashboardBuilder
             'status_label' => __($purchase->status),
             'created_at' => $purchase->created_at?->format('d M Y'),
             'total_formatted' => \App\Domain\Catalog\Models\CatalogItem::convertPrice($purchase->pay_amount ?? 0),
-            'details_url' => route('user-purchase-show', $purchase->id),
+            'details_url' => route('user-purchase', $purchase->id),
         ];
     }
 }

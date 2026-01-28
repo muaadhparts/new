@@ -20,12 +20,12 @@ abstract class DomainEvent
     /**
      * When the event occurred
      */
-    public readonly DateTimeImmutable $occurredAt;
+    public DateTimeImmutable $occurredAt;
 
     /**
      * Unique event ID for tracking
      */
-    public readonly string $eventId;
+    public string $eventId;
 
     public function __construct()
     {

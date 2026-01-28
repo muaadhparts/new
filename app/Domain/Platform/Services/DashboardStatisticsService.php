@@ -187,8 +187,11 @@ class DashboardStatisticsService
                 : __('N/A');
 
             // Edit URL
-            $catalogItem->edit_url = $bestMerchantItem
-                ? route('operator-catalog-item-edit', $bestMerchantItem->id)
+            $catalogItem->edit_url = route('operator-catalog-item-edit', $catalogItem->id);
+
+            // View URL (front page - part result)
+            $catalogItem->view_url = $catalogItem->part_number
+                ? route('front.part-result', $catalogItem->part_number)
                 : '#';
 
             return $catalogItem;

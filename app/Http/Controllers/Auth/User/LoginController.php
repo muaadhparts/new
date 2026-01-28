@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth\User;
 
 use App\Http\Controllers\Controller;
+use App\Domain\Identity\Events\UserLoginEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -48,6 +49,18 @@ class LoginController extends Controller
             if ($currencyBackup) {
                 Session::put(\App\Domain\Platform\Services\MonetaryUnitService::SESSION_KEY, $currencyBackup);
             }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT-DRIVEN: Dispatch UserLoginEvent
+            // All channels (Web, Mobile, API, WhatsApp) get same event
+            // ═══════════════════════════════════════════════════════════════════
+            event(new UserLoginEvent(
+                userId: Auth::id(),
+                loginMethod: 'password',
+                ipAddress: $request->ip(),
+                userAgent: $request->userAgent(),
+                rememberMe: $remember
+            ));
 
             // إذا كان تسجيل دخول البائع
             if ($request->merchant == 1) {

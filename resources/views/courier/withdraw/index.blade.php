@@ -59,8 +59,8 @@
                                         @endif
 
                                         <td class="text-center">
-                                            <span
-                                                class="content ">{{ $sign->sign }}{{ round($withdraw->amount * $sign->value, 2) }}
+                                            <span class="content">
+                                                {{ monetaryUnit()->convertAndFormat($withdraw->amount) }}
                                             </span>
                                         </td>
 

@@ -74,18 +74,18 @@
                     <div class="row text-center">
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Total Receivable') }}</h6>
-                            <h3 class="text-success">{{ $currency->sign }}{{ number_format($summary['total_receivable'], 2) }}</h3>
+                            <h3 class="text-success">{{ $currency->formatAmount($summary['total_receivable']) }}</h3>
                             <small class="text-muted">{{ __('Others owe this party') }}</small>
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Total Payable') }}</h6>
-                            <h3 class="text-danger">{{ $currency->sign }}{{ number_format($summary['total_payable'], 2) }}</h3>
+                            <h3 class="text-danger">{{ $currency->formatAmount($summary['total_payable']) }}</h3>
                             <small class="text-muted">{{ __('This party owes others') }}</small>
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Net Balance') }}</h6>
                             <h3 class="{{ $summary['is_net_positive'] ? 'text-success' : 'text-danger' }}">
-                                {{ $currency->sign }}{{ number_format(abs($summary['net_balance']), 2) }}
+                                {{ $currency->formatAmount(abs($summary['net_balance'])) }}
                             </h3>
                             <small class="{{ $summary['is_net_positive'] ? 'text-success' : 'text-danger' }}">
                                 {{ $summary['is_net_positive'] ? __('Credit Balance') : __('Debit Balance') }}
@@ -188,16 +188,16 @@
                             </td>
                             <td class="text-end">
                                 @if($row['is_debit'])
-                                    <span class="text-danger">{{ $currency->sign }}{{ number_format($row['transaction']->amount, 2) }}</span>
+                                    <span class="text-danger">{{ $currency->formatAmount($row['transaction']->amount) }}</span>
                                 @endif
                             </td>
                             <td class="text-end">
                                 @if($row['is_credit'])
-                                    <span class="text-success">{{ $currency->sign }}{{ number_format($row['transaction']->amount, 2) }}</span>
+                                    <span class="text-success">{{ $currency->formatAmount($row['transaction']->amount) }}</span>
                                 @endif
                             </td>
                             <td class="text-end fw-bold">
-                                {{ $currency->sign }}{{ number_format($row['running_balance'], 2) }}
+                                {{ $currency->formatAmount($row['running_balance']) }}
                             </td>
                             <td>
                                 <span class="badge bg-{{ $row['transaction']->getStatusColor() }}">{{ $row['transaction']->getStatusNameAr() }}</span>
@@ -215,9 +215,9 @@
                     <tfoot class="table-light">
                         <tr class="fw-bold">
                             <td colspan="5" class="text-end">{{ __('Totals') }}:</td>
-                            <td class="text-end text-danger">{{ $currency->sign }}{{ number_format($statement['total_debits'], 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($statement['total_credits'], 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($statement['closing_balance'], 2) }}</td>
+                            <td class="text-end text-danger">{{ $currency->formatAmount($statement['total_debits']) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($statement['total_credits']) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($statement['closing_balance']) }}</td>
                             <td></td>
                         </tr>
                     </tfoot>

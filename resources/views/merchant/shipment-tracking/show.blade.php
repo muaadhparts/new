@@ -55,13 +55,13 @@
                                 @if($shipmentInfo['current']['shipping_cost'])
                                 <tr>
                                     <th>@lang('Shipping Cost'):</th>
-                                    <td>{{ number_format($shipmentInfo['current']['shipping_cost'], 2) }} SAR</td>
+                                    <td>{{ monetaryUnit()->format($shipmentInfo['current']['shipping_cost']) }}</td>
                                 </tr>
                                 @endif
                                 @if($shipmentInfo['current']['cod_amount'])
                                 <tr>
                                     <th>@lang('COD Amount'):</th>
-                                    <td>{{ number_format($shipmentInfo['current']['cod_amount'], 2) }} SAR</td>
+                                    <td>{{ monetaryUnit()->format($shipmentInfo['current']['cod_amount']) }}</td>
                                 </tr>
                                 @endif
                                 @if($shipmentInfo['current']['awb_url'])

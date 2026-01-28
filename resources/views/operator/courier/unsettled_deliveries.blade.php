@@ -75,7 +75,7 @@
                             <td>
                                 @if($delivery->payment_method == 'cod')
                                     <span class="text-danger">
-                                        {{ $currency->sign }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}
+                                        {{ $currency->formatAmount($delivery->purchase_amount ?? 0) }}
                                     </span>
                                     <br><small class="text-muted">({{ __('Courier collected') }})</small>
                                 @else
@@ -83,7 +83,7 @@
                                 @endif
                             </td>
                             <td class="text-success">
-                                {{ $currency->sign }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}
+                                {{ $currency->formatAmount($delivery->delivery_fee ?? 0) }}
                                 <br><small class="text-muted">({{ __('Courier earned') }})</small>
                             </td>
                             <td>
@@ -113,10 +113,10 @@
                         <tr>
                             <td colspan="4" class="text-end"><strong>{{ __('Totals') }}:</strong></td>
                             <td class="text-danger">
-                                <strong>{{ $currency->sign }}{{ number_format($summary['cod_total'], 2) }}</strong>
+                                <strong>{{ $currency->formatAmount($summary['cod_total']) }}</strong>
                             </td>
                             <td class="text-success">
-                                <strong>{{ $currency->sign }}{{ number_format($summary['fees_total'], 2) }}</strong>
+                                <strong>{{ $currency->formatAmount($summary['fees_total']) }}</strong>
                             </td>
                             <td colspan="2"></td>
                         </tr>
@@ -124,7 +124,7 @@
                             <td colspan="4" class="text-end"><strong>{{ __('Net (Fees - COD)') }}:</strong></td>
                             {{-- جميع القيم من الـ Controller - لا حسابات هنا --}}
                             <td colspan="2" class="{{ $summary['net'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                <strong>{{ $currency->sign }}{{ number_format($summary['net'], 2) }}</strong>
+                                <strong>{{ $currency->formatAmount($summary['net']) }}</strong>
                                 @if($summary['net'] >= 0)
                                     <br><small>({{ __('Platform pays Courier') }})</small>
                                 @else

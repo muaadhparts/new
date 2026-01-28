@@ -4,6 +4,7 @@ namespace App\Domain\Commerce\Observers;
 
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Commerce\Models\PurchaseTimeline;
+use App\Domain\Commerce\Events\PurchaseStatusChangedEvent;
 use Illuminate\Support\Str;
 
 /**
@@ -72,6 +73,17 @@ class PurchaseObserver
                 'comment' => __('order.timeline.status_changed', ['status' => $purchase->status]),
                 'actor_type' => 'system',
             ]);
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT-DRIVEN: Dispatch PurchaseStatusChangedEvent
+            // All channels (Web, Mobile, API, WhatsApp) get same event
+            // ═══════════════════════════════════════════════════════════════════
+            event(new PurchaseStatusChangedEvent(
+                purchaseId: $purchase->id,
+                previousStatus: $purchase->getOriginal('status'),
+                newStatus: $purchase->status,
+                changedBy: auth()->id()
+            ));
         }
     }
 

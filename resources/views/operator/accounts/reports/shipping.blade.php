@@ -31,7 +31,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Receivable') }}</h6>
-                    <h2>{{ $currency->sign }}{{ number_format($totalReceivable, 2) }}</h2>
+                    <h2>{{ $currency->formatAmount($totalReceivable) }}</h2>
                 </div>
             </div>
         </div>
@@ -39,7 +39,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Payable') }}</h6>
-                    <h2>{{ $currency->sign }}{{ number_format($totalPayable, 2) }}</h2>
+                    <h2>{{ $currency->formatAmount($totalPayable) }}</h2>
                 </div>
             </div>
         </div>
@@ -47,7 +47,7 @@
             <div class="card {{ $netBalance >= 0 ? 'bg-success' : 'bg-danger' }} text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Net Balance') }}</h6>
-                    <h2>{{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}</h2>
+                    <h2>{{ $currency->formatAmount(abs($netBalance)) }}</h2>
                     <small>{{ $netBalance >= 0 ? __('Credit') : __('Debit') }}</small>
                 </div>
             </div>
@@ -83,14 +83,14 @@
                             </td>
                             <td><code>{{ $item['party']->code }}</code></td>
                             <td class="text-end text-success fw-bold">
-                                {{ $currency->sign }}{{ number_format($item['summary']['total_receivable'], 2) }}
+                                {{ $currency->formatAmount($item['summary']['total_receivable']) }}
                             </td>
                             <td class="text-end text-danger fw-bold">
-                                {{ $currency->sign }}{{ number_format($item['summary']['total_payable'], 2) }}
+                                {{ $currency->formatAmount($item['summary']['total_payable']) }}
                             </td>
                             <td class="text-end">
                                 <span class="fw-bold {{ $item['summary']['is_net_positive'] ? 'text-success' : 'text-danger' }}">
-                                    {{ $currency->sign }}{{ number_format(abs($item['summary']['net_balance']), 2) }}
+                                    {{ $currency->formatAmount(abs($item['summary']['net_balance'])) }}
                                     @if($item['summary']['is_net_positive'])
                                         <i class="fas fa-arrow-up"></i>
                                     @else

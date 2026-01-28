@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\Actions;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Catalog\Events\ProductReviewedEvent;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -80,6 +81,18 @@ class AddReviewAction
             'comment' => $comment,
             'status' => 1, // Pending approval
         ]);
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch ProductReviewedEvent
+        // All channels (Web, Mobile, API, WhatsApp) get same event
+        // ═══════════════════════════════════════════════════════════════════
+        event(new ProductReviewedEvent(
+            reviewId: $review->id,
+            catalogItemId: $catalogItemId,
+            customerId: $userId,
+            rating: $rating,
+            comment: $comment
+        ));
 
         return [
             'success' => true,

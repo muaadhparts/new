@@ -38,17 +38,17 @@
                     <h5 class="text-muted">{{ $summary['merchants']['count'] }} {{ __('Merchant') }}</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Receivable') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($summary['merchants']['receivable'], 2) }}</span>
+                        <span class="text-success fw-bold">{{ $currency->formatAmount($summary['merchants']['receivable']) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Payable') }}:</span>
-                        <span class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($summary['merchants']['payable'], 2) }}</span>
+                        <span class="text-danger fw-bold">{{ $currency->formatAmount($summary['merchants']['payable']) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('Net') }}:</span>
                         <span class="fw-bold {{ $summary['merchants']['net'] >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($summary['merchants']['net']), 2) }}
+                            {{ $currency->formatAmount(abs($summary['merchants']['net'])) }}
                         </span>
                     </div>
                 </div>
@@ -70,17 +70,17 @@
                     <h5 class="text-muted">{{ $summary['couriers']['count'] }} {{ __('Courier') }}</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Receivable') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($summary['couriers']['receivable'], 2) }}</span>
+                        <span class="text-success fw-bold">{{ $currency->formatAmount($summary['couriers']['receivable']) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Payable') }}:</span>
-                        <span class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($summary['couriers']['payable'], 2) }}</span>
+                        <span class="text-danger fw-bold">{{ $currency->formatAmount($summary['couriers']['payable']) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('Net') }}:</span>
                         <span class="fw-bold {{ $summary['couriers']['net'] >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($summary['couriers']['net']), 2) }}
+                            {{ $currency->formatAmount(abs($summary['couriers']['net'])) }}
                         </span>
                     </div>
                 </div>
@@ -102,17 +102,17 @@
                     <h5 class="text-muted">{{ $summary['shipping']['count'] }} {{ __('Company') }}</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Receivable') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($summary['shipping']['receivable'], 2) }}</span>
+                        <span class="text-success fw-bold">{{ $currency->formatAmount($summary['shipping']['receivable']) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Payable') }}:</span>
-                        <span class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($summary['shipping']['payable'], 2) }}</span>
+                        <span class="text-danger fw-bold">{{ $currency->formatAmount($summary['shipping']['payable']) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('Net') }}:</span>
                         <span class="fw-bold {{ $summary['shipping']['net'] >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($summary['shipping']['net']), 2) }}
+                            {{ $currency->formatAmount(abs($summary['shipping']['net'])) }}
                         </span>
                     </div>
                 </div>
@@ -134,17 +134,17 @@
                     <h5 class="text-muted">{{ $summary['payment']['count'] }} {{ __('Company') }}</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Receivable') }}:</span>
-                        <span class="text-success fw-bold">{{ $currency->sign }}{{ number_format($summary['payment']['receivable'], 2) }}</span>
+                        <span class="text-success fw-bold">{{ $currency->formatAmount($summary['payment']['receivable']) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>{{ __('Payable') }}:</span>
-                        <span class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($summary['payment']['payable'], 2) }}</span>
+                        <span class="text-danger fw-bold">{{ $currency->formatAmount($summary['payment']['payable']) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>{{ __('Net') }}:</span>
                         <span class="fw-bold {{ $summary['payment']['net'] >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($summary['payment']['net']), 2) }}
+                            {{ $currency->formatAmount(abs($summary['payment']['net'])) }}
                         </span>
                     </div>
                 </div>
@@ -169,14 +169,14 @@
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Total Receivable') }}</h6>
                             <h3 class="text-success">
-                                {{ $currency->sign }}{{ number_format($dashboard['platform_summary']['total_receivable'] ?? 0, 2) }}
+                                {{ $currency->formatAmount($dashboard['platform_summary']['total_receivable'] ?? 0) }}
                             </h3>
                             <small class="text-muted">{{ __('Amount others owe platform') }}</small>
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted">{{ __('Total Payable') }}</h6>
                             <h3 class="text-danger">
-                                {{ $currency->sign }}{{ number_format($dashboard['platform_summary']['total_payable'] ?? 0, 2) }}
+                                {{ $currency->formatAmount($dashboard['platform_summary']['total_payable'] ?? 0) }}
                             </h3>
                             <small class="text-muted">{{ __('Amount platform owes others') }}</small>
                         </div>
@@ -184,7 +184,7 @@
                             <h6 class="text-muted">{{ __('Net Balance') }}</h6>
                             {{-- Net balance pre-computed in Controller --}}
                             <h3 class="{{ $netBalance >= 0 ? 'text-success' : 'text-danger' }}">
-                                {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
+                                {{ $currency->formatAmount(abs($netBalance)) }}
                                 @if($netBalance >= 0)
                                     <small class="text-success">({{ __('Credit') }})</small>
                                 @else
@@ -279,7 +279,7 @@
                                         <span class="badge bg-secondary">{{ $txn->getTypeNameAr() }}</span>
                                     </td>
                                     <td class="text-end fw-bold">
-                                        {{ $currency->sign }}{{ number_format($txn->amount, 2) }}
+                                        {{ $currency->formatAmount($txn->amount) }}
                                     </td>
                                     <td>
                                         <span class="badge bg-{{ $txn->getStatusColor() }}">{{ $txn->getStatusNameAr() }}</span>

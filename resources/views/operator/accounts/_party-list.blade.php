@@ -79,18 +79,18 @@
                             </td>
                             <td class="text-end">
                                 <span class="text-success fw-bold">
-                                    {{ $currency->sign }}{{ number_format($party->summary['total_receivable'] ?? 0, 2) }}
+                                    {{ $currency->formatAmount($party->summary['total_receivable'] ?? 0) }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 <span class="text-danger fw-bold">
-                                    {{ $currency->sign }}{{ number_format($party->summary['total_payable'] ?? 0, 2) }}
+                                    {{ $currency->formatAmount($party->summary['total_payable'] ?? 0) }}
                                 </span>
                             </td>
                             <td class="text-end">
                                 {{-- Inline calculation - no @php (DATA_FLOW_POLICY) --}}
                                 <span class="fw-bold {{ (($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)) >= 0 ? 'text-success' : 'text-danger' }}">
-                                    {{ $currency->sign }}{{ number_format(abs(($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)), 2) }}
+                                    {{ $currency->formatAmount(abs(($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0))) }}
                                     @if((($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)) >= 0)
                                         <i class="fas fa-arrow-up text-success"></i>
                                     @else

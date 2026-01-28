@@ -4,6 +4,8 @@ namespace App\Domain\Commerce\Services\MerchantCheckout;
 
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Events\PurchasePlacedEvent;
+use App\Domain\Commerce\Events\PaymentReceivedEvent;
 use App\Domain\Merchant\Models\MerchantBranch;
 use App\Domain\Merchant\Models\MerchantCommission;
 use App\Domain\Identity\Models\User;
@@ -179,8 +181,23 @@ class MerchantPurchaseCreator
 
             DB::commit();
 
-            // Send notifications
-            $this->sendNotifications($purchase, $merchant);
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT-DRIVEN ARCHITECTURE: Dispatch domain events
+            // All side effects (notifications, accounting) handled by listeners
+            // Same events for Web, Mobile, API, WhatsApp channels
+            // ═══════════════════════════════════════════════════════════════════
+            PurchasePlacedEvent::dispatch(PurchasePlacedEvent::fromPurchase($purchase));
+
+            // If payment is already completed (online payments), dispatch PaymentReceivedEvent
+            if (($paymentData['payment_status'] ?? '') === 'Completed') {
+                event(new PaymentReceivedEvent(
+                    purchaseId: $purchase->id,
+                    amount: (float) $purchase->pay_amount,
+                    currency: $purchase->currency_name ?? 'SAR',
+                    paymentMethod: $paymentData['method'] ?? 'unknown',
+                    transactionId: $paymentData['txnid'] ?? $paymentData['charge_id'] ?? null
+                ));
+            }
 
             // Store temp data for success page
             $this->sessionManager->storeTempPurchase($purchase);
@@ -399,6 +416,13 @@ class MerchantPurchaseCreator
 
     /**
      * Send notifications
+     *
+     * @deprecated Use PurchasePlacedEvent listeners instead.
+     * This method is kept for reference only. Notifications are now handled by:
+     * - SendPurchaseConfirmationListener (customer email)
+     * - NotifyMerchantsOfPurchaseListener (merchant notification)
+     *
+     * @see \App\Domain\Commerce\Events\PurchasePlacedEvent
      */
     protected function sendNotifications(Purchase $purchase, User $merchant): void
     {
@@ -437,10 +461,14 @@ class MerchantPurchaseCreator
 
     /**
      * Update purchase payment status
+     *
+     * Dispatches PaymentReceivedEvent when status becomes 'Completed'.
      */
     public function updatePaymentStatus(Purchase $purchase, string $status, array $paymentData = []): bool
     {
         try {
+            $previousStatus = $purchase->payment_status;
+
             $purchase->update([
                 'payment_status' => $status,
                 'txnid' => $paymentData['txnid'] ?? $purchase->txnid,
@@ -457,6 +485,20 @@ class MerchantPurchaseCreator
                     'name' => 'Payment Confirmed',
                     'text' => __('Payment has been confirmed.'),
                 ]);
+
+                // ═══════════════════════════════════════════════════════════════════
+                // EVENT-DRIVEN: Dispatch PaymentReceivedEvent
+                // Only dispatch if transitioning TO Completed (not already Completed)
+                // ═══════════════════════════════════════════════════════════════════
+                if ($previousStatus !== 'Completed') {
+                    event(new PaymentReceivedEvent(
+                        purchaseId: $purchase->id,
+                        amount: (float) $purchase->pay_amount,
+                        currency: $purchase->currency_name ?? 'SAR',
+                        paymentMethod: $purchase->method ?? 'unknown',
+                        transactionId: $paymentData['txnid'] ?? $paymentData['charge_id'] ?? null
+                    ));
+                }
             }
 
             return true;

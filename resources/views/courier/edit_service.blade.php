@@ -104,7 +104,7 @@
                                                        id="priceInput"
                                                        step="0.01"
                                                        min="1"
-                                                       value="{{ round($service_area->price * $curr->value, 2) }}"
+                                                       value="{{ monetaryUnit()->convert($service_area->price) }}"
                                                        placeholder="@lang('Enter delivery cost')"
                                                        required>
                                                 @error('price')

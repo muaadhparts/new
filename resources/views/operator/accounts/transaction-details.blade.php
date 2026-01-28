@@ -50,7 +50,7 @@
                             <table class="table table-sm">
                                 <tr>
                                     <td class="text-muted">{{ __('Amount') }}:</td>
-                                    <td><span class="fs-4 fw-bold">{{ $currency->sign }}{{ number_format($transaction->amount, 2) }}</span></td>
+                                    <td><span class="fs-4 fw-bold">{{ $currency->formatAmount($transaction->amount) }}</span></td>
                                 </tr>
                                 <tr>
                                     <td class="text-muted">{{ __('Currency') }}:</td>
@@ -141,7 +141,7 @@
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Total Amount') }}:</td>
-                            <td>{{ $currency->sign }}{{ number_format($transaction->merchantPurchase->total, 2) }}</td>
+                            <td>{{ $currency->formatAmount($transaction->merchantPurchase->total) }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Payment Status') }}:</td>

@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Domain\Shipping\Models\ShipmentTracking;
 use App\Domain\Commerce\Services\PurchaseStatusResolverService;
-use App\Events\ShipmentStatusChanged;
+use App\Domain\Shipping\Events\ShipmentStatusChangedEvent;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -51,6 +51,7 @@ class ShipmentTrackingObserver
 
     /**
      * إطلاق حدث تغير الحالة
+     * Uses Domain Event (ShipmentStatusChangedEvent)
      */
     private function fireStatusChangedEvent(ShipmentTracking $tracking): void
     {
@@ -61,12 +62,22 @@ class ShipmentTrackingObserver
             ->orderBy('id', 'desc')
             ->first();
 
-        $oldStatus = $previousTracking?->status;
+        $oldStatus = $previousTracking?->status ?? ShipmentTracking::STATUS_CREATED;
 
         // إطلاق الحدث فقط إذا تغيرت الحالة
         if ($oldStatus !== $tracking->status) {
             try {
-                event(new ShipmentStatusChanged($tracking, $oldStatus));
+                // ═══════════════════════════════════════════════════════════════════
+                // EVENT-DRIVEN: Use Domain Event instead of legacy event
+                // ═══════════════════════════════════════════════════════════════════
+                event(new ShipmentStatusChangedEvent(
+                    shipmentId: $tracking->id,
+                    purchaseId: $tracking->purchase_id,
+                    merchantId: $tracking->merchant_id,
+                    previousStatus: $oldStatus,
+                    newStatus: $tracking->status,
+                    location: $tracking->location ?? null
+                ));
             } catch (\Exception $e) {
                 Log::warning('ShipmentTrackingObserver: Failed to fire event', [
                     'error' => $e->getMessage(),

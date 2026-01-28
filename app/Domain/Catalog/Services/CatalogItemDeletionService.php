@@ -55,10 +55,25 @@ class CatalogItemDeletionService
     }
 
     /**
-     * Delete all related records (flags, reviews, favorites, clicks, notes).
+     * Delete all related records (flags, reviews, favorites, notes, mappings, etc).
      */
     private function deleteRelatedRecords(CatalogItem $catalogItem): void
     {
+        // Delete code mappings (foreign key constraint)
+        DB::table('catalog_item_code_mappings')
+            ->where('catalog_item_id', $catalogItem->id)
+            ->delete();
+
+        // Delete fitments
+        DB::table('catalog_item_fitments')
+            ->where('catalog_item_id', $catalogItem->id)
+            ->delete();
+
+        // Delete merchant items
+        DB::table('merchant_items')
+            ->where('catalog_item_id', $catalogItem->id)
+            ->delete();
+
         // Delete abuse flags
         $catalogItem->abuseFlags()->delete();
 
@@ -67,9 +82,6 @@ class CatalogItemDeletionService
 
         // Delete favorites
         $catalogItem->favorites()->delete();
-
-        // Delete clicks
-        $catalogItem->clicks()->delete();
 
         // Delete buyer notes (with replies)
         $buyerNotes = $catalogItem->buyerNotes;

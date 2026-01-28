@@ -85,7 +85,7 @@
                                 {{ $batch->toParty->name }}
                             </td>
                             <td class="text-end fw-bold">
-                                {{ $currency->sign }}{{ number_format($batch->total_amount, 2) }}
+                                {{ $currency->formatAmount($batch->total_amount) }}
                             </td>
                             <td>{{ $batch->getPaymentMethodNameAr() }}</td>
                             <td>

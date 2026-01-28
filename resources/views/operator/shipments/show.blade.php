@@ -177,7 +177,7 @@
                         <tr>
                             <td class="text-muted">{{ __('Amount') }}</td>
                             <td class="text-right font-weight-bold text-success">
-                                {{ $purchase->currency_sign }}{{ number_format($purchase->pay_amount, 2) }}
+                                {{ $purchase->pay_amount_formatted }}
                             </td>
                         </tr>
                         <tr>

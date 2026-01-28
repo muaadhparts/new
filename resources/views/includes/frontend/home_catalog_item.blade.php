@@ -38,6 +38,7 @@
         $merchantName = $card->merchantName;
         $branchName = $card->branchName ?? null;
         $offPercentage = $card->offPercentage;
+        $offPercentageFormatted = $card->offPercentageFormatted;
         $inStock = $card->inStock;
         $stockQty = $card->stock;
         $stockText = $card->stockText ?? ($inStock ? __('In Stock') : __('Out of Stock'));
@@ -111,6 +112,7 @@
         $offPercentage = $merchantItem && method_exists($merchantItem, 'offPercentage')
             ? $merchantItem->offPercentage()
             : ($actualCatalogItem && method_exists($actualCatalogItem, 'offPercentage') ? $actualCatalogItem->offPercentage() : 0);
+        $offPercentageFormatted = $offPercentage > 0 ? round($offPercentage) . '%' : null;
 
         $stockQty = $merchantItem ? (int)($merchantItem->stock ?? 0) : 0;
         $inStock = $stockQty > 0 || ($merchantItem && $merchantItem->preordered);
@@ -155,9 +157,9 @@
     <div class="{{ $cardClass }}" id="{{ $cardId }}">
         {{-- Media Section --}}
         <div class="catalogItem-card__media">
-            @if ($offPercentage && round($offPercentage) > 0)
+            @if ($offPercentageFormatted)
                 <span class="catalogItem-card__badge catalogItem-card__badge--discount">
-                    -{{ round($offPercentage) }}%
+                    -{{ $offPercentageFormatted }}
                 </span>
             @endif
 
@@ -230,9 +232,9 @@
     <div class="{{ $cardClass }}" id="{{ $cardId }}">
         {{-- Media Section --}}
         <div class="catalogItem-card__media">
-            @if ($offPercentage && round($offPercentage) > 0)
+            @if ($offPercentageFormatted)
                 <span class="catalogItem-card__badge catalogItem-card__badge--discount">
-                    -{{ round($offPercentage) }}%
+                    -{{ $offPercentageFormatted }}
                 </span>
             @endif
 

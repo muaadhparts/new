@@ -10,6 +10,8 @@ use App\Http\Resources\CatalogReviewResource;
 use App\Http\Resources\NoteResponseResource;
 use App\Domain\Catalog\Models\BuyerNote;
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Events\ProductViewedEvent;
+use Illuminate\Support\Facades\Auth;
 
 class CatalogItemController extends Controller
 {
@@ -29,6 +31,17 @@ class CatalogItemController extends Controller
             if (!$catalogItem) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Item not found."]]);
             }
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT-DRIVEN: Dispatch ProductViewedEvent
+            // ═══════════════════════════════════════════════════════════════════
+            event(new ProductViewedEvent(
+                catalogItemId: $catalogItem->id,
+                customerId: Auth::id(),
+                sessionId: request()->header('X-Session-Id'),
+                source: 'api'
+            ));
+
             return response()->json(['status' => true, 'data' => new CatalogItemDetailsResource($catalogItem), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

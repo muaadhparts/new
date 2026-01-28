@@ -145,9 +145,9 @@
                                                     <del class="catalog-offers-price-old">
                                                         {{ $branchData['offer']['previous_price_formatted'] }}
                                                     </del>
-                                                    @if(($branchData['offer']['discount_percentage'] ?? 0) > 0)
+                                                    @if($branchData['offer']['discount_percentage_formatted'] ?? null)
                                                         <span class="catalog-badge catalog-badge-danger">
-                                                            -{{ number_format($branchData['offer']['discount_percentage'], 0) }}%
+                                                            -{{ $branchData['offer']['discount_percentage_formatted'] }}
                                                         </span>
                                                     @endif
                                                 @endif

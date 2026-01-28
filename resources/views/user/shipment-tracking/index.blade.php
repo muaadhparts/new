@@ -26,7 +26,7 @@
                                     <strong>{{ $shipment->purchase->purchase_number ?? 'N/A' }}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        {{ $shipment->purchase->currency_sign ?? '' }}{{ number_format($shipment->purchase->pay_amount ?? 0, 2) }}
+                                        {{ $shipment->purchase->pay_amount_formatted ?? '-' }}
                                     </small>
                                 </td>
                                 <td>

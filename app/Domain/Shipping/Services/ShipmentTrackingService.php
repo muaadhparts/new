@@ -6,6 +6,8 @@ use App\Domain\Shipping\Models\ShipmentTracking;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Events\ShipmentCreatedEvent;
+use App\Domain\Shipping\Events\ShipmentStatusChangedEvent;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -69,6 +71,39 @@ class ShipmentTrackingService
             'status' => $status,
             'source' => $data['source'] ?? 'system',
         ]);
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch appropriate event based on status
+        // All channels (Web, Mobile, API, WhatsApp) get same events
+        // ═══════════════════════════════════════════════════════════════════
+        if ($status === ShipmentTracking::STATUS_CREATED) {
+            // New shipment created
+            event(new ShipmentCreatedEvent(
+                shipmentId: $tracking->id,
+                purchaseId: $purchaseId,
+                merchantId: $merchantId,
+                trackingNumber: $data['tracking_number'] ?? '',
+                carrier: $data['provider'] ?? $data['company_name'] ?? 'unknown'
+            ));
+        } else {
+            // Status update - get previous status from last record
+            $previousTracking = ShipmentTracking::where('purchase_id', $purchaseId)
+                ->where('merchant_id', $merchantId)
+                ->where('id', '!=', $tracking->id)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            $previousStatus = $previousTracking?->status ?? ShipmentTracking::STATUS_CREATED;
+
+            event(new ShipmentStatusChangedEvent(
+                shipmentId: $tracking->id,
+                purchaseId: $purchaseId,
+                previousStatus: $previousStatus,
+                newStatus: $status,
+                location: $data['location'] ?? null,
+                notes: $data['message'] ?? null
+            ));
+        }
 
         // Note: Purchase status is now updated automatically via ShipmentTrackingObserver
         // calling PurchaseStatusResolverService - NO direct status modification here

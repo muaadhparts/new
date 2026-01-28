@@ -85,7 +85,7 @@
                                 @enderror
                             </div>
                             @if($party && $pendingBalance > 0)
-                                <small class="text-muted">{{ __('Pending balance') }}: {{ $currency->sign }}{{ number_format($pendingBalance, 2) }}</small>
+                                <small class="text-muted">{{ __('Pending balance') }}: {{ $currency->formatAmount($pendingBalance) }}</small>
                             @endif
                         </div>
 
@@ -173,7 +173,7 @@
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Pending Balance') }}:</td>
-                            <td class="text-danger fw-bold">{{ $currency->sign }}{{ number_format($pendingBalance, 2) }}</td>
+                            <td class="text-danger fw-bold">{{ $currency->formatAmount($pendingBalance) }}</td>
                         </tr>
                     </table>
                 </div>

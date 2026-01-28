@@ -187,19 +187,19 @@
             <div class="summary-card success">
                 <div class="inner">
                     <div class="label">{{ __('Shipping Fees') }}</div>
-                    <div class="value">{{ $currency->sign }}{{ number_format($totalShippingFees, 2) }}</div>
+                    <div class="value">{{ $currency->formatAmount($totalShippingFees) }}</div>
                 </div>
             </div>
             <div class="summary-card warning">
                 <div class="inner">
                     <div class="label">{{ __('COD Collected') }}</div>
-                    <div class="value">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</div>
+                    <div class="value">{{ $currency->formatAmount($totalCodCollected) }}</div>
                 </div>
             </div>
             <div class="summary-card {{ $netBalance >= 0 ? 'success' : 'danger' }}">
                 <div class="inner">
                     <div class="label">{{ __('Net Balance') }}</div>
-                    <div class="value">{{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}</div>
+                    <div class="value">{{ $currency->formatAmount(abs($netBalance)) }}</div>
                 </div>
             </div>
         </div>
@@ -216,7 +216,7 @@
                     <strong>{{ __('Owes to Platform') }}:</strong>
                 </td>
                 <td class="text-danger" style="font-weight: bold;">
-                    {{ $currency->sign }}{{ number_format($owesToPlatform, 2) }}
+                    {{ $currency->formatAmount($owesToPlatform) }}
                 </td>
             </tr>
             <tr>
@@ -224,20 +224,20 @@
                     <strong>{{ __('Owes to Merchants') }}:</strong>
                 </td>
                 <td class="text-warning" style="font-weight: bold;">
-                    {{ $currency->sign }}{{ number_format($owesToMerchant, 2) }}
+                    {{ $currency->formatAmount($owesToMerchant) }}
                 </td>
             </tr>
             <tr class="pending">
                 <td>
                     <strong>{{ __('Pending to Platform') }}:</strong>
                 </td>
-                <td>{{ $currency->sign }}{{ number_format($pendingToPlatform, 2) }}</td>
+                <td>{{ $currency->formatAmount($pendingToPlatform) }}</td>
             </tr>
             <tr class="pending">
                 <td>
                     <strong>{{ __('Pending to Merchants') }}:</strong>
                 </td>
-                <td>{{ $currency->sign }}{{ number_format($pendingToMerchant, 2) }}</td>
+                <td>{{ $currency->formatAmount($pendingToMerchant) }}</td>
             </tr>
         </table>
     </div>
@@ -265,22 +265,22 @@
                 <td>{{ $entry['merchant_name'] }}</td>
                 <td class="text-end text-success">
                     @if($entry['shipping_fee'] > 0)
-                        {{ $currency->sign }}{{ number_format($entry['shipping_fee'], 2) }}
+                        {{ $currency->formatAmount($entry['shipping_fee']) }}
                     @endif
                 </td>
                 <td class="text-end text-warning">
                     @if($entry['cod_collected'] > 0)
-                        {{ $currency->sign }}{{ number_format($entry['cod_collected'], 2) }}
+                        {{ $currency->formatAmount($entry['cod_collected']) }}
                     @endif
                 </td>
                 <td class="text-end text-danger">
                     @if($entry['owes_platform'] > 0)
-                        {{ $currency->sign }}{{ number_format($entry['owes_platform'], 2) }}
+                        {{ $currency->formatAmount($entry['owes_platform']) }}
                     @endif
                 </td>
                 <td class="text-end text-info">
                     @if($entry['owes_merchant'] > 0)
-                        {{ $currency->sign }}{{ number_format($entry['owes_merchant'], 2) }}
+                        {{ $currency->formatAmount($entry['owes_merchant']) }}
                     @endif
                 </td>
                 <td class="text-center">
@@ -291,7 +291,7 @@
                     @endif
                 </td>
                 <td class="text-end">
-                    {{ $currency->sign }}{{ number_format(abs($entry['balance']), 2) }}
+                    {{ $currency->formatAmount(abs($entry['balance'])) }}
                     @if($entry['balance'] >= 0)
                         <span class="badge badge-success">CR</span>
                     @else
@@ -309,13 +309,13 @@
         <tfoot>
             <tr>
                 <td colspan="3">{{ __('Totals') }}</td>
-                <td class="text-end">{{ $currency->sign }}{{ number_format($totalShippingFees, 2) }}</td>
-                <td class="text-end">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</td>
-                <td class="text-end">{{ $currency->sign }}{{ number_format($owesToPlatform, 2) }}</td>
-                <td class="text-end">{{ $currency->sign }}{{ number_format($owesToMerchant, 2) }}</td>
+                <td class="text-end">{{ $currency->formatAmount($totalShippingFees) }}</td>
+                <td class="text-end">{{ $currency->formatAmount($totalCodCollected) }}</td>
+                <td class="text-end">{{ $currency->formatAmount($owesToPlatform) }}</td>
+                <td class="text-end">{{ $currency->formatAmount($owesToMerchant) }}</td>
                 <td></td>
                 <td class="text-end">
-                    {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
+                    {{ $currency->formatAmount(abs($netBalance)) }}
                     @if($netBalance >= 0)
                         <span class="badge badge-success">CR</span>
                     @else

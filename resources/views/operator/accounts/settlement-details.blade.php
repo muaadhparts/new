@@ -147,7 +147,7 @@
                                     <td>
                                         <span class="badge bg-secondary">{{ $entry->getTypeNameAr() }}</span>
                                     </td>
-                                    <td class="text-end">{{ $currency->sign }}{{ number_format($entry->amount, 2) }}</td>
+                                    <td class="text-end">{{ $currency->formatAmount($entry->amount) }}</td>
                                     <td>
                                         <span class="badge bg-{{ $entry->getStatusColor() }}">{{ $entry->getStatusNameAr() }}</span>
                                     </td>

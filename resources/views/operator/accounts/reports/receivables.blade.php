@@ -23,7 +23,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Receivable') }}</h6>
-                    <h2>{{ $currency->sign }}{{ number_format($total, 2) }}</h2>
+                    <h2>{{ $currency->formatAmount($total) }}</h2>
                     <small>{{ __('Amount others owe the platform') }}</small>
                 </div>
             </div>
@@ -41,7 +41,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Average Balance') }}</h6>
-                    <h2>{{ $currency->sign }}{{ $receivables->count() > 0 ? number_format($total / $receivables->count(), 2) : '0.00' }}</h2>
+                    <h2>{{ $receivables->count() > 0 ? $currency->formatAmount($total / $receivables->count()) : $currency->formatAmount(0) }}</h2>
                     <small>{{ __('Per party') }}</small>
                 </div>
             </div>
@@ -76,9 +76,9 @@
                                 <br><small class="text-muted">{{ $balance->counterparty->code }}</small>
                             </td>
                             <td>{{ $balance->counterparty->getTypeNameAr() }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($balance->total_amount, 2) }}</td>
-                            <td class="text-end text-success fw-bold">{{ $currency->sign }}{{ number_format($balance->pending_amount, 2) }}</td>
-                            <td class="text-end text-muted">{{ $currency->sign }}{{ number_format($balance->settled_amount, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($balance->total_amount) }}</td>
+                            <td class="text-end text-success fw-bold">{{ $currency->formatAmount($balance->pending_amount) }}</td>
+                            <td class="text-end text-muted">{{ $currency->formatAmount($balance->settled_amount) }}</td>
                             <td class="text-center">
                                 <span class="badge bg-secondary">{{ $balance->transaction_count }}</span>
                             </td>
@@ -100,7 +100,7 @@
                     <tfoot class="table-success">
                         <tr class="fw-bold">
                             <td colspan="3" class="text-end">{{ __('Total') }}:</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($total, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($total) }}</td>
                             <td colspan="3"></td>
                         </tr>
                     </tfoot>

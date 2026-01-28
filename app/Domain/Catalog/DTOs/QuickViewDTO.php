@@ -44,6 +44,8 @@ class QuickViewDTO
 
     // Ratings
     public ?float $avgRating;
+    public int $roundedRating;  // For star display (1-5)
+    public ?string $formattedRating;
     public ?int $reviewCount;
 
     // Fitment brands
@@ -124,6 +126,8 @@ class QuickViewDTO
 
         // Ratings
         $dto->avgRating = $catalogItem->catalog_reviews_avg_rating ?? null;
+        $dto->roundedRating = $dto->avgRating !== null ? (int) round($dto->avgRating) : 0;
+        $dto->formattedRating = $dto->avgRating !== null ? number_format($dto->avgRating, 1) : null;
         $dto->reviewCount = null; // Can be loaded if needed
 
         // Fitment brands

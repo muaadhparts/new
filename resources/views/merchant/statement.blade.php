@@ -62,7 +62,7 @@
                 <div class="card {{ $closing_balance >= 0 ? 'bg-info' : 'bg-warning' }} text-white">
                     <div class="card-body text-center">
                         <h6>@lang('Closing Balance')</h6>
-                        <h3>{{ $currencySign }}{{ number_format(abs($closing_balance), 2) }}</h3>
+                        <h3>{{ monetaryUnit()->format(abs($closing_balance)) }}</h3>
                         @if($closing_balance >= 0)
                             <small>@lang('Platform owes you')</small>
                         @else
@@ -78,7 +78,7 @@
             <div class="card-body d-flex justify-content-between align-items-center">
                 <strong>@lang('Opening Balance')</strong>
                 <span class="{{ $opening_balance >= 0 ? 'text-success' : 'text-danger' }}">
-                    {{ $currencySign }}{{ number_format(abs($opening_balance), 2) }}
+                    {{ monetaryUnit()->format(abs($opening_balance)) }}
                     @if($opening_balance >= 0)
                         <small class="text-muted">(@lang('Platform owed you'))</small>
                     @else
@@ -138,16 +138,16 @@
                                 </td>
                                 <td class="text-end text-success">
                                     @if($entry['credit'] > 0)
-                                        {{ $currencySign }}{{ number_format($entry['credit'], 2) }}
+                                        {{ monetaryUnit()->format($entry['credit']) }}
                                     @endif
                                 </td>
                                 <td class="text-end text-danger">
                                     @if($entry['debit'] > 0)
-                                        {{ $currencySign }}{{ number_format($entry['debit'], 2) }}
+                                        {{ monetaryUnit()->format($entry['debit']) }}
                                     @endif
                                 </td>
                                 <td class="text-end {{ $entry['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                    <strong>{{ $currencySign }}{{ number_format(abs($entry['balance']), 2) }}</strong>
+                                    <strong>{{ monetaryUnit()->format(abs($entry['balance'])) }}</strong>
                                     @if($entry['balance'] >= 0)
                                         <small class="badge bg-success">CR</small>
                                     @else
@@ -170,7 +170,7 @@
                                 <td class="text-end text-success">{{ $total_credit }}</td>
                                 <td class="text-end text-danger">{{ $total_debit }}</td>
                                 <td class="text-end {{ $closing_balance >= 0 ? 'text-success' : 'text-danger' }}">
-                                    <strong>{{ $currencySign }}{{ number_format(abs($closing_balance), 2) }}</strong>
+                                    <strong>{{ monetaryUnit()->format(abs($closing_balance)) }}</strong>
                                     @if($closing_balance >= 0)
                                         <small class="badge bg-success">CR</small>
                                     @else

@@ -135,6 +135,7 @@ class MerchantController extends MerchantBaseController
                         ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
                         : asset('assets/images/noimage.png'),
                     'editUrl' => route('merchant-catalog-item-edit', $item->id),
+                    'viewUrl' => $catalogItem?->part_number ? route('front.part-result', $catalogItem->part_number) : '#',
                 ];
             });
 

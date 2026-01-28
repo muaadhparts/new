@@ -215,16 +215,16 @@
         <div class="summary-row">
             <div class="summary-card credit">
                 <h4>{{ __('Total Credit') }}</h4>
-                <div class="amount">{{ $currency_sign }} {{ number_format($total_credit, 2) }}</div>
+                <div class="amount">{{ monetaryUnit()->format($total_credit) }}</div>
             </div>
             <div class="summary-card debit">
                 <h4>{{ __('Total Debit') }}</h4>
-                <div class="amount">{{ $currency_sign }} {{ number_format($total_debit, 2) }}</div>
+                <div class="amount">{{ monetaryUnit()->format($total_debit) }}</div>
             </div>
             <div class="summary-card balance">
                 <h4>{{ __('Closing Balance') }}</h4>
                 <div class="amount">
-                    {{ $currency_sign }} {{ number_format(abs($closing_balance), 2) }}
+                    {{ monetaryUnit()->format(abs($closing_balance)) }}
                     @if($closing_balance >= 0)
                         ({{ __('CR') }})
                     @else
@@ -255,7 +255,7 @@
                     <td class="text-end">-</td>
                     <td class="text-end">-</td>
                     <td class="text-end">
-                        {{ $currency_sign }} {{ number_format(abs($opening_balance), 2) }}
+                        {{ monetaryUnit()->format(abs($opening_balance)) }}
                         @if($opening_balance >= 0)
                             <span class="badge badge-cr">CR</span>
                         @else
@@ -280,16 +280,16 @@
                     </td>
                     <td class="text-end credit-amount">
                         @if(($entry['credit'] ?? 0) > 0)
-                            {{ $currency_sign }} {{ number_format($entry['credit'], 2) }}
+                            {{ monetaryUnit()->format($entry['credit']) }}
                         @endif
                     </td>
                     <td class="text-end debit-amount">
                         @if(($entry['debit'] ?? 0) > 0)
-                            {{ $currency_sign }} {{ number_format($entry['debit'], 2) }}
+                            {{ monetaryUnit()->format($entry['debit']) }}
                         @endif
                     </td>
                     <td class="text-end">
-                        {{ $currency_sign }} {{ number_format(abs($entry['balance'] ?? 0), 2) }}
+                        {{ monetaryUnit()->format(abs($entry['balance'] ?? 0)) }}
                         @if(($entry['balance'] ?? 0) >= 0)
                             <span class="badge badge-cr">CR</span>
                         @else
@@ -309,10 +309,10 @@
             <tfoot>
                 <tr>
                     <td colspan="4" style="text-align: left;">{{ __('Closing Balance') }}</td>
-                    <td class="text-end credit-amount">{{ $currency_sign }} {{ number_format($total_credit, 2) }}</td>
-                    <td class="text-end debit-amount">{{ $currency_sign }} {{ number_format($total_debit, 2) }}</td>
+                    <td class="text-end credit-amount">{{ monetaryUnit()->format($total_credit) }}</td>
+                    <td class="text-end debit-amount">{{ monetaryUnit()->format($total_debit) }}</td>
                     <td class="text-end">
-                        {{ $currency_sign }} {{ number_format(abs($closing_balance), 2) }}
+                        {{ monetaryUnit()->format(abs($closing_balance)) }}
                         @if($closing_balance >= 0)
                             <span class="badge badge-cr">CR</span>
                         @else

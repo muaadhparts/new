@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Events\ShipmentStatusChanged;
 use App\Domain\Shipping\Models\ShipmentTracking;
 use App\Domain\Shipping\Services\TryotoService;
 use Illuminate\Console\Command;

@@ -6,6 +6,7 @@ use App\Classes\MuaadhMailer;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Identity\Models\User;
 use App\Domain\Accounting\Models\Withdraw;
+use App\Domain\Merchant\Events\MerchantStatusChangedEvent;
 use Auth;
 use Carbon\Carbon;
 use Datatables;
@@ -49,8 +50,25 @@ class MerchantController extends OperatorBaseController
     public function status($id1, $id2)
     {
         $user = User::findOrFail($id1);
+        $previousStatus = $user->is_merchant;
         $user->is_merchant = $id2;
         $user->update();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch MerchantStatusChangedEvent
+        // ═══════════════════════════════════════════════════════════════════
+        $statusMap = [
+            0 => MerchantStatusChangedEvent::STATUS_INACTIVE,
+            1 => MerchantStatusChangedEvent::STATUS_PENDING,
+            2 => MerchantStatusChangedEvent::STATUS_ACTIVE,
+        ];
+        event(new MerchantStatusChangedEvent(
+            merchantId: $user->id,
+            previousStatus: $statusMap[$previousStatus] ?? 'unknown',
+            newStatus: $statusMap[$id2] ?? 'unknown',
+            changedBy: Auth::id()
+        ));
+
         //--- Redirect Section
         $msg[0] = __('Status Updated Successfully.');
         return response()->json($msg);
@@ -181,13 +199,11 @@ class MerchantController extends OperatorBaseController
                 return \PriceHelper::showAdminCurrencyPrice($data->merchantSizePrice());
             })
             ->addColumn('status', function (MerchantItem $data) {
-                $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
-                return '<div class="action-list">
-                    <select class="process select droplinks ' . $class . '">
-                        <option data-val="1" value="' . route('operator-merchant-item-status', ['id' => $data->id, 'status' => 1]) . '" ' . ($data->status == 1 ? 'selected' : '') . '>' . __("Activated") . '</option>
-                        <option data-val="0" value="' . route('operator-merchant-item-status', ['id' => $data->id, 'status' => 0]) . '" ' . ($data->status == 0 ? 'selected' : '') . '>' . __("Deactivated") . '</option>
-                    </select>
-                </div>';
+                // Display-only status badge (operator cannot change merchant item status)
+                if ($data->status == 1) {
+                    return '<span class="badge badge-success">' . __('Activated') . '</span>';
+                }
+                return '<span class="badge badge-danger">' . __('Deactivated') . '</span>';
             })
             ->addColumn('action', function (MerchantItem $data) {
                 $dt = $data->catalogItem;

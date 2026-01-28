@@ -39,7 +39,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center py-3">
                     <h6 class="mb-1">{{ __('Fees') }}</h6>
-                    <h4 class="mb-0">{{ $currency->sign }}{{ number_format($totalFees, 2) }}</h4>
+                    <h4 class="mb-0">{{ $currency->formatAmount($totalFees) }}</h4>
                 </div>
             </div>
         </div>
@@ -47,7 +47,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center py-3">
                     <h6 class="mb-1">{{ __('COD') }}</h6>
-                    <h4 class="mb-0">{{ $currency->sign }}{{ number_format($totalCod, 2) }}</h4>
+                    <h4 class="mb-0">{{ $currency->formatAmount($totalCod) }}</h4>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center py-3">
                     <h6 class="mb-1">{{ __('Owes Platform') }}</h6>
-                    <h4 class="mb-0">{{ $currency->sign }}{{ number_format($totalOwesToPlatform, 2) }}</h4>
+                    <h4 class="mb-0">{{ $currency->formatAmount($totalOwesToPlatform) }}</h4>
                 </div>
             </div>
         </div>
@@ -103,21 +103,21 @@
                                 <span class="badge bg-info">{{ number_format($company['shipment_count']) }}</span>
                             </td>
                             <td class="text-end text-success fw-bold">
-                                {{ $currency->sign }}{{ number_format($company['total_shipping_fees'], 2) }}
+                                {{ $currency->formatAmount($company['total_shipping_fees']) }}
                             </td>
                             <td class="text-end text-warning fw-bold">
-                                {{ $currency->sign }}{{ number_format($company['total_cod_collected'], 2) }}
+                                {{ $currency->formatAmount($company['total_cod_collected']) }}
                             </td>
                             <td class="text-end text-danger">
                                 @if($company['owes_platform'] > 0)
-                                    {{ $currency->sign }}{{ number_format($company['owes_platform'], 2) }}
+                                    {{ $currency->formatAmount($company['owes_platform']) }}
                                 @else
                                     -
                                 @endif
                             </td>
                             <td class="text-end text-info">
                                 @if($company['owes_merchant'] > 0)
-                                    {{ $currency->sign }}{{ number_format($company['owes_merchant'], 2) }}
+                                    {{ $currency->formatAmount($company['owes_merchant']) }}
                                 @else
                                     -
                                 @endif
@@ -157,10 +157,10 @@
                         <tr class="fw-bold">
                             <td>{{ __('Totals') }}</td>
                             <td class="text-center">{{ number_format($totalShipments) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalFees, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalCod, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalOwesToPlatform, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalOwesToMerchant, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($totalFees) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($totalCod) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($totalOwesToPlatform) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($totalOwesToMerchant) }}</td>
                             <td class="text-center">{{ number_format($totalPending) }}</td>
                             <td></td>
                         </tr>

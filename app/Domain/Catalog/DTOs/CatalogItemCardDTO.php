@@ -40,6 +40,7 @@ class CatalogItemCardDTO
     public bool $inStock;
     public bool $hasMerchant;
     public int $offPercentage;
+    public ?string $offPercentageFormatted;
     public string $detailsUrl;
     public bool $isInFavorites;
     public string $favoriteUrl;
@@ -113,6 +114,7 @@ class CatalogItemCardDTO
         $dto->inStock = $dto->stock > 0 || $dto->preordered;
         $dto->hasMerchant = $dto->merchantId > 0;
         $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
+        $dto->offPercentageFormatted = $dto->offPercentage > 0 ? $dto->offPercentage . '%' : null;
         $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId, $dto->part_number);
 
         // Favorites
@@ -186,6 +188,7 @@ class CatalogItemCardDTO
         $dto->inStock = false;
         $dto->hasMerchant = false;
         $dto->offPercentage = 0;
+        $dto->offPercentageFormatted = null;
         $dto->detailsUrl = '#';
 
         // Favorites (catalog item level - no merchant, so no actions available)
@@ -265,6 +268,7 @@ class CatalogItemCardDTO
             $dto->inStock = $dto->stock > 0 || $dto->preordered;
             $dto->hasMerchant = true;
             $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
+            $dto->offPercentageFormatted = $dto->offPercentage > 0 ? $dto->offPercentage . '%' : null;
             $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId, $dto->part_number);
 
             // Favorites (based on merchant item)
@@ -304,6 +308,7 @@ class CatalogItemCardDTO
             $dto->inStock = false;
             $dto->hasMerchant = false;
             $dto->offPercentage = 0;
+            $dto->offPercentageFormatted = null;
             $dto->detailsUrl = '#';
 
             // Favorites (catalog item level)

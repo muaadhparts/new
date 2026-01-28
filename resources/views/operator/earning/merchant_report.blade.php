@@ -83,7 +83,7 @@
                     <strong>{{ __('Net Platform Position') }}</strong>
                 </div>
                 <div class="card-body text-center">
-                    <h3>{{ $currency->sign }}{{ number_format(abs($net_platform_position), 2) }}</h3>
+                    <h3>{{ $currency->formatAmount(abs($net_platform_position)) }}</h3>
                     @if($net_platform_position >= 0)
                         <small class="text-success">{{ __('Platform is owed this amount') }}</small>
                     @else
@@ -102,7 +102,7 @@
                     <strong>{{ __('Platform Payments') }}</strong>
                 </div>
                 <div class="card-body text-center">
-                    <h4>{{ $currency->sign }}{{ number_format($platform_payments['total'] ?? 0, 2) }}</h4>
+                    <h4>{{ $currency->formatAmount($platform_payments['total'] ?? 0) }}</h4>
                     <span class="badge bg-primary">{{ $platform_payments['count'] ?? 0 }} {{ __('Orders') }}</span>
                 </div>
             </div>
@@ -113,7 +113,7 @@
                     <strong>{{ __('Merchant Payments') }}</strong>
                 </div>
                 <div class="card-body text-center">
-                    <h4>{{ $currency->sign }}{{ number_format($merchant_payments['total'] ?? 0, 2) }}</h4>
+                    <h4>{{ $currency->formatAmount($merchant_payments['total'] ?? 0) }}</h4>
                     <span class="badge bg-warning">{{ $merchant_payments['count'] ?? 0 }} {{ __('Orders') }}</span>
                 </div>
             </div>
@@ -168,12 +168,12 @@
                         @forelse($merchants as $merchant)
                         <tr>
                             <td>{{ $merchant['merchant_name'] }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_sales'], 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($merchant['total_commission'], 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_tax'], 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_net'], 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($merchant['total_sales']) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($merchant['total_commission']) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($merchant['total_tax']) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($merchant['total_net']) }}</td>
                             <td class="text-end {{ $merchant['net_balance'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                {{ $currency->sign }}{{ number_format($merchant['net_balance'], 2) }}
+                                {{ $currency->formatAmount($merchant['net_balance']) }}
                                 @if($merchant['net_balance'] > 0)
                                     <small>({{ __('Owed') }})</small>
                                 @elseif($merchant['net_balance'] < 0)

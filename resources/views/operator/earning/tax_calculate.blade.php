@@ -115,8 +115,8 @@
                         @foreach($by_merchant as $merchant)
                         <tr>
                             <td>{{ $merchant['merchant_name'] }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_sales'], 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($merchant['total_tax'], 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($merchant['total_sales']) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($merchant['total_tax']) }}</td>
                             <td class="text-end">{{ $merchant['orders_count'] }}</td>
                         </tr>
                         @endforeach
@@ -151,8 +151,8 @@
                         <tr>
                             <td><code>{{ $purchase->purchase_number }}</code></td>
                             <td>{{ $purchase->user?->shop_name ?? $purchase->user?->name ?? '-' }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($purchase->price, 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($purchase->tax_amount, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($purchase->price) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($purchase->tax_amount) }}</td>
                             <td>
                                 @if($purchase->payment_owner_id === 0)
                                     <span class="badge bg-primary">{{ __('Platform') }}</span>

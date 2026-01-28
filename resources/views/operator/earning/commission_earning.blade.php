@@ -150,8 +150,8 @@
                         @foreach($by_merchant as $merchant)
                         <tr>
                             <td>{{ $merchant['merchant_name'] }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_sales'], 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($merchant['total_commission'], 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($merchant['total_sales']) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($merchant['total_commission']) }}</td>
                             <td class="text-end">{{ $merchant['avg_commission_rate'] }}%</td>
                             <td class="text-end">{{ $merchant['orders_count'] }}</td>
                         </tr>
@@ -187,9 +187,9 @@
                         <tr>
                             <td><code>{{ $purchase->purchase_number }}</code></td>
                             <td>{{ $purchase->user?->shop_name ?? $purchase->user?->name ?? '-' }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($purchase->price, 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($purchase->commission_amount, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($purchase->net_amount, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($purchase->price) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($purchase->commission_amount) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($purchase->net_amount) }}</td>
                             <td>{{ $purchase->created_at->format('d-m-Y') }}</td>
                         </tr>
                         @empty

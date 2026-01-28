@@ -12,10 +12,14 @@
                 <div class="summary-inner-box">
                     <div class="inputs-wrapper">
                         @forelse($shipping as $data)
+                        @php
+                            $convertedPrice = monetaryUnit()->convert($data->price);
+                            $formattedPrice = monetaryUnit()->convertAndFormat($data->price);
+                        @endphp
                         <div class="gs-radio-wrapper">
                             <input type="radio" class="shipping" ref="{{$merchant_id}}"
-                                data-price="{{ round($data->price * $curr->value,2) }}"
-                                view="{{ $curr->sign }}{{ round($data->price * $curr->value,2) }}"
+                                data-price="{{ $convertedPrice }}"
+                                view="{{ $formattedPrice }}"
                                 data-form="{{$data->name}}" id="free-shepping{{ $data->id }}"
                                 name="shipping[{{$merchant_id}}]" value="{{ $data->id }}" {{ ($loop->first) ?
                             'checked' :
@@ -33,7 +37,7 @@
                             <label for="free-shepping{{ $data->id }}">
                                 {{ $data->name }}
                                 @if($data->price != 0)
-                                + {{ $curr->sign }}{{ round($data->price * $curr->value,2) }}
+                                + {{ $formattedPrice }}
                                 @endif
                                 <small>{{ $data->subtitle }}</small>
                             </label>

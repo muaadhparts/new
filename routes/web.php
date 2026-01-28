@@ -302,7 +302,6 @@ Route::prefix('operator')->group(function () {
     Route::group(['middleware' => 'permissions:catalog_items'], function () {
         Route::get('/catalog-items/datatables', 'Operator\CatalogItemController@datatables')->name('operator-catalog-item-datatables');
         Route::get('/catalog-items', 'Operator\CatalogItemController@index')->name('operator-catalog-item-index');
-        Route::get('/catalog-items/deactive', 'Operator\CatalogItemController@deactive')->name('operator-catalog-item-deactive');
 
         // CREATE SECTION
         Route::get('/catalog-items/{slug}/create', 'Operator\CatalogItemController@create')->name('operator-catalog-item-create');
@@ -315,9 +314,7 @@ Route::prefix('operator')->group(function () {
         // DELETE SECTION
         Route::delete('/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-catalog-item-delete');
 
-        // STATUS & SETTINGS
-        Route::get('/catalog-items/status/{id1}/{id2}', 'Operator\CatalogItemController@status')->name('operator-catalog-item-status');
-        Route::get('/merchant-items/status/{id}/{status}', 'Operator\CatalogItemController@merchantItemStatus')->name('operator-merchant-item-status');
+        // SETTINGS
         Route::get('/catalog-items/settings', 'Operator\CatalogItemController@catalogItemSettings')->name('operator-gs-catalog-item-settings');
         Route::post('/catalog-items/settings/update', 'Operator\CatalogItemController@settingUpdate')->name('operator-gs-catalog-item-settings-update');
 
@@ -1050,10 +1047,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/favorite/add/merchant/{merchantItemId}', 'User\FavoriteController@add')->name('user-favorite-add-merchant');
         Route::get('/favorite/remove/{id}', 'User\FavoriteController@remove')->name('user-favorite-remove');
         // User Favorites Ends
-
-        // User Review
-        Route::post('/review/submit', 'User\UserController@reviewsubmit')->name('front.review.submit');
-        // User Review Ends
 
         // User Purchases
 

@@ -6,6 +6,8 @@ use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Domain\Catalog\Models\CatalogEvent;
 use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Events\UserRegisteredEvent;
+use App\Domain\Identity\Events\UserVerifiedEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -62,6 +64,18 @@ class RegisterController extends Controller
 
         
         $user->fill($input)->save();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch UserRegisteredEvent
+        // All channels (Web, Mobile, API, WhatsApp) get same event
+        // ═══════════════════════════════════════════════════════════════════
+        event(new UserRegisteredEvent(
+            userId: $user->id,
+            email: $user->email,
+            role: $user->is_merchant >= 1 ? 'merchant' : 'user',
+            registrationSource: 'web',
+            referrerId: Session::get('referrer_id')
+        ));
 
         if ($ps->get('is_verification_email') == 1) {
             $to = $request->email;
@@ -122,6 +136,16 @@ class RegisterController extends Controller
             if (isset($user)) {
                 $user->email_verified = 'Yes';
                 $user->update();
+
+                // ═══════════════════════════════════════════════════════════════════
+                // EVENT-DRIVEN: Dispatch UserVerifiedEvent
+                // ═══════════════════════════════════════════════════════════════════
+                event(new UserVerifiedEvent(
+                    userId: $user->id,
+                    verificationType: UserVerifiedEvent::TYPE_EMAIL,
+                    verifiedValue: $user->email
+                ));
+
                 $catalogEvent = new CatalogEvent;
                 $catalogEvent->user_id = $user->id;
                 $catalogEvent->save();

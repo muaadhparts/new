@@ -37,20 +37,20 @@
                 <div class="stat-card {{ $report['current_balance'] >= 0 ? 'border-start border-success border-3' : 'border-start border-danger border-3' }}">
                     <h6>{{ __('Current Balance') }}</h6>
                     <h4 class="{{ $report['current_balance'] >= 0 ? 'text-success' : 'text-danger' }}">
-                        {{ $currency->sign }}{{ number_format($report['current_balance'], 2) }}
+                        {{ $currency->formatAmount($report['current_balance']) }}
                     </h4>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-card">
                     <h6>{{ __('COD Collected') }}</h6>
-                    <h4 class="text-warning">{{ $currency->sign }}{{ number_format($report['total_collected'], 2) }}</h4>
+                    <h4 class="text-warning">{{ $currency->formatAmount($report['total_collected']) }}</h4>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
                 <div class="stat-card">
                     <h6>{{ __('Fees Earned') }}</h6>
-                    <h4 class="text-success">{{ $currency->sign }}{{ number_format($report['total_fees_earned'], 2) }}</h4>
+                    <h4 class="text-success">{{ $currency->formatAmount($report['total_fees_earned']) }}</h4>
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
@@ -169,8 +169,8 @@
                                                 <span class="badge bg-success">{{ __('Online') }}</span>
                                             @endif
                                         </td>
-                                        <td>{{ $currency->sign }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}</td>
-                                        <td class="text-success">{{ $currency->sign }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</td>
+                                        <td>{{ $currency->formatAmount($delivery->purchase_amount ?? 0) }}</td>
+                                        <td class="text-success">{{ $currency->formatAmount($delivery->delivery_fee ?? 0) }}</td>
                                         <td>
                                             @if($delivery->isDelivered() || $delivery->isConfirmed())
                                                 <span class="badge bg-success">{{ __('Delivered') }}</span>
@@ -213,21 +213,21 @@
                 <div class="row text-center">
                     <div class="col-md-3">
                         <h6 class="text-muted">{{ __('COD Collected (Unsettled)') }}</h6>
-                        <h4 class="text-danger">{{ $currency->sign }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</h4>
+                        <h4 class="text-danger">{{ $currency->formatAmount($settlementCalc['cod_amount'] ?? 0) }}</h4>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted">{{ __('Fees Earned (Online)') }}</h6>
-                        <h4 class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</h4>
+                        <h4 class="text-success">{{ $currency->formatAmount($settlementCalc['fees_earned_online'] ?? 0) }}</h4>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted">{{ __('Fees Earned (COD)') }}</h6>
-                        <h4 class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</h4>
+                        <h4 class="text-success">{{ $currency->formatAmount($settlementCalc['fees_earned_cod'] ?? 0) }}</h4>
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted">{{ __('Net Amount') }}</h6>
                         {{-- Direct access - no @php (DATA_FLOW_POLICY) --}}
                         <h4 class="{{ ($settlementCalc['net_amount'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($settlementCalc['net_amount'] ?? 0), 2) }}
+                            {{ $currency->formatAmount(abs($settlementCalc['net_amount'] ?? 0)) }}
                             <small class="d-block text-muted fs-6">
                                 @if(($settlementCalc['net_amount'] ?? 0) >= 0)
                                     {{ __('(Platform owes)') }}

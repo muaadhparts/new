@@ -13,6 +13,7 @@ use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Catalog\Models\CatalogReview;
 use App\Domain\Catalog\Models\NoteResponse;
 use App\Domain\Catalog\Models\AbuseFlag;
+use App\Domain\Catalog\Events\ProductReviewedEvent;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -57,6 +58,18 @@ class CatalogItemController extends Controller
                 $review->fill($in);
                 $review['review_date'] = date('Y-m-d H:i:s');
                 $review->save();
+
+                // ═══════════════════════════════════════════════════════════════════
+                // EVENT-DRIVEN: Dispatch ProductReviewedEvent
+                // ═══════════════════════════════════════════════════════════════════
+                event(new ProductReviewedEvent(
+                    reviewId: $review->id,
+                    catalogItemId: $request->catalog_item_id,
+                    customerId: $request->user_id,
+                    rating: $request->rating,
+                    comment: $request->comment
+                ));
+
                 return response()->json(['status' => true, 'data' => new CatalogReviewResource($review), 'error' => []]);
             } else {
                 return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Buy This CatalogItem First']]);

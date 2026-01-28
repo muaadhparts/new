@@ -6,7 +6,9 @@ use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Services\AlternativeService;
 use App\Domain\Catalog\Services\CatalogDisplayService;
 use App\Domain\Catalog\Services\CatalogItemOffersService;
+use App\Domain\Catalog\Events\ProductViewedEvent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * PartResultController
@@ -45,6 +47,17 @@ class PartResultController extends FrontBaseController
         if (!$catalogItem) {
             abort(404, __('Part not found'));
         }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch ProductViewedEvent
+        // All channels (Web, Mobile, API, WhatsApp) get same event
+        // ═══════════════════════════════════════════════════════════════════
+        event(new ProductViewedEvent(
+            catalogItemId: $catalogItem->id,
+            customerId: Auth::id(),
+            sessionId: $request->session()->getId(),
+            source: $request->query('ref', 'direct')
+        ));
 
         // Get sort parameter
         $sort = $request->input('sort', 'price_asc');

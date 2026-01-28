@@ -4,16 +4,18 @@ namespace App\Domain\Commerce\Listeners;
 
 use App\Domain\Commerce\Events\PurchasePlacedEvent;
 use App\Domain\Commerce\Models\Purchase;
-use App\Domain\Identity\Models\User;
+use App\Classes\MuaadhMailer;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Send Purchase Confirmation Listener
  *
  * Sends confirmation email to customer when purchase is placed.
+ *
+ * Channel Independence: This listener handles customer notifications
+ * for ALL channels (Web, Mobile, API, WhatsApp).
  */
 class SendPurchaseConfirmationListener implements ShouldQueue
 {
@@ -30,6 +32,11 @@ class SendPurchaseConfirmationListener implements ShouldQueue
     public int $backoff = 60;
 
     /**
+     * The queue to use
+     */
+    public string $queue = 'notifications';
+
+    /**
      * Handle the event.
      */
     public function handle(PurchasePlacedEvent $event): void
@@ -43,37 +50,39 @@ class SendPurchaseConfirmationListener implements ShouldQueue
             return;
         }
 
-        $customer = User::find($event->customerId);
+        // Use customer email from purchase record (more reliable)
+        $customerEmail = $purchase->customer_email;
 
-        if (!$customer || !$customer->email) {
+        if (!$customerEmail) {
             Log::warning('SendPurchaseConfirmation: Customer email not found', [
-                'customer_id' => $event->customerId,
+                'purchase_id' => $event->purchaseId,
             ]);
             return;
         }
 
-        $this->sendConfirmationEmail($customer, $purchase, $event);
+        $this->sendConfirmationEmail($purchase, $customerEmail);
 
-        Log::info('Purchase confirmation sent', [
+        Log::channel('domain')->info('Purchase confirmation sent to customer', [
+            'event_id' => $event->eventId,
             'purchase_id' => $event->purchaseId,
-            'customer_email' => $customer->email,
+            'customer_email' => $customerEmail,
         ]);
     }
 
     /**
-     * Send the confirmation email
+     * Send the confirmation email using MuaadhMailer
      */
-    protected function sendConfirmationEmail(User $customer, Purchase $purchase, PurchasePlacedEvent $event): void
+    protected function sendConfirmationEmail(Purchase $purchase, string $customerEmail): void
     {
-        // Mail::to($customer->email)->send(new PurchaseConfirmationMail($purchase));
+        $mailer = new MuaadhMailer();
 
-        // For now, just log - actual mail implementation depends on mail setup
-        Log::info('Would send purchase confirmation email', [
-            'to' => $customer->email,
-            'purchase_id' => $purchase->id,
-            'total' => $event->totalAmount,
-            'currency' => $event->currency,
-        ]);
+        $mailer->sendAutoPurchaseMail([
+            'order_id' => $purchase->id,
+            'purchase_number' => $purchase->purchase_number,
+            'customer_name' => $purchase->customer_name,
+            'customer_email' => $customerEmail,
+            'total' => $purchase->pay_amount,
+        ], $customerEmail);
     }
 
     /**

@@ -238,6 +238,38 @@ class Purchase extends Model
     }
 
     // =========================================================================
+    // FORMATTED AMOUNT ACCESSORS (DATA_FLOW_POLICY)
+    // =========================================================================
+
+    /**
+     * Get formatted pay amount with currency sign
+     * Uses stored currency (not current session currency)
+     */
+    public function getPayAmountFormattedAttribute(): string
+    {
+        $sign = $this->currency_sign ?? '';
+        return $sign . number_format($this->pay_amount ?? 0, 2);
+    }
+
+    /**
+     * Get formatted shipping cost with currency sign
+     */
+    public function getShippingCostFormattedAttribute(): string
+    {
+        $sign = $this->currency_sign ?? '';
+        return $sign . number_format($this->shipping_cost ?? 0, 2);
+    }
+
+    /**
+     * Format any amount with this purchase's stored currency
+     */
+    public function formatAmount(float $amount): string
+    {
+        $sign = $this->currency_sign ?? '';
+        return $sign . number_format($amount, 2);
+    }
+
+    // =========================================================================
     // RELATIONS
     // =========================================================================
 

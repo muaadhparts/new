@@ -264,6 +264,57 @@ function monetaryUnit() { return app(MonetaryUnitService::class); }
 **Full Policy:** `docs/rules/DATA_FLOW_POLICY.md`
 **Lint Check:** `php artisan lint:dataflow --ci`
 
+### 9. Event-Driven Core
+**All significant actions MUST dispatch Domain Events. Services dispatch events, Listeners handle side effects.**
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DOMAIN LAYER                                │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐             │
+│  │   Service   │───►│   Event     │───►│  Dispatcher │             │
+│  │  (Action)   │    │  (Fact)     │    │  (Laravel)  │             │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘             │
+└─────────────────────────────────────────────────┼───────────────────┘
+                                                  │
+           ┌──────────────────────────────────────┼──────────────────┐
+           │                                      ▼                  │
+           │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+           │  │  Listener   │  │  Listener   │  │  Listener   │     │
+           │  │ (Notify)    │  │ (Stock)     │  │ (Ledger)    │     │
+           │  └─────────────┘  └─────────────┘  └─────────────┘     │
+           │                    LISTENERS LAYER                      │
+           └─────────────────────────────────────────────────────────┘
+```
+
+```php
+// FORBIDDEN - Direct side effects in services
+$this->sendNotifications($purchase, $merchant);
+Mail::send($email, $data);
+$this->accountingService->createEntry(...);
+$this->notificationService->notify(...);
+
+// REQUIRED - Dispatch event, listeners handle side effects
+PurchasePlacedEvent::dispatch(PurchasePlacedEvent::fromPurchase($purchase));
+// Listeners automatically handle:
+// - Customer email → NotifyCustomerOfPurchaseListener
+// - Merchant email → NotifyMerchantOfPurchaseListener
+// - Accounting → CreateAccountingEntriesListener
+```
+
+**Event Rules:**
+1. Events are **immutable facts** (past tense: Placed, Confirmed, Completed)
+2. Events contain **all data needed** by listeners
+3. Services **dispatch events**, Listeners **handle side effects**
+4. One event can have **many listeners**
+5. Listeners are **single-responsibility** (one task each)
+
+**Channel Independence:**
+- Web, Mobile, API, WhatsApp → Same event, same behavior
+- View changes → No domain/service changes needed
+- New channel → Just consume existing events
+
+**Full Plan:** `docs/plans/EVENT_DRIVEN_ARCHITECTURE_PLAN.md`
+
 ---
 
 ## FORBIDDEN PATTERNS
@@ -464,4 +515,4 @@ php artisan lint:dataflow --fix  # Show fix suggestions
 | Table Rename Method | `docs/standards/TABLE_RENAME_METHODOLOGY.md` |
 | Blade Display Only | `docs/plans/BLADE_DISPLAY_ONLY_PLAN.md` |
 | **Data Flow Policy** | `docs/rules/DATA_FLOW_POLICY.md` |
-| **Work Plan** | `WORK_PLAN.md` |
+| **Event-Driven Architecture** | `docs/plans/EVENT_DRIVEN_ARCHITECTURE_PLAN.md` |

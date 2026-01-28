@@ -11,6 +11,7 @@ use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Identity\Models\User;
 use App\Domain\Merchant\Models\MerchantBranch;
 use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Events\DeliveryCompletedEvent;
 
 /**
  * DeliveryCourier - Local Courier Delivery Record
@@ -297,6 +298,17 @@ class DeliveryCourier extends Model
 
             $this->updatePurchasePaymentStatusIfAllDelivered();
         }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch DeliveryCompletedEvent
+        // All channels (Web, Mobile, API, WhatsApp) get same event
+        // ═══════════════════════════════════════════════════════════════════
+        event(new DeliveryCompletedEvent(
+            shipmentId: $this->id,
+            purchaseId: $this->purchase_id,
+            customerId: $this->purchase?->user_id ?? 0,
+            courierId: $this->courier_id
+        ));
     }
 
     protected function updatePurchasePaymentStatusIfAllDelivered(): void

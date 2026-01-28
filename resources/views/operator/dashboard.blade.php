@@ -235,8 +235,9 @@
                                                 <td>{{ $catalogItem->price_formatted }}</td>
 
                                                 <td>
-                                                    <div class="action-list"><a href="{{ $catalogItem->edit_url }}"><i
-                                                                class="fas fa-eye"></i> {{ __('Details') }}</a>
+                                                    <div class="action-list">
+                                                        <a href="{{ $catalogItem->view_url }}" target="_blank"><i class="fas fa-eye"></i> {{ __('View') }}</a>
+                                                        <a href="{{ $catalogItem->edit_url }}"><i class="fas fa-edit"></i> {{ __('Edit') }}</a>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -280,8 +281,9 @@
                                                         <td>{{ $catalogItem->part_number_display }}</td>
                                                         <td>{{ $catalogItem->price_formatted }}</td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ $catalogItem->edit_url }}"><i
-                                                                        class="fas fa-eye"></i> {{ __('Details') }}</a>
+                                                            <div class="action-list">
+                                                                <a href="{{ $catalogItem->view_url }}" target="_blank"><i class="fas fa-eye"></i> {{ __('View') }}</a>
+                                                                <a href="{{ $catalogItem->edit_url }}"><i class="fas fa-edit"></i> {{ __('Edit') }}</a>
                                                             </div>
                                                         </td>
                                                     </tr>

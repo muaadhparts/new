@@ -4,6 +4,8 @@ namespace App\Domain\Merchant\Observers;
 
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Merchant\Models\MerchantStockUpdate;
+use App\Domain\Merchant\Events\StockUpdatedEvent;
+use App\Domain\Merchant\Events\PriceChangedEvent;
 
 /**
  * Merchant Item Observer
@@ -64,31 +66,62 @@ class MerchantItemObserver
         if ($merchantItem->wasChanged('stock')) {
             $this->checkLowStock($merchantItem);
         }
+
+        // Check for price changes
+        if ($merchantItem->wasChanged('price') || $merchantItem->wasChanged('discount_price')) {
+            $this->dispatchPriceChangedEvent($merchantItem);
+        }
+    }
+
+    /**
+     * Dispatch PriceChangedEvent when price or discount changes
+     */
+    protected function dispatchPriceChangedEvent(MerchantItem $merchantItem): void
+    {
+        $previousPrice = (float) $merchantItem->getOriginal('price');
+        $newPrice = (float) $merchantItem->price;
+        $previousDiscount = $merchantItem->getOriginal('discount_price');
+        $newDiscount = $merchantItem->discount_price;
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch PriceChangedEvent for ALL price changes
+        // Listeners can notify interested customers, update caches, etc.
+        // ═══════════════════════════════════════════════════════════════════
+        event(new PriceChangedEvent(
+            merchantItemId: $merchantItem->id,
+            merchantId: $merchantItem->merchant_id,
+            catalogItemId: $merchantItem->item_id,
+            previousPrice: $previousPrice,
+            newPrice: $newPrice,
+            previousDiscount: $previousDiscount ? (float) $previousDiscount : null,
+            newDiscount: $newDiscount ? (float) $newDiscount : null,
+            changedBy: auth()->id()
+        ));
     }
 
     /**
      * Check and notify for low stock
+     *
+     * Dispatches StockUpdatedEvent for all stock changes.
+     * Listeners handle notifications based on stock levels.
      */
     protected function checkLowStock(MerchantItem $merchantItem): void
     {
-        $threshold = $merchantItem->merchant?->merchantSetting?->low_stock_threshold ?? 5;
+        $previousStock = (int) $merchantItem->getOriginal('stock');
+        $newStock = (int) $merchantItem->stock;
 
-        if ($merchantItem->stock <= 0) {
-            // Out of stock - could dispatch event
-            event(new \App\Domain\Merchant\Events\StockUpdatedEvent(
-                $merchantItem,
-                $merchantItem->getOriginal('stock'),
-                0,
-                'system'
-            ));
-        } elseif ($merchantItem->stock <= $threshold) {
-            // Low stock - could dispatch event
-            event(new \App\Domain\Merchant\Events\StockUpdatedEvent(
-                $merchantItem,
-                $merchantItem->getOriginal('stock'),
-                $merchantItem->stock,
-                'system'
-            ));
-        }
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch StockUpdatedEvent for ALL stock changes
+        // Listeners decide what to do based on stock levels
+        // ═══════════════════════════════════════════════════════════════════
+        event(new StockUpdatedEvent(
+            merchantItemId: $merchantItem->id,
+            merchantId: $merchantItem->merchant_id,
+            catalogItemId: $merchantItem->item_id,
+            previousStock: $previousStock,
+            newStock: $newStock,
+            reason: $merchantItem->stock_update_reason ?? 'system',
+            updatedBy: auth()->id()
+        ));
     }
 }

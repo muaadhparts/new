@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Events\UserRegisteredEvent;
+use App\Domain\Identity\Events\UserLoginEvent;
 
 use App\{
   Http\Controllers\Controller,
@@ -80,7 +82,28 @@ class AuthController extends Controller
 
       $user->save();
 
+      // ═══════════════════════════════════════════════════════════════════
+      // EVENT-DRIVEN: Dispatch UserRegisteredEvent
+      // ═══════════════════════════════════════════════════════════════════
+      event(new UserRegisteredEvent(
+        userId: $user->id,
+        email: $user->email,
+        role: 'user',
+        registrationSource: 'api'
+      ));
+
       $token = auth()->login($user);
+
+      // ═══════════════════════════════════════════════════════════════════
+      // EVENT-DRIVEN: Dispatch UserLoginEvent
+      // ═══════════════════════════════════════════════════════════════════
+      event(new UserLoginEvent(
+        userId: $user->id,
+        loginMethod: 'password',
+        ipAddress: $request->ip(),
+        userAgent: $request->userAgent(),
+        rememberMe: false
+      ));
 
       return response()->json(['status' => true, 'data' => ['token' => $token, 'user' => new UserResource($user)], 'error' => []]);
     } catch (\Exception $e) {
@@ -124,6 +147,17 @@ class AuthController extends Controller
         return response()->json(['status' => false, 'data' => [], 'error' => ["message" => 'Your Account Has Been Banned.']]);
       }
 
+      // ═══════════════════════════════════════════════════════════════════
+      // EVENT-DRIVEN: Dispatch UserLoginEvent
+      // ═══════════════════════════════════════════════════════════════════
+      event(new UserLoginEvent(
+        userId: auth()->id(),
+        loginMethod: 'password',
+        ipAddress: $request->ip(),
+        userAgent: $request->userAgent(),
+        rememberMe: false
+      ));
+
       return response()->json(['status' => true, 'data' => ['token' => $token, 'user' => new UserResource(auth()->user())], 'error' => []]);
     } catch (\Exception $e) {
       return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -166,7 +200,30 @@ class AuthController extends Controller
         $user->email = $request->email;
         $user->email_verified = 'Yes';
         $user->save();
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch UserRegisteredEvent (social registration)
+        // ═══════════════════════════════════════════════════════════════════
+        event(new UserRegisteredEvent(
+          userId: $user->id,
+          email: $user->email,
+          role: 'user',
+          registrationSource: 'social'
+        ));
+
         $token = auth()->login($user);
+
+        // ═══════════════════════════════════════════════════════════════════
+        // EVENT-DRIVEN: Dispatch UserLoginEvent (social login)
+        // ═══════════════════════════════════════════════════════════════════
+        event(new UserLoginEvent(
+          userId: $user->id,
+          loginMethod: 'social',
+          ipAddress: $request->ip(),
+          userAgent: $request->userAgent(),
+          rememberMe: false
+        ));
+
         return response()->json(['status' => true, 'data' => ['token' => $token], 'error' => []]);
       }
 
@@ -181,6 +238,17 @@ class AuthController extends Controller
       }
 
       auth()->login($user);
+
+      // ═══════════════════════════════════════════════════════════════════
+      // EVENT-DRIVEN: Dispatch UserLoginEvent (existing user social login)
+      // ═══════════════════════════════════════════════════════════════════
+      event(new UserLoginEvent(
+        userId: $user->id,
+        loginMethod: 'social',
+        ipAddress: $request->ip(),
+        userAgent: $request->userAgent(),
+        rememberMe: false
+      ));
 
       return response()->json(['status' => true, 'data' => ['token' => $userToken, 'user' => auth()->user()], 'error' => []]);
     } catch (\Exception $e) {

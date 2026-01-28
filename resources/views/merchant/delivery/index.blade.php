@@ -138,7 +138,7 @@
                                             @if($customerChoiceDisplay['isFreeShipping'])
                                                 {{-- ✅ Free Shipping Alert --}}
                                                 <span class="text-decoration-line-through text-muted">
-                                                    {{ $data->currency_sign }}{{ number_format($customerChoiceDisplay['originalPrice'], 2) }}
+                                                    {{ $data->formatAmount($customerChoiceDisplay['originalPrice']) }}
                                                 </span>
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-gift"></i> @lang('Free!')
@@ -149,7 +149,7 @@
                                                     @lang('Merchant pays shipping')
                                                 </small>
                                             @else
-                                                <small>{{ $data->currency_sign }}{{ number_format($customerChoiceDisplay['actualPrice'], 2) }}</small>
+                                                <small>{{ $data->formatAmount($customerChoiceDisplay['actualPrice']) }}</small>
                                             @endif
                                         </div>
                                         <span class="badge bg-warning text-dark">@lang('Not Assigned')</span>
@@ -204,7 +204,7 @@
                                         @endif
                                         {{-- ✅ Payment Method Indicator --}}
                                         @if($delivery->isCod())
-                                            <br><small class="text-success"><i class="fas fa-money-bill"></i> @lang('COD'): {{ $data->currency_sign }}{{ number_format($delivery->cod_amount, 2) }}</small>
+                                            <br><small class="text-success"><i class="fas fa-money-bill"></i> @lang('COD'): {{ $data->formatAmount($delivery->cod_amount) }}</small>
                                         @else
                                             <br><small class="text-info"><i class="fas fa-credit-card"></i> @lang('Paid Online')</small>
                                         @endif

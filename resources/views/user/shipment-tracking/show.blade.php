@@ -29,7 +29,7 @@
                             </tr>
                             <tr>
                                 <th>@lang('Total'):</th>
-                                <td>{{ $purchase->currency_sign }}{{ number_format($purchase->pay_amount, 2) }}</td>
+                                <td>{{ $purchase->pay_amount_formatted }}</td>
                             </tr>
                         </table>
                     </div>

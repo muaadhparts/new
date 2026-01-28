@@ -43,7 +43,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Tax Collected') }}</h6>
-                    <h2>{{ $currency->sign }}{{ number_format($totalTax, 2) }}</h2>
+                    <h2>{{ $currency->formatAmount($totalTax) }}</h2>
                     <small>{{ $taxEntries->count() }} {{ __('Transaction') }}</small>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                         <div class="col-md-4 mb-2">
                             <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
                                 <span>{{ $location }}</span>
-                                <span class="fw-bold">{{ $currency->sign }}{{ number_format($data['total'], 2) }}</span>
+                                <span class="fw-bold">{{ $currency->formatAmount($data['total']) }}</span>
                             </div>
                             <small class="text-muted">{{ $data['count'] }} {{ __('orders') }}</small>
                         </div>
@@ -122,7 +122,7 @@
                                 @endif
                             </td>
                             <td class="text-end fw-bold text-info">
-                                {{ $currency->sign }}{{ number_format($entry->amount, 2) }}
+                                {{ $currency->formatAmount($entry->amount) }}
                             </td>
                         </tr>
                         @empty
@@ -137,7 +137,7 @@
                     <tfoot class="table-info">
                         <tr class="fw-bold">
                             <td colspan="5" class="text-end">{{ __('Total') }}:</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($totalTax, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($totalTax) }}</td>
                         </tr>
                     </tfoot>
                     @endif

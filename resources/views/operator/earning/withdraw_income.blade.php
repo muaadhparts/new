@@ -90,8 +90,8 @@
                         @forelse($withdraws as $withdraw)
                         <tr>
                             <td>{{ $withdraw->user?->name ?? '-' }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($withdraw->amount, 2) }}</td>
-                            <td class="text-end text-success">{{ $currency->sign }}{{ number_format($withdraw->fee, 2) }}</td>
+                            <td class="text-end">{{ $currency->formatAmount($withdraw->amount) }}</td>
+                            <td class="text-end text-success">{{ $currency->formatAmount($withdraw->fee) }}</td>
                             <td>{{ $withdraw->method ?? '-' }}</td>
                             <td>{{ $withdraw->created_at->format('d-m-Y') }}</td>
                         </tr>

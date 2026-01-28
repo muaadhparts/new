@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Catalog\Events\ProductFavoritedEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\View\Composers\HeaderComposer;
@@ -68,6 +69,16 @@ class FavoriteController extends Controller
                 $favorite->catalog_item_id = $catalogItemId;
                 $favorite->save();
                 HeaderComposer::invalidateFavoriteCache($user->id);
+
+                // ═══════════════════════════════════════════════════════════════════
+                // EVENT-DRIVEN: Dispatch ProductFavoritedEvent (added)
+                // ═══════════════════════════════════════════════════════════════════
+                event(new ProductFavoritedEvent(
+                    catalogItemId: $catalogItemId,
+                    customerId: $user->id,
+                    added: true
+                ));
+
                 return response()->json(['status' => true, 'data' => ['message' => 'Successfully Added To Favorites.'], 'error' => []]);
             }else{
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Already Added To Favorites.']]);
@@ -85,6 +96,16 @@ class FavoriteController extends Controller
             $favorite = FavoriteSeller::where('catalog_item_id',$id)->where('user_id',$user->id)->first();
             $favorite->delete();
             HeaderComposer::invalidateFavoriteCache($user->id);
+
+            // ═══════════════════════════════════════════════════════════════════
+            // EVENT-DRIVEN: Dispatch ProductFavoritedEvent (removed)
+            // ═══════════════════════════════════════════════════════════════════
+            event(new ProductFavoritedEvent(
+                catalogItemId: (int) $id,
+                customerId: $user->id,
+                added: false
+            ));
+
             return response()->json(['status' => true, 'data' => ['message' => 'Successfully Removed From Favorites.'], 'error' => []]);
         }
         catch(\Exception $e){

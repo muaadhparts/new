@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Operator;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Services\CatalogItemDeletionService;
-use App\Domain\Merchant\Models\MerchantItem;
 use Datatables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Validator;
 
@@ -17,116 +17,74 @@ class CatalogItemController extends OperatorBaseController
     ) {
         parent::__construct();
     }
+
     /**
-     * Datatables for merchant items listing (shows merchant offers)
+     * Datatables for catalog items listing
+     * Shows catalog item data only (not merchant-specific data)
      */
     public function datatables(Request $request)
     {
-        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand', 'merchantBranch'])
-            ->where('item_type', 'normal');
-
-        if ($request->type == 'deactive') {
-            $query->where('status', 0);
-        }
+        $query = CatalogItem::with(['fitments.brand'])
+            ->select('catalog_items.*');
 
         $datas = $query->latest('id');
 
         return Datatables::of($datas)
             ->filterColumn('name', function ($query, $keyword) {
-                $query->whereHas('catalogItem', function($q) use ($keyword) {
-                    $q->where('name', 'like', "%{$keyword}%")
+                $query->where('name', 'like', "%{$keyword}%")
                       ->orWhere('part_number', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
-                });
             })
-            ->addColumn('photo', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
-
-                $photo = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
-                    ? $catalogItem->photo
-                    : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
+            ->addColumn('photo', function (CatalogItem $item) {
+                $photo = filter_var($item->photo, FILTER_VALIDATE_URL)
+                    ? $item->photo
+                    : ($item->photo ? Storage::url($item->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->addColumn('part_number', function (MerchantItem $mp) {
-                return '<code>' . ($mp->catalogItem?->part_number ?? __('N/A')) . '</code>';
+            ->addColumn('part_number', function (CatalogItem $item) {
+                return '<code>' . ($item->part_number ?? __('N/A')) . '</code>';
             })
-            ->addColumn('name', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return __('N/A');
-
-                $prodLink = $catalogItem->part_number
-                    ? route('front.part-result', $catalogItem->part_number)
+            ->addColumn('name', function (CatalogItem $item) {
+                $prodLink = $item->part_number
+                    ? route('front.part-result', $item->part_number)
                     : '#';
 
-                $displayName = getLocalizedCatalogItemName($catalogItem);
-                $condition = $mp->item_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $displayName = getLocalizedCatalogItemName($item);
 
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $condition;
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>';
             })
-            ->addColumn('brand', function (MerchantItem $mp) {
-                $fitments = $mp->catalogItem?->fitments ?? collect();
+            ->addColumn('brand', function (CatalogItem $item) {
+                $fitments = $item->fitments ?? collect();
                 $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
                 $count = $brands->count();
                 if ($count === 0) return __('N/A');
                 if ($count === 1) return getLocalizedBrandName($brands->first());
                 return __('Fits') . ' ' . $count . ' ' . __('brands');
             })
-            ->addColumn('quality_brand', function (MerchantItem $mp) {
-                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            ->addColumn('offers_count', function (CatalogItem $item) {
+                $count = $item->merchantItems()->where('status', 1)->count();
+                if ($count === 0) {
+                    return '<span class="badge badge-secondary">' . __('No Offers') . '</span>';
+                }
+                return '<span class="badge badge-success">' . $count . ' ' . __('Offers') . '</span>';
             })
-            ->addColumn('merchant', function (MerchantItem $mp) {
-                if (!$mp->user) return __('N/A');
-                $shopName = $mp->user->shop_name ?: $mp->user->name;
-                return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
-            })
-            ->addColumn('branch', function (MerchantItem $mp) {
-                return $mp->merchantBranch?->warehouse_name ?? __('N/A');
-            })
-            ->addColumn('price', function (MerchantItem $mp) {
-                $priceWithCommission = $mp->merchantSizePrice();
-                return \PriceHelper::showAdminCurrencyPrice($priceWithCommission * $this->curr->value);
-            })
-            ->addColumn('stock', function (MerchantItem $mp) {
-                if ($mp->stock === null) return __('Unlimited');
-                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
-                return $mp->stock;
-            })
-            ->addColumn('status', function (MerchantItem $mp) {
-                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
-                $s = $mp->status == 1 ? 'selected' : '';
-                $ns = $mp->status == 0 ? 'selected' : '';
-
-                return '<div class="action-list">
-                    <select class="process select droplinks ' . $class . '">
-                        <option data-val="1" value="' . route('operator-merchant-item-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
-                        <option data-val="0" value="' . route('operator-merchant-item-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
-                    </select>
-                </div>';
-            })
-            ->addColumn('action', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return '';
-
+            ->addColumn('action', function (CatalogItem $item) {
+                $viewUrl = $item->part_number ? route('front.part-result', $item->part_number) : '#';
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('operator-catalog-item-edit', $catalogItem->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
-                        <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
+                        <a href="' . $viewUrl . '" target="_blank"><i class="fas fa-eye"></i> ' . __("View") . '</a>
+                        <a href="' . route('operator-catalog-item-edit', $item->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
+                        <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $item->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                     </div></div>';
             })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant', 'part_number'])
+            ->rawColumns(['name', 'action', 'photo', 'part_number', 'offers_count'])
             ->toJson();
     }
 
     public function index()
     {
         return view('operator.catalog-item.index');
-    }
-
-    public function deactive()
-    {
-        return view('operator.catalog-item.deactive');
     }
 
     public function catalogItemSettings()
@@ -140,30 +98,6 @@ class CatalogItemController extends OperatorBaseController
     public function create()
     {
         return view('operator.catalog-item.create.items');
-    }
-
-    /**
-     * Update catalog item status
-     */
-    public function status($id1, $id2)
-    {
-        $data = CatalogItem::findOrFail($id1);
-        $data->status = $id2;
-        $data->update();
-
-        return response()->json(__('Status Updated Successfully.'));
-    }
-
-    /**
-     * Update merchant item status (for activating/deactivating merchant offers)
-     */
-    public function merchantItemStatus($id, $status)
-    {
-        $merchantItem = MerchantItem::findOrFail($id);
-        $merchantItem->status = $status;
-        $merchantItem->update();
-
-        return response()->json(__('Status Updated Successfully.'));
     }
 
     /**
@@ -249,6 +183,16 @@ class CatalogItemController extends OperatorBaseController
      */
     public function destroy($id)
     {
+        // Check if item can be deleted
+        $check = $this->deletionService->canDelete($id);
+
+        if (!$check['can_delete']) {
+            return response()->json([
+                'error' => true,
+                'message' => __('Cannot delete this item. It has active merchant offers.')
+            ], 422);
+        }
+
         $this->deletionService->delete($id);
 
         return response()->json(__('CatalogItem Deleted Successfully.'));

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Shipping\Listeners;
 
-use App\Domain\Shipping\Events\DeliveryCompletedEvent;
+use App\Domain\Shipping\Events\ShipmentCreatedEvent;
 use App\Domain\Commerce\Models\Purchase;
 use App\Classes\MuaadhMailer;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -10,14 +10,14 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Send Delivery Confirmation Listener
+ * Notify Customer Of Shipment Listener
  *
- * Notifies customer when their order has been delivered.
+ * Notifies customer when a shipment is created for their order.
  *
- * Channel Independence: This listener handles delivery notifications
+ * Channel Independence: This listener handles shipment notifications
  * for ALL channels (Web, Mobile, API, WhatsApp).
  */
-class SendDeliveryConfirmationListener implements ShouldQueue
+class NotifyCustomerOfShipmentListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -28,12 +28,12 @@ class SendDeliveryConfirmationListener implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(DeliveryCompletedEvent $event): void
+    public function handle(ShipmentCreatedEvent $event): void
     {
         $purchase = Purchase::find($event->purchaseId);
 
         if (!$purchase) {
-            Log::warning('SendDeliveryConfirmation: Purchase not found', [
+            Log::warning('NotifyCustomerOfShipment: Purchase not found', [
                 'purchase_id' => $event->purchaseId,
             ]);
             return;
@@ -42,26 +42,26 @@ class SendDeliveryConfirmationListener implements ShouldQueue
         $customerEmail = $purchase->customer_email;
 
         if (!$customerEmail) {
-            Log::warning('SendDeliveryConfirmation: Customer email not found', [
+            Log::warning('NotifyCustomerOfShipment: Customer email not found', [
                 'purchase_id' => $event->purchaseId,
             ]);
             return;
         }
 
-        $this->sendDeliveryConfirmation($purchase, $event);
-        $this->updatePurchaseStatus($purchase);
+        $this->sendShipmentNotification($purchase, $event);
 
-        Log::channel('domain')->info('Delivery confirmation sent to customer', [
+        Log::channel('domain')->info('Shipment notification sent to customer', [
             'event_id' => $event->eventId,
             'purchase_id' => $event->purchaseId,
             'shipment_id' => $event->shipmentId,
+            'tracking_number' => $event->trackingNumber,
         ]);
     }
 
     /**
-     * Send delivery confirmation email
+     * Send shipment notification email
      */
-    protected function sendDeliveryConfirmation(Purchase $purchase, DeliveryCompletedEvent $event): void
+    protected function sendShipmentNotification(Purchase $purchase, ShipmentCreatedEvent $event): void
     {
         $mailer = new MuaadhMailer();
 
@@ -70,32 +70,20 @@ class SendDeliveryConfirmationListener implements ShouldQueue
             'purchase_number' => $purchase->purchase_number,
             'customer_name' => $purchase->customer_name,
             'customer_email' => $purchase->customer_email,
-            'type' => 'delivery_confirmation',
-            'delivered_at' => now()->format('Y-m-d H:i'),
-            'received_by' => $event->receivedBy,
+            'type' => 'shipment_created',
+            'tracking_number' => $event->trackingNumber,
+            'carrier' => $event->carrier,
         ], $purchase->customer_email);
-    }
-
-    /**
-     * Update purchase status to delivered
-     */
-    protected function updatePurchaseStatus(Purchase $purchase): void
-    {
-        if ($purchase->status !== 'delivered') {
-            $purchase->update([
-                'status' => 'delivered',
-                'delivered_at' => now(),
-            ]);
-        }
     }
 
     /**
      * Handle a job failure.
      */
-    public function failed(DeliveryCompletedEvent $event, \Throwable $exception): void
+    public function failed(ShipmentCreatedEvent $event, \Throwable $exception): void
     {
-        Log::error('Failed to send delivery confirmation', [
+        Log::error('Failed to notify customer of shipment', [
             'purchase_id' => $event->purchaseId,
+            'shipment_id' => $event->shipmentId,
             'error' => $exception->getMessage(),
         ]);
     }
