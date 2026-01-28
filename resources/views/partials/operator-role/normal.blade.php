@@ -353,7 +353,7 @@
 </li>
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('mailing_list'))
+@if(Auth::guard('operator')->user()->sectionCheck('subscribers'))
 
 <li>
     <a href="{{ route('operator-mailing-list-index') }}" class=" wave-effect"><i class="fas fa-users-cog mr-2"></i>{{

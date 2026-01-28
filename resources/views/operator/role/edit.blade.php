@@ -316,7 +316,7 @@
                       <div class="col-lg-4 d-flex justify-content-between">
                         <label class="control-label">{{ __('Subscribers') }} *</label>
                         <label class="switch">
-                          <input type="checkbox" name="section[]" value="mailing_list" {{ $data->sectionCheck('mailing_list') ? 'checked' : '' }}>
+                          <input type="checkbox" name="section[]" value="subscribers" {{ $data->sectionCheck('subscribers') ? 'checked' : '' }}>
                           <span class="toggle-switch round"></span>
                         </label>
                       </div>

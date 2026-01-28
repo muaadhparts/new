@@ -732,7 +732,7 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATORMAILING LIST SECTION ------------
 
-    Route::group(['middleware' => 'permissions:mailing_list'], function () {
+    Route::group(['middleware' => 'permissions:subscribers'], function () {
 
         Route::get('/mailing-list/datatables', 'Operator\MailingListController@datatables')->name('operator-mailing-list-datatables'); //JSON REQUEST
         Route::get('/mailing-list', 'Operator\MailingListController@index')->name('operator-mailing-list-index');

@@ -315,7 +315,7 @@
                         <div class="col-lg-4 d-flex justify-content-between">
                           <label class="control-label">{{ __('Subscribers') }} *</label>
                           <label class="switch">
-                            <input type="checkbox" name="section[]" value="mailing_list">
+                            <input type="checkbox" name="section[]" value="subscribers">
                             <span class="toggle-switch round"></span>
                           </label>
                         </div>
