@@ -96,10 +96,16 @@ public function show($id) {
 
 | المجموعة | الوصف | الحالة |
 |----------|-------|--------|
-| ✅ Courier Views | مثال: courier/dashboard | DONE |
-| ⬜ Operator Views | استهلاك OperatorDisplayService | PENDING |
-| ⬜ Merchant Views | استهلاك MerchantDisplayService | PENDING |
+| 🔄 Courier Views | dashboard, financial_report | IN PROGRESS |
+| 🔄 Operator Views | dashboard - pre-computed values | IN PROGRESS |
+| 🔄 Merchant Views | index - monetaryUnit formatting | IN PROGRESS |
 | ⬜ User Views | استهلاك UserDisplayService | PENDING |
+
+**تقدم التفاصيل:**
+- ✅ courier/dashbaord.blade.php - pre-computed arrays
+- ✅ courier/financial_report.blade.php - pre-computed formatted values
+- ✅ operator/dashboard.blade.php - pre-computed catalog items
+- ✅ merchant/index.blade.php - monetaryUnit()->format()
 
 **القاعدة:**
 ```blade

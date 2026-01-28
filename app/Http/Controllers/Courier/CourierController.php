@@ -723,11 +723,35 @@ class CourierController extends CourierBaseController
         $endDate = $request->end_date;
 
         $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
-        $currency = monetaryUnit()->getDefault();
+
+        // PRE-COMPUTED: Format all monetary values (DATA_FLOW_POLICY)
+        $reportDisplay = [
+            // Monetary values - pre-formatted
+            'current_balance' => $report['current_balance'] ?? 0,
+            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
+            'total_collected' => $report['total_collected'] ?? 0,
+            'total_collected_formatted' => monetaryUnit()->format($report['total_collected'] ?? 0),
+            'total_fees_earned' => $report['total_fees_earned'] ?? 0,
+            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
+            'total_delivery_fees_formatted' => monetaryUnit()->format($report['total_delivery_fees'] ?? 0),
+            'total_cod_collected_formatted' => monetaryUnit()->format($report['total_cod_collected'] ?? 0),
+            'total_delivered_formatted' => monetaryUnit()->format($report['total_delivered'] ?? 0),
+
+            // Boolean flags
+            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
+            'has_credit' => ($report['current_balance'] ?? 0) > 0,
+
+            // Count values with defaults
+            'deliveries_count' => $report['deliveries_count'] ?? 0,
+            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
+            'deliveries_pending' => $report['deliveries_pending'] ?? 0,
+            'unsettled_deliveries' => $report['unsettled_deliveries'] ?? 0,
+            'cod_deliveries' => $report['cod_deliveries'] ?? 0,
+            'online_deliveries' => $report['online_deliveries'] ?? 0,
+        ];
 
         return view('courier.financial_report', [
-            'report' => $report,
-            'currency' => $currency,
+            'report' => $reportDisplay,
             'startDate' => $startDate,
             'endDate' => $endDate,
         ]);

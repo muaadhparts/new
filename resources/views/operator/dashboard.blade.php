@@ -187,7 +187,7 @@
                                         @foreach($recentUsers as $data)
                                         <tr>
                                             <td>{{ $data->email }}</td>
-                                            <td>{{ $data->created_at }}</td>
+                                            <td>{{ $data->created_at_formatted }}</td>
                                             <td>
                                                 <div class="action-list"><a href="{{ route('operator-user-show',$data->id) }}"><i
                                                             class="fas fa-eye"></i> {{ __('Details') }}</a>
@@ -230,12 +230,12 @@
                                             <td><img src="{{ $catalogItem->photo_url }}"></td>
                                             <td>{{ $catalogItem->localized_name }}</td>
                                             <td>{{ $catalogItem->first_brand_name }}</td>
-                                                <td>{{ $catalogItem->views ?? 0 }}</td>
+                                                <td>{{ $catalogItem->views_count }}</td>
 
-                                                <td>{{ $catalogItem->best_merchant_item?->showPrice() ?? 'N/A' }}</td>
+                                                <td>{{ $catalogItem->price_formatted }}</td>
 
                                                 <td>
-                                                    <div class="action-list"><a href="{{ $catalogItem->best_merchant_item ? route('operator-catalog-item-edit', $catalogItem->best_merchant_item->id) : '#' }}"><i
+                                                    <div class="action-list"><a href="{{ $catalogItem->edit_url }}"><i
                                                                 class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                     </div>
                                                 </td>
@@ -277,10 +277,10 @@
                                                     <td><img src="{{ $catalogItem->photo_url }}"></td>
                                                     <td>{{ $catalogItem->localized_name }}</td>
                                                     <td>{{ $catalogItem->first_brand_name }}</td>
-                                                        <td>{{ $catalogItem->part_number ?? 'N/A' }}</td>
-                                                        <td>{{ $catalogItem->best_merchant_item?->showPrice() ?? 'N/A' }}</td>
+                                                        <td>{{ $catalogItem->part_number_display }}</td>
+                                                        <td>{{ $catalogItem->price_formatted }}</td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ $catalogItem->best_merchant_item ? route('operator-catalog-item-edit', $catalogItem->best_merchant_item->id) : '#' }}"><i
+                                                            <div class="action-list"><a href="{{ $catalogItem->edit_url }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>

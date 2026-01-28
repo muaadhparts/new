@@ -17,11 +17,11 @@
                         <form action="{{ route('courier-financial-report') }}" method="GET" class="d-flex gap-2 flex-wrap align-items-end">
                             <div>
                                 <label class="form-label small">@lang('From Date')</label>
-                                <input type="date" name="start_date" class="form-control" value="{{ $startDate ?? '' }}">
+                                <input type="date" name="start_date" class="form-control" value="{{ $startDate }}">
                             </div>
                             <div>
                                 <label class="form-label small">@lang('To Date')</label>
-                                <input type="date" name="end_date" class="form-control" value="{{ $endDate ?? '' }}">
+                                <input type="date" name="end_date" class="form-control" value="{{ $endDate }}">
                             </div>
                             <div>
                                 <button type="submit" class="btn btn-primary">@lang('Filter')</button>
@@ -33,14 +33,14 @@
                     <!-- Summary Cards -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-4 col-md-6">
-                            <div class="account-info-box text-center {{ ($report['current_balance'] ?? 0) < 0 ? 'border-danger' : (($report['current_balance'] ?? 0) > 0 ? 'border-success' : '') }}">
+                            <div class="account-info-box text-center {{ $report['is_in_debt'] ? 'border-danger' : ($report['has_credit'] ? 'border-success' : '') }}">
                                 <h6>@lang('Current Balance')</h6>
-                                <h3 class="{{ ($report['current_balance'] ?? 0) < 0 ? 'text-danger' : 'text-success' }}">
-                                    {{ $currency->sign ?? 'SAR ' }}{{ number_format($report['current_balance'] ?? 0, 2) }}
+                                <h3 class="{{ $report['is_in_debt'] ? 'text-danger' : 'text-success' }}">
+                                    {{ $report['current_balance_formatted'] }}
                                 </h3>
-                                @if(($report['is_in_debt'] ?? false))
+                                @if($report['is_in_debt'])
                                     <span class="badge bg-danger">@lang('You owe to platform')</span>
-                                @elseif(($report['has_credit'] ?? false))
+                                @elseif($report['has_credit'])
                                     <span class="badge bg-success">@lang('Platform owes you')</span>
                                 @else
                                     <span class="badge bg-secondary">@lang('Balanced')</span>
@@ -50,13 +50,13 @@
                         <div class="col-lg-4 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Total COD Collected')</h6>
-                                <h3 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_collected'] ?? 0, 2) }}</h3>
+                                <h3 class="text-warning">{{ $report['total_collected_formatted'] }}</h3>
                             </div>
                         </div>
                         <div class="col-lg-4 col-md-6">
                             <div class="account-info-box text-center">
                                 <h6>@lang('Total Fees Earned')</h6>
-                                <h3 class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_fees_earned'] ?? 0, 2) }}</h3>
+                                <h3 class="text-success">{{ $report['total_fees_earned_formatted'] }}</h3>
                             </div>
                         </div>
                     </div>
@@ -69,19 +69,19 @@
                                 <table class="table table-borderless mb-0">
                                     <tr>
                                         <td>@lang('Total Deliveries')</td>
-                                        <td class="text-end"><strong>{{ $report['deliveries_count'] ?? 0 }}</strong></td>
+                                        <td class="text-end"><strong>{{ $report['deliveries_count'] }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Completed Deliveries')</td>
-                                        <td class="text-end"><span class="badge bg-success">{{ $report['deliveries_completed'] ?? 0 }}</span></td>
+                                        <td class="text-end"><span class="badge bg-success">{{ $report['deliveries_completed'] }}</span></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Pending Deliveries')</td>
-                                        <td class="text-end"><span class="badge bg-warning">{{ $report['deliveries_pending'] ?? 0 }}</span></td>
+                                        <td class="text-end"><span class="badge bg-warning">{{ $report['deliveries_pending'] }}</span></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Unsettled Deliveries')</td>
-                                        <td class="text-end"><span class="badge bg-danger">{{ $report['unsettled_deliveries'] ?? 0 }}</span></td>
+                                        <td class="text-end"><span class="badge bg-danger">{{ $report['unsettled_deliveries'] }}</span></td>
                                     </tr>
                                 </table>
                             </div>
@@ -92,19 +92,19 @@
                                 <table class="table table-borderless mb-0">
                                     <tr>
                                         <td>@lang('COD Deliveries')</td>
-                                        <td class="text-end"><span class="badge bg-warning">{{ $report['cod_deliveries'] ?? 0 }}</span></td>
+                                        <td class="text-end"><span class="badge bg-warning">{{ $report['cod_deliveries'] }}</span></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Online Payment Deliveries')</td>
-                                        <td class="text-end"><span class="badge bg-info">{{ $report['online_deliveries'] ?? 0 }}</span></td>
+                                        <td class="text-end"><span class="badge bg-info">{{ $report['online_deliveries'] }}</span></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Total Delivery Fees')</td>
-                                        <td class="text-end"><strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_delivery_fees'] ?? 0, 2) }}</strong></td>
+                                        <td class="text-end"><strong>{{ $report['total_delivery_fees_formatted'] }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Total COD Amount')</td>
-                                        <td class="text-end"><strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_cod_collected'] ?? 0, 2) }}</strong></td>
+                                        <td class="text-end"><strong>{{ $report['total_cod_collected_formatted'] }}</strong></td>
                                     </tr>
                                 </table>
                             </div>
@@ -119,23 +119,23 @@
                                 <table class="table table-bordered">
                                     <tr>
                                         <td width="60%">@lang('Total COD Collected (You owe to Platform)')</td>
-                                        <td class="text-end text-danger"><strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_collected'] ?? 0, 2) }}</strong></td>
+                                        <td class="text-end text-danger"><strong>{{ $report['total_collected_formatted'] }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Total Delivery Fees Earned (Platform owes to You)')</td>
-                                        <td class="text-end text-success"><strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_fees_earned'] ?? 0, 2) }}</strong></td>
+                                        <td class="text-end text-success"><strong>{{ $report['total_fees_earned_formatted'] }}</strong></td>
                                     </tr>
                                     <tr>
                                         <td>@lang('Amount Settled/Delivered to Platform')</td>
-                                        <td class="text-end"><strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_delivered'] ?? 0, 2) }}</strong></td>
+                                        <td class="text-end"><strong>{{ $report['total_delivered_formatted'] }}</strong></td>
                                     </tr>
                                     <tr class="table-active">
                                         <td><strong>@lang('Current Balance')</strong></td>
-                                        <td class="text-end {{ ($report['current_balance'] ?? 0) < 0 ? 'text-danger' : 'text-success' }}">
-                                            <strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['current_balance'] ?? 0, 2) }}</strong>
-                                            @if(($report['current_balance'] ?? 0) < 0)
+                                        <td class="text-end {{ $report['is_in_debt'] ? 'text-danger' : 'text-success' }}">
+                                            <strong>{{ $report['current_balance_formatted'] }}</strong>
+                                            @if($report['is_in_debt'])
                                                 <br><small>(@lang('You need to pay this amount to platform'))</small>
-                                            @elseif(($report['current_balance'] ?? 0) > 0)
+                                            @elseif($report['has_credit'])
                                                 <br><small>(@lang('Platform will pay this amount to you'))</small>
                                             @endif
                                         </td>

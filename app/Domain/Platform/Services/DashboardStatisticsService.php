@@ -108,11 +108,11 @@ class DashboardStatisticsService
      * Get latest catalog items with active merchant offers.
      *
      * @param int $limit
-     * @return Collection
+     * @return Collection Pre-computed display data for each item
      */
     public function getLatestCatalogItems(int $limit = 5): Collection
     {
-        return CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
+        $items = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
             ->with([
                 'merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price'),
                 'fitments.brand:id,name,name_ar,photo',
@@ -120,17 +120,19 @@ class DashboardStatisticsService
             ->latest('id')
             ->take($limit)
             ->get();
+
+        return $this->formatCatalogItemsForDisplay($items);
     }
 
     /**
      * Get popular catalog items by views.
      *
      * @param int $limit
-     * @return Collection
+     * @return Collection Pre-computed display data for each item
      */
     public function getPopularCatalogItems(int $limit = 5): Collection
     {
-        return CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
+        $items = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
             ->with([
                 'merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price'),
                 'fitments.brand:id,name,name_ar,photo',
@@ -138,6 +140,59 @@ class DashboardStatisticsService
             ->orderByDesc('views')
             ->take($limit)
             ->get();
+
+        return $this->formatCatalogItemsForDisplay($items);
+    }
+
+    /**
+     * Format catalog items for dashboard display.
+     * Pre-computes all values needed by the View (DATA_FLOW_POLICY).
+     *
+     * @param Collection $items
+     * @return Collection
+     */
+    private function formatCatalogItemsForDisplay(Collection $items): Collection
+    {
+        return $items->transform(function ($catalogItem) {
+            // Best merchant item (lowest price)
+            $bestMerchantItem = $catalogItem->merchantItems->first();
+
+            // Photo URL
+            $photo = $catalogItem->photo;
+            $catalogItem->photo_url = $photo
+                ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
+                : asset('assets/images/noimage.png');
+
+            // Localized name
+            $catalogItem->localized_name = getLocalizedCatalogItemName($catalogItem, 50);
+
+            // First brand name from fitments
+            $firstBrand = $catalogItem->fitments
+                ->map(fn($f) => $f->brand)
+                ->filter()
+                ->first();
+            $catalogItem->first_brand_name = $firstBrand
+                ? getLocalizedBrandName($firstBrand)
+                : __('N/A');
+
+            // Views with default
+            $catalogItem->views_count = $catalogItem->views ?? 0;
+
+            // Part number with default
+            $catalogItem->part_number_display = $catalogItem->part_number ?? __('N/A');
+
+            // Pre-formatted price
+            $catalogItem->price_formatted = $bestMerchantItem
+                ? $bestMerchantItem->showPrice()
+                : __('N/A');
+
+            // Edit URL
+            $catalogItem->edit_url = $bestMerchantItem
+                ? route('operator-catalog-item-edit', $bestMerchantItem->id)
+                : '#';
+
+            return $catalogItem;
+        });
     }
 
     /**
@@ -167,7 +222,15 @@ class DashboardStatisticsService
      */
     public function getRecentUsers(int $limit = 5): Collection
     {
-        return User::latest('id')->take($limit)->get();
+        $users = User::latest('id')->take($limit)->get();
+
+        // PRE-COMPUTED: Add formatted date (DATA_FLOW_POLICY)
+        $users->transform(function ($user) {
+            $user->created_at_formatted = $user->created_at?->format('Y-m-d') ?? 'N/A';
+            return $user;
+        });
+
+        return $users;
     }
 
     /**
