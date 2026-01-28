@@ -544,10 +544,37 @@ class CourierController extends CourierBaseController
         // PRE-COMPUTED: Delivery DTO for workflow display (DATA_FLOW_POLICY)
         $deliveryDto = $this->buildDeliveryDto($data);
 
+        // PRE-COMPUTED: Merchant display values (DATA_FLOW_POLICY)
+        $merchant = $data->merchant;
+        $data->merchant_name = $merchant->shop_name ?? $merchant->name ?? 'N/A';
+        $data->merchant_phone = $merchant?->phone;
+        $data->merchant_address = $merchant?->address;
+        $data->branch_location = $data->merchantBranch?->location;
+        $data->delivered_at_formatted = $data->delivered_at?->format('Y-m-d H:i');
+
+        // PRE-COMPUTED: Price values (DATA_FLOW_POLICY)
+        $currencySign = $purchase->currency_sign;
+        $data->cod_amount_formatted = \PriceHelper::showAdminCurrencyPrice($data->cod_amount, $currencySign);
+        $data->delivery_fee_formatted = \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $currencySign);
+
+        // PRE-COMPUTED: Cart items with localized names (DATA_FLOW_POLICY)
+        $cartItems = $purchase->getCartItems();
+        $merchantId = $data->merchant_id;
+        $cartItemsDisplay = collect($cartItems)->filter(function ($item) use ($merchantId) {
+            return ($item['user_id'] ?? null) == $merchantId;
+        })->map(function ($item) {
+            return [
+                'id' => $item['item']['id'] ?? 'N/A',
+                'name' => isset($item['item']) ? getLocalizedCatalogItemName($item['item'], 50) : 'N/A',
+                'qty' => $item['qty'] ?? 1,
+            ];
+        })->values();
+
         return view('courier.purchase_details', [
             'data' => $data,
             'purchase' => $purchase,
             'deliveryDto' => $deliveryDto,
+            'cartItems' => $cartItemsDisplay,
         ]);
     }
 

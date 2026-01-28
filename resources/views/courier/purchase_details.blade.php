@@ -58,8 +58,8 @@
                                 <div class="alert alert-success w-100 text-center">
                                     <i class="fas fa-check-circle me-2"></i>
                                     <strong>@lang('Delivery Completed!')</strong>
-                                    @if($data->delivered_at)
-                                        <br><small>@lang('Delivered on'): {{ $data->delivered_at->format('Y-m-d H:i') }}</small>
+                                    @if($data->delivered_at_formatted)
+                                        <br><small>@lang('Delivered on'): {{ $data->delivered_at_formatted }}</small>
                                     @endif
                                     @if($data->isConfirmed())
                                         <br><span class="badge bg-success">@lang('Customer Confirmed')</span>
@@ -125,27 +125,27 @@
                                         @if($data->merchant)
                                             <div class="mb-2">
                                                 <strong><i class="fas fa-store"></i> @lang('Shop'):</strong>
-                                                {{ $data->merchant->shop_name ?? $data->merchant->name ?? 'N/A' }}
+                                                {{ $data->merchant_name }}
                                             </div>
-                                            @if($data->merchant->phone)
+                                            @if($data->merchant_phone)
                                                 <div class="mb-2">
                                                     <strong><i class="fas fa-phone"></i> @lang('Phone'):</strong>
-                                                    <a href="tel:{{ $data->merchant->phone }}" class="text-primary">
-                                                        {{ $data->merchant->phone }}
+                                                    <a href="tel:{{ $data->merchant_phone }}" class="text-primary">
+                                                        {{ $data->merchant_phone }}
                                                     </a>
                                                 </div>
                                             @endif
-                                            @if($data->merchantBranch && $data->merchantBranch->location)
+                                            @if($data->branch_location)
                                                 <div class="mb-2 p-2 bg-light rounded">
                                                     <strong><i class="fas fa-warehouse text-success"></i> @lang('Pickup Location'):</strong>
                                                     <br>
-                                                    <span class="text-success">{{ $data->merchantBranch->location }}</span>
+                                                    <span class="text-success">{{ $data->branch_location }}</span>
                                                 </div>
                                             @endif
-                                            @if($data->merchant->address)
+                                            @if($data->merchant_address)
                                                 <div class="mb-2">
                                                     <strong><i class="fas fa-map-marker-alt"></i> @lang('Address'):</strong>
-                                                    {{ $data->merchant->address }}
+                                                    {{ $data->merchant_address }}
                                                 </div>
                                             @endif
                                         @else
@@ -171,14 +171,14 @@
                                             <td><strong>@lang('TOTAL TO COLLECT'):</strong></td>
                                             <td class="text-end">
                                                 <strong class="fs-4 text-danger">
-                                                    {{ \PriceHelper::showAdminCurrencyPrice($data->cod_amount, $purchase->currency_sign) }}
+                                                    {{ $data->cod_amount_formatted }}
                                                 </strong>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>@lang('Your Delivery Fee'):</td>
                                             <td class="text-end text-success">
-                                                {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $purchase->currency_sign) }}
+                                                {{ $data->delivery_fee_formatted }}
                                             </td>
                                         </tr>
                                     </table>
@@ -202,7 +202,7 @@
                                     <p class="mb-0">
                                         <strong>@lang('Your Delivery Fee'):</strong>
                                         <span class="text-success fs-5">
-                                            {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $purchase->currency_sign) }}
+                                            {{ $data->delivery_fee_formatted }}
                                         </span>
                                     </p>
                                 </div>
@@ -223,16 +223,14 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach ($purchase->getCartItems() as $catalogItem)
-                                        @if ($catalogItem['user_id'] == $data->merchant_id)
-                                            <tr>
-                                                <td>{{ $catalogItem['item']['id'] }}</td>
-                                                <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
-                                                <td>
-                                                    <strong>@lang('Qty'):</strong> {{ $catalogItem['qty'] ?? 1 }}
-                                                </td>
-                                            </tr>
-                                        @endif
+                                    @foreach ($cartItems as $item)
+                                        <tr>
+                                            <td>{{ $item['id'] }}</td>
+                                            <td>{{ $item['name'] }}</td>
+                                            <td>
+                                                <strong>@lang('Qty'):</strong> {{ $item['qty'] }}
+                                            </td>
+                                        </tr>
                                     @endforeach
                                 </tbody>
                             </table>
