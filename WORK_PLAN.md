@@ -107,10 +107,19 @@ public function show($id) {
 - ✅ courier/orders.blade.php - pre-computed delivery display values
 - ✅ courier/purchase_details.blade.php - merchant info, prices, cart items
 - ✅ courier/service-area.blade.php - country, city, price formatting
+- ✅ courier/transactions.blade.php - pre-computed delivery values
+- ✅ courier/settlements.blade.php - pre-computed report/settlement arrays
 - ✅ operator/dashboard.blade.php - pre-computed catalog items
 - ✅ merchant/index.blade.php - monetaryUnit()->format()
+- ✅ merchant/checkout/address.blade.php - pre-formatted cart total
+- ✅ merchant/checkout/shipping.blade.php - pre-formatted totals/prices
+- ✅ merchant/checkout/payment.blade.php - pre-formatted cart/totals/shipping
+- ✅ merchant/branch/index.blade.php - pre-formatted coordinates
+- ✅ merchant/cart/partials/item.blade.php - pre-formatted discount percent
+- ✅ frontend/part-result.blade.php - pre-formatted rating
+- ✅ merchant/earning.blade.php - pre-formatted settlement/purchase values
 
-**Progress:** 534 → 508 violations (26 fixed)
+**Progress:** 534 → 458 violations (76 fixed)
 
 **القاعدة:**
 ```blade
