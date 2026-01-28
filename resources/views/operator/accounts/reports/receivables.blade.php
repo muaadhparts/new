@@ -41,7 +41,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Average Balance') }}</h6>
-                    <h2>{{ $receivables->count() > 0 ? $currency->formatAmount($total / $receivables->count()) : $currency->formatAmount(0) }}</h2>
+                    <h2>{{ $currency->formatAmount($averageBalance) }}</h2>
                     <small>{{ __('Per party') }}</small>
                 </div>
             </div>

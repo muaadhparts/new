@@ -528,10 +528,16 @@ class AccountLedgerController extends OperatorBaseController
 
         $total = $receivables->sum('pending_amount');
         $currency = monetaryUnit()->getDefault();
+        
+        // Pre-compute average balance (DATA_FLOW_POLICY)
+        $averageBalance = $receivables->count() > 0 
+            ? $total / $receivables->count() 
+            : 0;
 
         return view('operator.accounts.reports.receivables', [
             'receivables' => $receivables,
             'total' => $total,
+            'averageBalance' => $averageBalance,
             'currency' => $currency,
         ]);
     }
@@ -552,10 +558,16 @@ class AccountLedgerController extends OperatorBaseController
 
         $total = $payables->sum('pending_amount');
         $currency = monetaryUnit()->getDefault();
+        
+        // Pre-compute average balance (DATA_FLOW_POLICY)
+        $averageBalance = $payables->count() > 0 
+            ? $total / $payables->count() 
+            : 0;
 
         return view('operator.accounts.reports.payables', [
             'payables' => $payables,
             'total' => $total,
+            'averageBalance' => $averageBalance,
             'currency' => $currency,
         ]);
     }

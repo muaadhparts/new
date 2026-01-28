@@ -1,7 +1,7 @@
 {
     "name": "Auto Parts Offers Platform/epc",
     "type": "project",
-    "description": "Auto Parts Offers Platform \u2014 AI-assisted OEM/Aftermarket parts catalog (callout-first search, Laravel + Livewire)",
+    "description": "Auto Parts Offers Platform — AI-assisted OEM/Aftermarket parts catalog (callout-first search, Laravel + Livewire)",
     "keywords": [
         "Auto Parts Offers Platform",
         "epc",
@@ -69,7 +69,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/helper.php"
+            "app/Helpers/helper.php",
+            "app/Helpers/LocalizationHelper.php"
         ]
     },
     "autoload-dev": {
