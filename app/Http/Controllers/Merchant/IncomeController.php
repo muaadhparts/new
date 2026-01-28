@@ -47,11 +47,26 @@ class IncomeController extends Controller
         // Get statement for ledger view
         $statement = $this->accountingService->getMerchantStatement($merchantId, $startDate, $endDate);
 
-        // PRE-COMPUTED: Add date_formatted to purchases (DATA_FLOW_POLICY)
-        $report['purchases']->transform(function ($purchase) {
+        // PRE-COMPUTED: Add formatted values to purchases (DATA_FLOW_POLICY)
+        $report['purchases']->transform(function ($purchase) use ($currencySign) {
             $purchase->date_formatted = $purchase->created_at?->format('d-m-Y') ?? 'N/A';
+            $purchase->price_formatted = $currencySign . number_format($purchase->price, 2);
+            $purchase->commission_amount_formatted = $currencySign . number_format($purchase->commission_amount, 2);
+            $purchase->tax_amount_formatted = $currencySign . number_format($purchase->tax_amount, 2);
+            $purchase->net_amount_formatted = $currencySign . number_format($purchase->net_amount, 2);
+            $purchase->platform_owes_merchant_formatted = $currencySign . number_format($purchase->platform_owes_merchant, 2);
+            $purchase->merchant_owes_platform_formatted = $currencySign . number_format($purchase->merchant_owes_platform, 2);
             return $purchase;
         });
+
+        // PRE-COMPUTE: Formatted values for settlement cards (DATA_FLOW_POLICY)
+        $netBalanceFormatted = $currencySign . number_format(abs($report['net_balance']), 2);
+        $platformOwesMerchantFormatted = $currencySign . number_format($report['platform_owes_merchant'], 2);
+        $merchantOwesPlatformFormatted = $currencySign . number_format($report['merchant_owes_platform'], 2);
+        $platformPaymentsTotalFormatted = $currencySign . number_format($report['platform_payments']['total'], 2);
+        $merchantPaymentsTotalFormatted = $currencySign . number_format($report['merchant_payments']['total'], 2);
+        $platformShippingCostFormatted = $currencySign . number_format($report['platform_shipping']['cost'], 2);
+        $merchantShippingCostFormatted = $currencySign . number_format($report['merchant_shipping']['cost'], 2);
 
         return view('merchant.earning', [
             'currency' => $currency,
@@ -80,14 +95,21 @@ class IncomeController extends Controller
             'platform_owes_merchant' => $report['platform_owes_merchant'],
             'merchant_owes_platform' => $report['merchant_owes_platform'],
             'net_balance' => $report['net_balance'],
+            'net_balance_formatted' => $netBalanceFormatted,
+            'platform_owes_merchant_formatted' => $platformOwesMerchantFormatted,
+            'merchant_owes_platform_formatted' => $merchantOwesPlatformFormatted,
 
             // Payment Method Breakdown
             'platform_payments' => $report['platform_payments'],
             'merchant_payments' => $report['merchant_payments'],
+            'platform_payments_total_formatted' => $platformPaymentsTotalFormatted,
+            'merchant_payments_total_formatted' => $merchantPaymentsTotalFormatted,
 
             // Shipping Breakdown
             'platform_shipping' => $report['platform_shipping'],
             'merchant_shipping' => $report['merchant_shipping'],
+            'platform_shipping_cost_formatted' => $platformShippingCostFormatted,
+            'merchant_shipping_cost_formatted' => $merchantShippingCostFormatted,
             'courier_deliveries' => $report['courier_deliveries'],
 
             // Raw purchases for table

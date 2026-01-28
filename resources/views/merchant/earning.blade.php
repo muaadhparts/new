@@ -45,7 +45,7 @@
                 <div class="card {{ $net_balance >= 0 ? 'bg-info' : 'bg-warning' }} text-white h-100">
                     <div class="card-body text-center">
                         <h6 class="mb-2">@lang('Current Balance')</h6>
-                        <h3 class="mb-0">{{ $currencySign }}{{ number_format(abs($net_balance), 2) }}</h3>
+                        <h3 class="mb-0">{{ $net_balance_formatted }}</h3>
                         @if($net_balance >= 0)
                             <small>@lang('Platform owes you')</small>
                         @else
@@ -67,11 +67,11 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-6">
-                                <h4 class="text-success mb-1">{{ $currencySign }}{{ number_format($platform_owes_merchant, 2) }}</h4>
+                                <h4 class="text-success mb-1">{{ $platform_owes_merchant_formatted }}</h4>
                                 <small class="text-muted">@lang('Amount to receive')</small>
                             </div>
                             <div class="col-6">
-                                <h4 class="mb-1">{{ $currencySign }}{{ number_format($platform_payments['total'], 2) }}</h4>
+                                <h4 class="mb-1">{{ $platform_payments_total_formatted }}</h4>
                                 <small class="text-muted">@lang('Total from platform payments')</small>
                             </div>
                         </div>
@@ -87,11 +87,11 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-6">
-                                <h4 class="text-danger mb-1">{{ $currencySign }}{{ number_format($merchant_owes_platform, 2) }}</h4>
+                                <h4 class="text-danger mb-1">{{ $merchant_owes_platform_formatted }}</h4>
                                 <small class="text-muted">@lang('Amount to pay')</small>
                             </div>
                             <div class="col-6">
-                                <h4 class="mb-1">{{ $currencySign }}{{ number_format($merchant_payments['total'], 2) }}</h4>
+                                <h4 class="mb-1">{{ $merchant_payments_total_formatted }}</h4>
                                 <small class="text-muted">@lang('Total from your payments')</small>
                             </div>
                         </div>
@@ -153,14 +153,14 @@
                                 <td><i class="fas fa-truck me-2"></i>@lang('Platform Shipping')</td>
                                 <td class="text-end">
                                     <span class="badge bg-primary">{{ $platform_shipping['count'] }}</span>
-                                    <span class="ms-2">{{ $currencySign }}{{ number_format($platform_shipping['cost'], 2) }}</span>
+                                    <span class="ms-2">{{ $platform_shipping_cost_formatted }}</span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><i class="fas fa-store me-2"></i>@lang('Your Shipping')</td>
                                 <td class="text-end">
                                     <span class="badge bg-success">{{ $merchant_shipping['count'] }}</span>
-                                    <span class="ms-2">{{ $currencySign }}{{ number_format($merchant_shipping['cost'], 2) }}</span>
+                                    <span class="ms-2">{{ $merchant_shipping_cost_formatted }}</span>
                                 </td>
                             </tr>
                             <tr class="border-top">
@@ -227,10 +227,10 @@
                                         {{ $purchase->purchase_number }}
                                     </a>
                                 </td>
-                                <td class="text-end">{{ $currencySign }}{{ number_format($purchase->price, 2) }}</td>
-                                <td class="text-end text-danger">-{{ $currencySign }}{{ number_format($purchase->commission_amount, 2) }}</td>
-                                <td class="text-end">{{ $currencySign }}{{ number_format($purchase->tax_amount, 2) }}</td>
-                                <td class="text-end text-success">{{ $currencySign }}{{ number_format($purchase->net_amount, 2) }}</td>
+                                <td class="text-end">{{ $purchase->price_formatted }}</td>
+                                <td class="text-end text-danger">-{{ $purchase->commission_amount_formatted }}</td>
+                                <td class="text-end">{{ $purchase->tax_amount_formatted }}</td>
+                                <td class="text-end text-success">{{ $purchase->net_amount_formatted }}</td>
                                 <td class="text-center">
                                     @if($purchase->payment_owner_id === 0)
                                         <span class="badge bg-primary" name="@lang('Platform received payment')">
@@ -260,11 +260,11 @@
                                 <td class="text-end">
                                     @if($purchase->platform_owes_merchant > 0)
                                         <span class="text-success" name="@lang('Platform owes you')">
-                                            +{{ $currencySign }}{{ number_format($purchase->platform_owes_merchant, 2) }}
+                                            +{{ $purchase->platform_owes_merchant_formatted }}
                                         </span>
                                     @elseif($purchase->merchant_owes_platform > 0)
                                         <span class="text-danger" name="@lang('You owe platform')">
-                                            -{{ $currencySign }}{{ number_format($purchase->merchant_owes_platform, 2) }}
+                                            -{{ $purchase->merchant_owes_platform_formatted }}
                                         </span>
                                     @else
                                         <span class="text-muted">{{ $currencySign }}0.00</span>
