@@ -365,6 +365,31 @@ if (! function_exists('space_path')) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// UserDisplay Helper - API-Ready User Formatting
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get UserDisplayService instance (SINGLE SOURCE OF TRUTH for user formatting)
+ *
+ * This is the main entry point for all user display formatting.
+ * Use this helper for user profiles, avatars, and account display.
+ *
+ * Usage:
+ *   userDisplay()->forProfile($user)           // Get profile DTO
+ *   userDisplay()->forCard($user)              // Get card display data
+ *   userDisplay()->getPhotoUrl($user)          // Get avatar URL
+ *   userDisplay()->getStatusDisplay($status)   // Get status badge data
+ *
+ * @return \App\Domain\Identity\Services\UserDisplayService
+ */
+if (! function_exists('userDisplay')) {
+    function userDisplay(): \App\Domain\Identity\Services\UserDisplayService
+    {
+        return app(\App\Domain\Identity\Services\UserDisplayService::class);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // OperatorDisplay Helper - API-Ready Operator/Admin Formatting
 // ═══════════════════════════════════════════════════════════════════════════
 
