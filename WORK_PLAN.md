@@ -90,15 +90,16 @@ public function show($id) {
 
 ---
 
-### ⬜ Phase 6: Views Alignment
+### 🔄 Phase 6: Views Alignment (IN PROGRESS)
 
 **الهدف:** تحويل Views لاستخدام Display DTOs - بدون منطق جديد.
 
-| المجموعة | الوصف | الأولوية |
-|----------|-------|----------|
-| Operator Views | استهلاك OperatorDisplayService | HIGH |
-| Merchant Views | استهلاك MerchantDisplayService | HIGH |
-| User Views | استهلاك UserDisplayService | MEDIUM |
+| المجموعة | الوصف | الحالة |
+|----------|-------|--------|
+| ✅ Courier Views | مثال: courier/dashboard | DONE |
+| ⬜ Operator Views | استهلاك OperatorDisplayService | PENDING |
+| ⬜ Merchant Views | استهلاك MerchantDisplayService | PENDING |
+| ⬜ User Views | استهلاك UserDisplayService | PENDING |
 
 **القاعدة:**
 ```blade
