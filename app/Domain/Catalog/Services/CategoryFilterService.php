@@ -4,7 +4,7 @@ namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\Catalog;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +23,7 @@ class CategoryFilterService
         ?string $filterDate,
         array $specItemIds
     ): array {
-        $query = DB::table('newcategories as nc')
+        $query = DB::table('categories as nc')
             ->join('category_periods as cp', 'cp.category_id', '=', 'nc.id')
             ->where('nc.catalog_id', $catalog->id)
             ->where('nc.brand_id', $brand->id)
@@ -60,9 +60,9 @@ class CategoryFilterService
     ): Collection {
         $labelField = $this->getLabelField();
 
-        return DB::table('newcategories as n')
-            ->join('newcategories as level2', 'level2.parent_id', '=', 'n.id')
-            ->join('newcategories as level3', 'level3.parent_id', '=', 'level2.id')
+        return DB::table('categories as n')
+            ->join('categories as level2', 'level2.parent_id', '=', 'n.id')
+            ->join('categories as level3', 'level3.parent_id', '=', 'level2.id')
             ->join('category_periods as cp', 'cp.category_id', '=', 'level3.id')
             ->where('n.catalog_id', $catalog->id)
             ->where('n.brand_id', $brand->id)
@@ -103,8 +103,8 @@ class CategoryFilterService
             return collect();
         }
 
-        $query = DB::table('newcategories as n')
-            ->join('newcategories as parent', 'parent.id', '=', 'n.parent_id')
+        $query = DB::table('categories as n')
+            ->join('categories as parent', 'parent.id', '=', 'n.parent_id')
             ->where('n.catalog_id', $catalog->id)
             ->where('n.brand_id', $brand->id)
             ->where('n.parent_id', $parent->id)
@@ -153,10 +153,10 @@ class CategoryFilterService
             return collect();
         }
 
-        $baseQuery = DB::table('newcategories as n')
+        $baseQuery = DB::table('categories as n')
             ->join('category_periods as cp', 'cp.category_id', '=', 'n.id')
-            ->join('newcategories as parent2', 'parent2.id', '=', 'n.parent_id')
-            ->join('newcategories as parent1', 'parent1.id', '=', 'parent2.parent_id')
+            ->join('categories as parent2', 'parent2.id', '=', 'n.parent_id')
+            ->join('categories as parent1', 'parent1.id', '=', 'parent2.parent_id')
             ->where('n.catalog_id', $catalog->id)
             ->where('n.brand_id', $brand->id)
             ->where('n.parent_id', $parent2->id)
@@ -212,7 +212,7 @@ class CategoryFilterService
      */
     public function findCategory(Catalog $catalog, Brand $brand, string $fullCode, int $level): ?object
     {
-        return DB::table('newcategories')
+        return DB::table('categories')
             ->where('catalog_id', $catalog->id)
             ->where('brand_id', $brand->id)
             ->where('full_code', $fullCode)
@@ -231,7 +231,7 @@ class CategoryFilterService
             return [];
         }
 
-        $level3Codes = DB::table('newcategories')
+        $level3Codes = DB::table('categories')
             ->whereIn('parent_id', $nodes->pluck('id')->toArray())
             ->where('level', 3)
             ->pluck('full_code')
@@ -272,7 +272,7 @@ class CategoryFilterService
         if (!$filterDate) return;
 
         $query->whereExists(function ($q) use ($catalog, $brand, $filterDate) {
-            $q->from('newcategories as l3')
+            $q->from('categories as l3')
                 ->join('category_periods as cp2', 'cp2.category_id', '=', 'l3.id')
                 ->whereColumn('l3.parent_id', 'n.id')
                 ->where('l3.catalog_id', $catalog->id)
@@ -297,7 +297,7 @@ class CategoryFilterService
 
         $matchedGroupIndexSql = "
             (SELECT MAX(csg2.group_index)
-             FROM newcategories l3
+             FROM categories l3
              JOIN category_spec_groups csg2 ON csg2.category_id = l3.id AND csg2.catalog_id = {$catalog->id}
              {$dateJoin}
              WHERE l3.parent_id = n.id

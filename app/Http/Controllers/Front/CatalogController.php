@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Domain\Catalog\Models\AbuseFlag;
 use App\Domain\Catalog\Services\CatalogItemFilterService;
-use App\Domain\Catalog\Services\NewCategoryTreeService;
+use App\Domain\Catalog\Services\CategoryTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -12,7 +12,7 @@ class CatalogController extends FrontBaseController
 {
     public function __construct(
         private CatalogItemFilterService $filterService,
-        private NewCategoryTreeService $categoryTreeService
+        private CategoryTreeService $categoryTreeService
     ) {
         parent::__construct();
     }
@@ -88,9 +88,9 @@ class CatalogController extends FrontBaseController
      * @param Request $request
      * @param string|null $brand Brand slug (e.g., "nissan")
      * @param string|null $catalog Catalog slug (e.g., "safari-patrol-1997")
-     * @param string|null $cat1 NewCategory L1 slug (e.g., "engine")
-     * @param string|null $cat2 NewCategory L2 slug (e.g., "cooling")
-     * @param string|null $cat3 NewCategory L3 slug (e.g., "radiator")
+     * @param string|null $cat1 Category L1 slug (e.g., "engine")
+     * @param string|null $cat2 Category L2 slug (e.g., "cooling")
+     * @param string|null $cat3 Category L3 slug (e.g., "radiator")
      */
     public function catalog(Request $request, $brand = null, $catalog = null, $cat1 = null, $cat2 = null, $cat3 = null)
     {
@@ -167,7 +167,7 @@ class CatalogController extends FrontBaseController
      * Only shows parts that have merchant_items (available for sale)
      * NOW WITH FULL FILTER SUPPORT (merchant, branch, quality_brand, price, sort)
      */
-    public function newCategory(
+    public function category(
         Request $request,
         string $brand_slug,
         string $catalog_slug,
@@ -196,7 +196,7 @@ class CatalogController extends FrontBaseController
             abort(404, __('Catalog not found'));
         }
 
-        // Resolve category hierarchy from newcategories
+        // Resolve category hierarchy from categories
         $hierarchy = $this->categoryTreeService->resolveCategoryHierarchy(
             $catalog->id,
             $cat1,
@@ -319,7 +319,7 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        $query = \App\Domain\Catalog\Models\NewCategory::where('catalog_id', $catalog->id)
+        $query = \App\Domain\Catalog\Models\Category::where('catalog_id', $catalog->id)
             ->where('level', $level)
             ->orderBy('label_en');
 
@@ -330,7 +330,7 @@ class CatalogController extends FrontBaseController
             if (!$parentSlug) {
                 return response()->json([]);
             }
-            $parent = \App\Domain\Catalog\Models\NewCategory::where('catalog_id', $catalog->id)
+            $parent = \App\Domain\Catalog\Models\Category::where('catalog_id', $catalog->id)
                 ->where('slug', $parentSlug)
                 ->where('level', $level - 1)
                 ->first();

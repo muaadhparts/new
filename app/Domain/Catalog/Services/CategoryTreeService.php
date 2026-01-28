@@ -4,7 +4,7 @@ namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\Catalog;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
  * Uses recursive CTE queries to get all descendant categories
  * and fetches parts with merchant_items (available for sale only)
  */
-class NewCategoryTreeService
+class CategoryTreeService
 {
     /**
      * Validate catalog code to prevent SQL injection
@@ -48,13 +48,13 @@ class NewCategoryTreeService
         $sql = "
             WITH RECURSIVE category_tree AS (
                 SELECT id
-                FROM newcategories
+                FROM categories
                 WHERE id = ? AND catalog_id = ?
 
                 UNION ALL
 
                 SELECT nc.id
-                FROM newcategories nc
+                FROM categories nc
                 INNER JOIN category_tree ct ON nc.parent_id = ct.id
                 WHERE nc.catalog_id = ?
             )
@@ -84,13 +84,13 @@ class NewCategoryTreeService
         $sql = "
             WITH RECURSIVE category_tree AS (
                 SELECT id
-                FROM newcategories
+                FROM categories
                 WHERE id IN ({$placeholders}) AND catalog_id = ?
 
                 UNION ALL
 
                 SELECT nc.id
-                FROM newcategories nc
+                FROM categories nc
                 INNER JOIN category_tree ct ON nc.parent_id = ct.id
                 WHERE nc.catalog_id = ?
             )
@@ -159,7 +159,7 @@ class NewCategoryTreeService
         ?string $brandSlug = null,
         ?string $catalogSlug = null
     ): Collection {
-        $query = NewCategory::query()
+        $query = Category::query()
             ->where('catalog_id', $catalogId)
             ->orderBy('level')
             ->orderBy('label_en');
@@ -272,11 +272,11 @@ class NewCategoryTreeService
      * @param string $slug Category slug
      * @param int $catalogId Catalog ID
      * @param int|null $parentId Parent category ID (for hierarchy validation)
-     * @return NewCategory|null
+     * @return Category|null
      */
-    public function resolveCategoryBySlug(string $slug, int $catalogId, ?int $parentId = null): ?NewCategory
+    public function resolveCategoryBySlug(string $slug, int $catalogId, ?int $parentId = null): ?Category
     {
-        $query = NewCategory::where('slug', $slug)
+        $query = Category::where('slug', $slug)
             ->where('catalog_id', $catalogId);
 
         if ($parentId !== null) {
@@ -307,7 +307,7 @@ class NewCategoryTreeService
         $deepest = null;
 
         if ($slug1) {
-            $cat1 = NewCategory::where('slug', $slug1)
+            $cat1 = Category::where('slug', $slug1)
                 ->where('catalog_id', $catalogId)
                 ->where('level', 1)
                 ->first();
@@ -316,7 +316,7 @@ class NewCategoryTreeService
                 $deepest = $cat1;
 
                 if ($slug2) {
-                    $cat2 = NewCategory::where('slug', $slug2)
+                    $cat2 = Category::where('slug', $slug2)
                         ->where('catalog_id', $catalogId)
                         ->where('parent_id', $cat1->id)
                         ->where('level', 2)
@@ -326,7 +326,7 @@ class NewCategoryTreeService
                         $deepest = $cat2;
 
                         if ($slug3) {
-                            $cat3 = NewCategory::where('slug', $slug3)
+                            $cat3 = Category::where('slug', $slug3)
                                 ->where('catalog_id', $catalogId)
                                 ->where('parent_id', $cat2->id)
                                 ->where('level', 3)
@@ -352,16 +352,16 @@ class NewCategoryTreeService
     /**
      * Get breadcrumb trail for a category
      *
-     * @param NewCategory $category
+     * @param Category $category
      * @return Collection Ordered from root to current
      */
-    public function getBreadcrumb(NewCategory $category): Collection
+    public function getBreadcrumb(Category $category): Collection
     {
         $breadcrumb = collect([$category]);
         $current = $category;
 
         while ($current->parent_id) {
-            $parent = NewCategory::find($current->parent_id);
+            $parent = Category::find($current->parent_id);
             if ($parent) {
                 $breadcrumb->prepend($parent);
                 $current = $parent;
@@ -466,7 +466,7 @@ class NewCategoryTreeService
      */
     public function getCategoriesForLevel(int $catalogId, int $level, ?int $parentId = null): Collection
     {
-        $query = NewCategory::where('catalog_id', $catalogId)
+        $query = Category::where('catalog_id', $catalogId)
             ->where('level', $level)
             ->orderBy('label_en');
 

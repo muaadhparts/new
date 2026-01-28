@@ -410,7 +410,7 @@ php artisan db:wipe              -- NEVER
 | `order` | `purchase` |
 | `riders` | `couriers` |
 | `admin` | `operator` |
-| `category/subcategory/childcategory` | `NewCategory` (levels) |
+| `category/subcategory/childcategory` | `Category` (levels) |
 
 ---
 

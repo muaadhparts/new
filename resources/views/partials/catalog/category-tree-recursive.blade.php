@@ -1,5 +1,5 @@
 {{-- Recursive category tree component --}}
-{{-- computed_url, computed_label, has_children pre-computed in NewCategoryTreeService (DATA_FLOW_POLICY) --}}
+{{-- computed_url, computed_label, has_children pre-computed in CategoryTreeService (DATA_FLOW_POLICY) --}}
 <ul class="tree-list" style="{{ $level > 1 ? 'display: none;' : '' }}">
     @foreach($categories as $category)
         <li class="tree-item-wrapper">

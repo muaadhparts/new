@@ -15,12 +15,12 @@
 brands (العلامات التجارية)
   └── catalogs (الكتالوجات) [brand_id]
         │
-        ├── newcategories (التصنيفات) [catalog_id, level, parent_id]
+        ├── categories (التصنيفات) [catalog_id, level, parent_id]
         │     ├── Level 1 (parent_id = NULL)
         │     │     └── Level 2 (parent_id = L1.id)
         │     │           └── Level 3 (parent_id = L2.id)
         │     │
-        ├── sections (الأقسام) [category_id → newcategories.id]
+        ├── sections (الأقسام) [category_id → categories.id]
         │     │
         │     └── Dynamic Tables (per catalog):
         │           ├── parts_{catalog_code}
@@ -43,11 +43,11 @@ Brand::hasMany(Catalog::class);
 Catalog::belongsTo(Brand::class);
 
 // Catalog → Categories (3 levels)
-NewCategory::belongsTo(Catalog::class);
-NewCategory::belongsTo(NewCategory::class, 'parent_id'); // self-referencing
+Category::belongsTo(Catalog::class);
+Category::belongsTo(Category::class, 'parent_id'); // self-referencing
 
 // Section → Category
-Section::belongsTo(NewCategory::class, 'category_id');
+Section::belongsTo(Category::class, 'category_id');
 
 // Dynamic Parts Tables
 // parts_{code}.part_number ↔ catalog_items.part_number
@@ -62,7 +62,7 @@ MerchantItem::belongsTo(CatalogItem::class);
 
 Location: `app/Domain/Catalog/Services/`
 
-### NewCategoryTreeService
+### CategoryTreeService
 
 Key methods:
 - `getDescendantIds()` - Recursive CTE for all child categories

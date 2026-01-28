@@ -3,16 +3,16 @@
 namespace App\Domain\Catalog\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 
 /**
  * New Category Factory
  *
- * Factory for creating NewCategory instances in tests.
+ * Factory for creating Category instances in tests.
  */
-class NewCategoryFactory extends Factory
+class CategoryFactory extends Factory
 {
-    protected $model = NewCategory::class;
+    protected $model = Category::class;
 
     /**
      * Define the model's default state.
@@ -50,7 +50,7 @@ class NewCategoryFactory extends Factory
     /**
      * Child category with parent.
      */
-    public function childOf(NewCategory $parent): static
+    public function childOf(Category $parent): static
     {
         return $this->state(fn (array $attributes) => [
             'parent_id' => $parent->id,

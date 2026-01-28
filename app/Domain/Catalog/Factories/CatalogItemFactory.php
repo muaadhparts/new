@@ -5,7 +5,7 @@ namespace App\Domain\Catalog\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\Brand;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 
 /**
  * Catalog Item Factory
@@ -30,7 +30,7 @@ class CatalogItemFactory extends Factory
             'description' => $this->faker->paragraph(),
             'description_ar' => $this->faker->paragraph(),
             'brand_id' => Brand::factory(),
-            'new_category_id' => NewCategory::factory(),
+            'new_category_id' => Category::factory(),
             'status' => 1,
             'created_at' => now(),
             'updated_at' => now(),
@@ -70,7 +70,7 @@ class CatalogItemFactory extends Factory
     /**
      * Set a specific category.
      */
-    public function forCategory(NewCategory $category): static
+    public function forCategory(Category $category): static
     {
         return $this->state(fn (array $attributes) => [
             'new_category_id' => $category->id,

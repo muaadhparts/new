@@ -129,9 +129,9 @@ class Catalog extends Model
     /**
      * All categories in this catalog.
      */
-    public function newCategories(): HasMany
+    public function categories(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'catalog_id');
+        return $this->hasMany(Category::class, 'catalog_id');
     }
 
     /**
@@ -139,7 +139,7 @@ class Catalog extends Model
      */
     public function rootCategories(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'catalog_id')
+        return $this->hasMany(Category::class, 'catalog_id')
             ->where('level', 1);
     }
 
@@ -286,7 +286,7 @@ class Catalog extends Model
      */
     public function getChildsAttribute()
     {
-        return $this->newCategories()
+        return $this->categories()
             ->where('level', 1)
             ->orderBy('label_en')
             ->limit(10)

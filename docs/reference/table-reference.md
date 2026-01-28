@@ -9,7 +9,7 @@
 | Merchant branches | `merchant_branches` | Warehouses, shipping origins |
 | Customer orders | `purchases` | Main order record |
 | Per-merchant breakdown | `merchant_purchases` | Split by merchant |
-| Categories | `newcategories` | 3-level hierarchy per catalog |
+| Categories | `categories` | 3-level hierarchy per catalog |
 | Parts data | `parts_{code}` | Dynamic per catalog |
 | User favorites | `favorite_sellers` | Wishlist |
 | Reviews | `catalog_reviews` | Product reviews |

@@ -80,11 +80,11 @@ class Brand extends Model
     }
 
     /**
-     * NewCategories belonging to this brand.
+     * Categories belonging to this brand.
      */
-    public function newCategories(): HasMany
+    public function categories(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'brand_id');
+        return $this->hasMany(Category::class, 'brand_id');
     }
 
     /**

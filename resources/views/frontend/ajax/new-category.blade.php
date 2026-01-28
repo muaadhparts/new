@@ -1,5 +1,5 @@
 {{-- AJAX response for new unified catalog category tree --}}
-{{-- $view pre-computed in CatalogController::newCategory (DATA_FLOW_POLICY) --}}
+{{-- $view pre-computed in CatalogController::category (DATA_FLOW_POLICY) --}}
 
 {{-- Products Content Container for AJAX replacement --}}
 <div id="ajax-catalogItems-content">

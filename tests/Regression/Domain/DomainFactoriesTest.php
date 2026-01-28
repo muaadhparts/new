@@ -5,7 +5,7 @@ namespace Tests\Regression\Domain;
 use Tests\TestCase;
 use App\Domain\Catalog\Factories\CatalogItemFactory;
 use App\Domain\Catalog\Factories\BrandFactory;
-use App\Domain\Catalog\Factories\NewCategoryFactory;
+use App\Domain\Catalog\Factories\CategoryFactory;
 use App\Domain\Catalog\Factories\CatalogReviewFactory;
 use App\Domain\Merchant\Factories\MerchantItemFactory;
 use App\Domain\Merchant\Factories\MerchantBranchFactory;
@@ -82,13 +82,13 @@ class DomainFactoriesTest extends TestCase
     /** @test */
     public function new_category_factory_exists()
     {
-        $this->assertTrue(class_exists(NewCategoryFactory::class));
+        $this->assertTrue(class_exists(CategoryFactory::class));
     }
 
     /** @test */
     public function new_category_factory_has_hierarchy_methods()
     {
-        $factory = new NewCategoryFactory();
+        $factory = new CategoryFactory();
         $this->assertTrue(method_exists($factory, 'root'));
         $this->assertTrue(method_exists($factory, 'childOf'));
         $this->assertTrue(method_exists($factory, 'autoParts'));
@@ -397,7 +397,7 @@ class DomainFactoriesTest extends TestCase
         $factories = [
             CatalogItemFactory::class,
             BrandFactory::class,
-            NewCategoryFactory::class,
+            CategoryFactory::class,
             CatalogReviewFactory::class,
             MerchantItemFactory::class,
             MerchantBranchFactory::class,
@@ -427,7 +427,7 @@ class DomainFactoriesTest extends TestCase
         $factories = [
             CatalogItemFactory::class,
             BrandFactory::class,
-            NewCategoryFactory::class,
+            CategoryFactory::class,
             CatalogReviewFactory::class,
             MerchantItemFactory::class,
             MerchantBranchFactory::class,
@@ -460,7 +460,7 @@ class DomainFactoriesTest extends TestCase
         $factories = [
             CatalogItemFactory::class,
             BrandFactory::class,
-            NewCategoryFactory::class,
+            CategoryFactory::class,
             CatalogReviewFactory::class,
             MerchantItemFactory::class,
             MerchantBranchFactory::class,

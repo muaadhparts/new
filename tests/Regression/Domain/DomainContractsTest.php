@@ -18,7 +18,7 @@ use App\Domain\Accounting\Services\AccountLedgerService;
 use App\Domain\Catalog\Contracts\CatalogFilterInterface;
 use App\Domain\Catalog\Contracts\CategoryTreeInterface;
 use App\Domain\Catalog\Services\CatalogItemFilterService;
-use App\Domain\Catalog\Services\NewCategoryTreeService;
+use App\Domain\Catalog\Services\CategoryTreeService;
 
 // Shipping Contracts
 use App\Domain\Shipping\Contracts\ShippingCalculatorInterface;
@@ -123,7 +123,7 @@ class DomainContractsTest extends TestCase
     public function category_tree_interface_resolves_to_service()
     {
         $service = app(CategoryTreeInterface::class);
-        $this->assertInstanceOf(NewCategoryTreeService::class, $service);
+        $this->assertInstanceOf(CategoryTreeService::class, $service);
     }
 
     /** @test */

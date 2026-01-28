@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Domain\Catalog\Services\CatalogItemFilterService;
 use App\Domain\Catalog\Services\CatalogItemCardDataBuilder;
 use App\Domain\Catalog\Services\CategoryFilterService;
-use App\Domain\Catalog\Services\NewCategoryTreeService;
+use App\Domain\Catalog\Services\CategoryTreeService;
 use App\Domain\Catalog\Services\CompatibilityService;
 use App\Domain\Catalog\Services\CatalogItemOffersService;
 use App\Domain\Catalog\Services\CatalogSessionManager;
@@ -189,14 +189,14 @@ class CatalogServicesTest extends TestCase
     /** @test */
     public function new_category_tree_service_can_be_resolved()
     {
-        $service = app(NewCategoryTreeService::class);
-        $this->assertInstanceOf(NewCategoryTreeService::class, $service);
+        $service = app(CategoryTreeService::class);
+        $this->assertInstanceOf(CategoryTreeService::class, $service);
     }
 
     /** @test */
     public function new_category_tree_service_has_descendant_methods()
     {
-        $service = app(NewCategoryTreeService::class);
+        $service = app(CategoryTreeService::class);
 
         $this->assertTrue(method_exists($service, 'getDescendantIds'));
         $this->assertTrue(method_exists($service, 'getDescendantIdsForMultiple'));
@@ -205,7 +205,7 @@ class CatalogServicesTest extends TestCase
     /** @test */
     public function new_category_tree_service_has_parts_methods()
     {
-        $service = app(NewCategoryTreeService::class);
+        $service = app(CategoryTreeService::class);
 
         $this->assertTrue(method_exists($service, 'getRawParts'));
         $this->assertTrue(method_exists($service, 'countAvailableParts'));
@@ -214,7 +214,7 @@ class CatalogServicesTest extends TestCase
     /** @test */
     public function new_category_tree_service_has_tree_methods()
     {
-        $service = app(NewCategoryTreeService::class);
+        $service = app(CategoryTreeService::class);
 
         $this->assertTrue(method_exists($service, 'buildCategoryTree'));
         $this->assertTrue(method_exists($service, 'getBreadcrumb'));
@@ -223,7 +223,7 @@ class CatalogServicesTest extends TestCase
     /** @test */
     public function new_category_tree_service_has_resolution_methods()
     {
-        $service = app(NewCategoryTreeService::class);
+        $service = app(CategoryTreeService::class);
 
         $this->assertTrue(method_exists($service, 'resolveCategoryBySlug'));
         $this->assertTrue(method_exists($service, 'resolveCategoryHierarchy'));

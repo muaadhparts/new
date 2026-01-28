@@ -4,7 +4,7 @@ namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\Catalog;
 use App\Domain\Catalog\Models\Brand;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -202,12 +202,12 @@ class CatalogSessionManager
     }
 
     /**
-     * تحميل NewCategory بكافة العلاقات الضرورية
+     * تحميل Category بكافة العلاقات الضرورية
      * لتقليل الاستعلامات في مكونات Livewire
      */
     public function loadCategoryWithRelations(int $catalogId, int $brandId, string $fullCode, int $level)
     {
-        return NewCategory::with(['catalog', 'brand', 'periods'])
+        return Category::with(['catalog', 'brand', 'periods'])
             ->where('catalog_id', $catalogId)
             ->where('brand_id', $brandId)
             ->where('full_code', $fullCode)

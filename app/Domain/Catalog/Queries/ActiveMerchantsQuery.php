@@ -38,7 +38,7 @@ class ActiveMerchantsQuery
             ->join('catalog_items', 'catalog_items.id', '=', 'merchant_items.catalog_item_id')
             ->where('merchant_items.status', 1)
             ->where('users.is_merchant', 2)
-            ->where('catalog_items.newcategory_id', $categoryId)
+            ->where('catalog_items.category_id', $categoryId)
             ->groupBy('merchant_items.user_id')
             ->selectRaw('merchant_items.user_id, users.shop_name, users.shop_name_ar')
             ->orderBy('users.shop_name', 'asc')

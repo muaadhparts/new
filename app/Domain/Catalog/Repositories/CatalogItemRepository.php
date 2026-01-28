@@ -44,7 +44,7 @@ class CatalogItemRepository extends BaseRepository
     public function getByCategory(int $categoryId, int $perPage = 20): LengthAwarePaginator
     {
         return $this->query()
-            ->where('newcategory_id', $categoryId)
+            ->where('category_id', $categoryId)
             ->where('status', 1)
             ->paginate($perPage);
     }

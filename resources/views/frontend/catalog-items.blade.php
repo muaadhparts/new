@@ -99,7 +99,7 @@
                             </li>
                         @endif
 
-                        {{-- NewCategory Level 1 --}}
+                        {{-- Category Level 1 --}}
                         @if(!empty($childcat))
                             <li>
                                 <a href="{{ route('front.catalog', ['brand' => $cat->slug ?? '', 'catalog' => $subcat->slug ?? '', 'cat1' => $childcat->slug]) }}">
@@ -108,7 +108,7 @@
                             </li>
                         @endif
 
-                        {{-- NewCategory Level 2 --}}
+                        {{-- Category Level 2 --}}
                         @if(!empty($cat2))
                             <li>
                                 <a href="{{ route('front.catalog', ['brand' => $cat->slug ?? '', 'catalog' => $subcat->slug ?? '', 'cat1' => $childcat->slug ?? '', 'cat2' => $cat2->slug]) }}">
@@ -117,7 +117,7 @@
                             </li>
                         @endif
 
-                        {{-- NewCategory Level 3 --}}
+                        {{-- Category Level 3 --}}
                         @if(!empty($cat3))
                             <li>
                                 <a href="javascript:;">
@@ -175,7 +175,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 3: NewCategory Level 1 --}}
+                                    {{-- Step 3: Category Level 1 --}}
                                     <div class="step-selector-item mb-3 {{ $catalogLevel1->count() > 0 ? '' : 'd-none' }}" id="level1-step">
                                         <label class="step-label">@lang('Category')</label>
                                         <select class="form-select category-select" id="level1-select">
@@ -189,7 +189,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 4: NewCategory Level 2 --}}
+                                    {{-- Step 4: Category Level 2 --}}
                                     <div class="step-selector-item mb-3 {{ $level1Level2->count() > 0 ? '' : 'd-none' }}" id="level2-step">
                                         <label class="step-label">@lang('Subcategory')</label>
                                         <select class="form-select category-select" id="level2-select">
@@ -203,7 +203,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 5: NewCategory Level 3 --}}
+                                    {{-- Step 5: Category Level 3 --}}
                                     <div class="step-selector-item mb-3 {{ $level2Level3->count() > 0 ? '' : 'd-none' }}" id="level3-step">
                                         <label class="step-label">@lang('Part Type')</label>
                                         <select class="form-select category-select" id="level3-select">
@@ -231,7 +231,7 @@
                             </div>
                         </div>
 
-                        {{-- Legacy attributes filter removed - Dead code: Brand/Catalog/NewCategory models don't have attributes relationship --}}
+                        {{-- Legacy attributes filter removed - Dead code: Brand/Catalog/Category models don't have attributes relationship --}}
 
                         <!-- Merchant Filter -->
                         @if(isset($merchants) && $merchants->count() > 0)

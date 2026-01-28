@@ -1218,7 +1218,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Structure: /brands/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
     // - brand = Brand slug (e.g., "nissan")
     // - catalog = Catalog slug (e.g., "safari-patrol-1997")
-    // - cat1/cat2/cat3 = NewCategory slugs (levels 1, 2, 3)
+    // - cat1/cat2/cat3 = Category slugs (levels 1, 2, 3)
     Route::get('/brands/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}', 'Front\CatalogController@catalog')->name('front.catalog');
 
     // AJAX APIs for catalog selector (lightweight on-demand loading)

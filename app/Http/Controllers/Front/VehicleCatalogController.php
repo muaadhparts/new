@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\Catalog;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\Section;
 use App\Domain\Catalog\Models\Illustration;
 use App\Domain\Catalog\Models\Specification;
@@ -316,21 +316,21 @@ class VehicleCatalogController extends Controller
         if (!$catalog) abort(404, __('Catalog not found'));
 
         // Load category hierarchy - must have valid full_code
-        $level1Category = NewCategory::where('catalog_id', $catalog->id)
+        $level1Category = Category::where('catalog_id', $catalog->id)
             ->where('full_code', $key1)
             ->where('level', 1)
             ->whereNotNull('full_code')
             ->where('full_code', '!=', '')
             ->first();
 
-        $level2Category = NewCategory::where('catalog_id', $catalog->id)
+        $level2Category = Category::where('catalog_id', $catalog->id)
             ->where('full_code', $key2)
             ->where('level', 2)
             ->whereNotNull('full_code')
             ->where('full_code', '!=', '')
             ->first();
 
-        $level3Category = NewCategory::where('catalog_id', $catalog->id)
+        $level3Category = Category::where('catalog_id', $catalog->id)
             ->where('full_code', $key3)
             ->where('level', 3)
             ->whereNotNull('full_code')

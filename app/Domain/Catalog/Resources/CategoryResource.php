@@ -8,7 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * Category Resource
  *
- * Transforms NewCategory model for API responses.
+ * Transforms Category model for API responses.
  */
 class CategoryResource extends JsonResource
 {

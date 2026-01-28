@@ -81,7 +81,7 @@ class CatalogItemQuery
     }
 
     /**
-     * Filter by category IDs (for NewCategory tree)
+     * Filter by category IDs (for Category tree)
      */
     public function forCategories(string $catalogCode, array $categoryIds): self
     {

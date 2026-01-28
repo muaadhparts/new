@@ -76,7 +76,7 @@ php artisan test --filter=TestName  # Run specific test
 | Commerce | `CheckoutPriceService` | Checkout pricing logic |
 | Commerce | `MerchantCartManager` | Multi-merchant cart management |
 | Catalog | `CompatibilityService` | CatalogItem alternatives and fitment |
-| Catalog | `NewCategoryTreeService` | Category tree navigation |
+| Catalog | `CategoryTreeService` | Category tree navigation |
 | Platform | `MonetaryUnitService` | Currency conversion and formatting |
 
 ## Controllers Structure

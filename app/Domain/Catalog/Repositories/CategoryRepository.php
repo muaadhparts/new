@@ -3,7 +3,7 @@
 namespace App\Domain\Catalog\Repositories;
 
 use App\Domain\Platform\Repositories\BaseRepository;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -19,7 +19,7 @@ class CategoryRepository extends BaseRepository
      */
     protected function model(): string
     {
-        return NewCategory::class;
+        return Category::class;
     }
 
     /**
@@ -68,7 +68,7 @@ class CategoryRepository extends BaseRepository
     /**
      * Find by slug.
      */
-    public function findBySlug(string $slug): ?NewCategory
+    public function findBySlug(string $slug): ?Category
     {
         return $this->findFirstBy('slug', $slug);
     }
@@ -76,7 +76,7 @@ class CategoryRepository extends BaseRepository
     /**
      * Get category with ancestors.
      */
-    public function getWithAncestors(int $id): ?NewCategory
+    public function getWithAncestors(int $id): ?Category
     {
         $category = $this->find($id);
 

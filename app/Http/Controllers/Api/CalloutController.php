@@ -4,7 +4,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\Illustration;
 use App\Domain\Catalog\Models\Section;
 use App\Domain\Catalog\Models\CatalogItem;
@@ -71,7 +71,7 @@ class CalloutController extends Controller
             $parentsKeyMap = [];
             if (!empty($sectionCalloutKeys)) {
                 // بناء CASE WHEN للبحث الأمثل
-                $parentsKeyMap = NewCategory::where('level', 3)
+                $parentsKeyMap = Category::where('level', 3)
                     ->where(function ($q) use ($sectionCalloutKeys) {
                         foreach ($sectionCalloutKeys as $key) {
                             $q->orWhere('full_code', 'LIKE', $key . '%');
@@ -164,7 +164,7 @@ class CalloutController extends Controller
             ], 422);
         }
 
-        $category = NewCategory::select('id', 'catalog_id')->find($categoryId);
+        $category = Category::select('id', 'catalog_id')->find($categoryId);
         if (!$category) {
             return response()->json(['ok' => false, 'error' => 'Invalid category'], 404);
         }

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Queries;
 
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -20,12 +20,12 @@ class CategoryDescendantsQuery
     {
         $sql = "
             WITH RECURSIVE category_tree AS (
-                SELECT id FROM newcategories
+                SELECT id FROM categories
                 WHERE id = ? AND catalog_id = ?
 
                 UNION ALL
 
-                SELECT nc.id FROM newcategories nc
+                SELECT nc.id FROM categories nc
                 INNER JOIN category_tree ct ON nc.parent_id = ct.id
                 WHERE nc.catalog_id = ?
             )
@@ -43,12 +43,12 @@ class CategoryDescendantsQuery
     {
         $sql = "
             WITH RECURSIVE category_ancestors AS (
-                SELECT id, parent_id FROM newcategories
+                SELECT id, parent_id FROM categories
                 WHERE id = ? AND catalog_id = ?
 
                 UNION ALL
 
-                SELECT nc.id, nc.parent_id FROM newcategories nc
+                SELECT nc.id, nc.parent_id FROM categories nc
                 INNER JOIN category_ancestors ca ON nc.id = ca.parent_id
                 WHERE nc.catalog_id = ?
             )
@@ -70,7 +70,7 @@ class CategoryDescendantsQuery
             return collect();
         }
 
-        return NewCategory::whereIn('id', $ids)
+        return Category::whereIn('id', $ids)
             ->where('catalog_id', $catalogId)
             ->orderBy('level')
             ->orderBy('name')
@@ -88,7 +88,7 @@ class CategoryDescendantsQuery
             return collect();
         }
 
-        return NewCategory::whereIn('id', $ids)
+        return Category::whereIn('id', $ids)
             ->where('catalog_id', $catalogId)
             ->orderBy('level')
             ->get();
@@ -99,7 +99,7 @@ class CategoryDescendantsQuery
      */
     public static function getChildren(int $categoryId, int $catalogId): Collection
     {
-        return NewCategory::where('parent_id', $categoryId)
+        return Category::where('parent_id', $categoryId)
             ->where('catalog_id', $catalogId)
             ->orderBy('name')
             ->get();
@@ -110,13 +110,13 @@ class CategoryDescendantsQuery
      */
     public static function getSiblings(int $categoryId, int $catalogId): Collection
     {
-        $category = NewCategory::find($categoryId);
+        $category = Category::find($categoryId);
 
         if (!$category) {
             return collect();
         }
 
-        return NewCategory::where('parent_id', $category->parent_id)
+        return Category::where('parent_id', $category->parent_id)
             ->where('catalog_id', $catalogId)
             ->where('id', '!=', $categoryId)
             ->orderBy('name')
@@ -128,7 +128,7 @@ class CategoryDescendantsQuery
      */
     public static function getMaxDepth(int $catalogId): int
     {
-        return NewCategory::where('catalog_id', $catalogId)
+        return Category::where('catalog_id', $catalogId)
             ->max('level') ?? 0;
     }
 
@@ -137,7 +137,7 @@ class CategoryDescendantsQuery
      */
     public static function atLevel(int $catalogId, int $level): Collection
     {
-        return NewCategory::where('catalog_id', $catalogId)
+        return Category::where('catalog_id', $catalogId)
             ->where('level', $level)
             ->orderBy('name')
             ->get();

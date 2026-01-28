@@ -59,7 +59,7 @@ npm run dev
 ```
 brands
   └── catalogs [brand_id]
-        ├── newcategories [catalog_id, level, parent_id]
+        ├── categories [catalog_id, level, parent_id]
         │     └── Level 1 → Level 2 → Level 3
         ├── sections [category_id]
         └── Dynamic Tables:
@@ -94,7 +94,7 @@ app/
 ├── Services/           # Business logic
 │   ├── MerchantCartService.php
 │   ├── CheckoutPriceService.php
-│   ├── NewCategoryTreeService.php
+│   ├── CategoryTreeService.php
 │   └── ...
 └── Helpers/            # Global helper functions
 
@@ -171,7 +171,7 @@ php artisan test
 |-------|---------|------------|
 | `brands` | Vehicle brands (Nissan, Toyota) | `name`, `slug`, `status` |
 | `catalogs` | Vehicle catalogs per brand | `brand_id`, `code`, `name`, `slug` |
-| `newcategories` | 3-level category hierarchy | `catalog_id`, `parent_id`, `level`, `slug` |
+| `categories` | 3-level category hierarchy | `catalog_id`, `parent_id`, `level`, `slug` |
 | `sections` | Links categories to parts | `category_id`, `full_code` |
 
 ### Dynamic Tables (per catalog)

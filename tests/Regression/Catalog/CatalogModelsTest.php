@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Models\BrandRegion;
 use App\Domain\Catalog\Models\Catalog;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\CatalogItemFitment;
 use App\Domain\Catalog\Models\Section;
@@ -35,7 +35,7 @@ class CatalogModelsTest extends TestCase
         $catalog = Catalog::first();
         $this->assertNotNull($catalog);
 
-        $category = NewCategory::first();
+        $category = Category::first();
         $this->assertNotNull($category);
     }
 
@@ -50,8 +50,8 @@ class CatalogModelsTest extends TestCase
         $catalog = Catalog::first();
         $this->assertInstanceOf(Catalog::class, $catalog);
 
-        $category = NewCategory::first();
-        $this->assertInstanceOf(NewCategory::class, $category);
+        $category = Category::first();
+        $this->assertInstanceOf(Category::class, $category);
     }
 
     /**
@@ -84,16 +84,16 @@ class CatalogModelsTest extends TestCase
         $this->assertNotNull($catalog->brand);
 
         // Test categories relation
-        $categories = $catalog->newCategories;
+        $categories = $catalog->categories;
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $categories);
     }
 
     /**
-     * Test NewCategory model functionality
+     * Test Category model functionality
      */
     public function test_new_category_model_works(): void
     {
-        $category = NewCategory::first();
+        $category = Category::first();
 
         $this->assertNotNull($category);
         $this->assertIsString($category->localized_name);
@@ -249,11 +249,11 @@ class CatalogModelsTest extends TestCase
     public function test_category_hierarchy_works(): void
     {
         // Test level 1 categories
-        $rootCategories = NewCategory::level(1)->limit(5)->get();
+        $rootCategories = Category::level(1)->limit(5)->get();
         $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $rootCategories);
 
         // Test children relation
-        $categoryWithChildren = NewCategory::whereHas('children')->first();
+        $categoryWithChildren = Category::whereHas('children')->first();
         if ($categoryWithChildren) {
             $children = $categoryWithChildren->children;
             $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $children);

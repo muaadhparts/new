@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Contracts;
 
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Support\Collection;
 
 /**
@@ -35,7 +35,7 @@ interface CategoryTreeInterface
     /**
      * Resolve category by slug
      */
-    public function resolveCategoryBySlug(string $slug): ?NewCategory;
+    public function resolveCategoryBySlug(string $slug): ?Category;
 
     /**
      * Resolve full category hierarchy

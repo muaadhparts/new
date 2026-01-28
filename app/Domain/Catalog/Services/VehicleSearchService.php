@@ -3,7 +3,7 @@
 namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\Catalog;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use App\Traits\NormalizesInput;
 use Illuminate\Support\Facades\DB;
 
@@ -191,7 +191,7 @@ class VehicleSearchService
             return $options;
         }
 
-        $cats = NewCategory::query()
+        $cats = Category::query()
             ->where('catalog_id', $catalog->id)
             ->whereIn('full_code', $codes)
             ->select('id', 'full_code', 'parents_key', 'spec_key', 'Applicability')

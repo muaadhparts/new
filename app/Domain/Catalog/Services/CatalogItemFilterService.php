@@ -7,7 +7,7 @@ use App\Domain\Catalog\Models\Catalog;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\QualityBrand;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Centralized service for catalog item filtering logic
- * Uses: Brand → Catalog → NewCategory hierarchy
+ * Uses: Brand → Catalog → Category hierarchy
  * Filters via: sections → section_parts_{code} → parts_{code} → catalog_items
  */
 class CatalogItemFilterService
@@ -35,7 +35,7 @@ class CatalogItemFilterService
 
         return [
             // Brand has 'subs' accessor that returns catalogs
-            // Catalog has 'childs' accessor that returns NewCategories Level 1
+            // Catalog has 'childs' accessor that returns Categories Level 1
             'categories' => $brands,
             'brands' => $brands, // Alias for views that use $brands
             'merchants' => $this->getActiveMerchants(),
@@ -109,7 +109,7 @@ class CatalogItemFilterService
 
     /**
      * Resolve category hierarchy from slugs
-     * Now uses: Brand → Catalog → NewCategory (3 levels)
+     * Now uses: Brand → Catalog → Category (3 levels)
      */
     public function resolveCategoryHierarchy(
         ?string $catSlug,
@@ -120,9 +120,9 @@ class CatalogItemFilterService
     ): array {
         $cat = null;      // Brand
         $subcat = null;   // Catalog
-        $childcat = null; // NewCategory Level 1
-        $cat2 = null;     // NewCategory Level 2
-        $cat3 = null;     // NewCategory Level 3
+        $childcat = null; // Category Level 1
+        $cat2 = null;     // Category Level 2
+        $cat3 = null;     // Category Level 3
         $catalog = null;  // Reference for filtering
         $deepest = null;  // Deepest resolved category
 
@@ -143,9 +143,9 @@ class CatalogItemFilterService
             $subcat = $catalog; // For view compatibility
         }
 
-        // Level 3: Resolve NewCategory Level 1
+        // Level 3: Resolve Category Level 1
         if (!empty($childcatSlug) && $catalog) {
-            $childcat = NewCategory::where('slug', $childcatSlug)
+            $childcat = Category::where('slug', $childcatSlug)
                 ->where('catalog_id', $catalog->id)
                 ->where('level', 1)
                 ->first();
@@ -153,9 +153,9 @@ class CatalogItemFilterService
             if ($childcat) {
                 $deepest = $childcat;
 
-                // Level 4: NewCategory Level 2
+                // Level 4: Category Level 2
                 if (!empty($cat2Slug)) {
-                    $cat2 = NewCategory::where('slug', $cat2Slug)
+                    $cat2 = Category::where('slug', $cat2Slug)
                         ->where('catalog_id', $catalog->id)
                         ->where('parent_id', $childcat->id)
                         ->where('level', 2)
@@ -164,9 +164,9 @@ class CatalogItemFilterService
                     if ($cat2) {
                         $deepest = $cat2;
 
-                        // Level 5: NewCategory Level 3
+                        // Level 5: Category Level 3
                         if (!empty($cat3Slug)) {
-                            $cat3 = NewCategory::where('slug', $cat3Slug)
+                            $cat3 = Category::where('slug', $cat3Slug)
                                 ->where('catalog_id', $catalog->id)
                                 ->where('parent_id', $cat2->id)
                                 ->where('level', 3)
@@ -191,12 +191,12 @@ class CatalogItemFilterService
     {
         $sql = "
             WITH RECURSIVE category_tree AS (
-                SELECT id FROM newcategories
+                SELECT id FROM categories
                 WHERE id = ? AND catalog_id = ?
 
                 UNION ALL
 
-                SELECT nc.id FROM newcategories nc
+                SELECT nc.id FROM categories nc
                 INNER JOIN category_tree ct ON nc.parent_id = ct.id
                 WHERE nc.catalog_id = ?
             )
@@ -355,13 +355,13 @@ class CatalogItemFilterService
 
         $catalogCode = $catalogObj->code;
 
-        // Only Catalog selected (no NewCategory)
+        // Only Catalog selected (no Category)
         if (!$childcat) {
             $this->applyCatalogItemPartsTableFilter($query, $catalogCode, null);
             return;
         }
 
-        // NewCategory selected → get all descendants
+        // Category selected → get all descendants
         $categoryIds = $this->getDescendantIds($childcat->id, $catalogObj->id);
 
         if (empty($categoryIds)) {
@@ -701,10 +701,10 @@ class CatalogItemFilterService
     }
 
     /**
-     * Get CatalogItem results for NewCategory tree navigation with FULL filter support
+     * Get CatalogItem results for Category tree navigation with FULL filter support
      *
      * This method combines:
-     * - Recursive CTE category traversal (from NewCategoryTreeService)
+     * - Recursive CTE category traversal (from CategoryTreeService)
      * - Full filter integration (merchant, branch, quality_brand, price, sort)
      *
      * @param Request $request HTTP request with filter parameters
@@ -793,7 +793,7 @@ class CatalogItemFilterService
         return array_merge($sidebarData, [
             'cards' => $cards,
             'prods' => $cards,
-            'items' => $cards, // Alias for newCategory view compatibility
+            'items' => $cards, // Alias for category view compatibility
             'filterSummary' => $filterSummary,
         ]);
     }

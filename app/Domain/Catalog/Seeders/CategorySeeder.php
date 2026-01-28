@@ -3,7 +3,7 @@
 namespace App\Domain\Catalog\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 
 /**
  * Category Seeder
@@ -93,7 +93,7 @@ class CategorySeeder extends Seeder
 
         $sortOrder = 1;
         foreach ($categories as $category) {
-            $parent = NewCategory::firstOrCreate(
+            $parent = Category::firstOrCreate(
                 ['slug' => \Str::slug($category['name'])],
                 [
                     'name' => $category['name'],
@@ -109,7 +109,7 @@ class CategorySeeder extends Seeder
             if (isset($category['children'])) {
                 $childOrder = 1;
                 foreach ($category['children'] as $child) {
-                    NewCategory::firstOrCreate(
+                    Category::firstOrCreate(
                         ['slug' => \Str::slug($child['name'])],
                         [
                             'name' => $child['name'],

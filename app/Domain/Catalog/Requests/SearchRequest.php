@@ -33,7 +33,7 @@ class SearchRequest extends FormRequest
             'category_id' => [
                 'nullable',
                 'integer',
-                'exists:newcategories,id',
+                'exists:categories,id',
             ],
             'brand_id' => [
                 'nullable',

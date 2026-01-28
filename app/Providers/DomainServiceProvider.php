@@ -18,7 +18,7 @@ use App\Domain\Accounting\Services\AccountLedgerService;
 use App\Domain\Catalog\Contracts\CatalogFilterInterface;
 use App\Domain\Catalog\Contracts\CategoryTreeInterface;
 use App\Domain\Catalog\Services\CatalogItemFilterService;
-use App\Domain\Catalog\Services\NewCategoryTreeService;
+use App\Domain\Catalog\Services\CategoryTreeService;
 
 // Shipping Contracts
 use App\Domain\Shipping\Contracts\ShippingCalculatorInterface;
@@ -57,7 +57,7 @@ class DomainServiceProvider extends ServiceProvider
 
         // Catalog
         CatalogFilterInterface::class => CatalogItemFilterService::class,
-        CategoryTreeInterface::class => NewCategoryTreeService::class,
+        CategoryTreeInterface::class => CategoryTreeService::class,
 
         // Shipping
         ShippingCalculatorInterface::class => ShippingCalculatorService::class,

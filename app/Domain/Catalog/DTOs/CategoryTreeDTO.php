@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\DTOs;
 
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use Illuminate\Support\Collection;
 
 /**
@@ -26,9 +26,9 @@ final class CategoryTreeDTO
     ) {}
 
     /**
-     * Build DTO from NewCategory model
+     * Build DTO from Category model
      */
-    public static function fromModel(NewCategory $category, bool $includeChildren = true): self
+    public static function fromModel(Category $category, bool $includeChildren = true): self
     {
         return new self(
             id: $category->id,
@@ -47,7 +47,7 @@ final class CategoryTreeDTO
     /**
      * Build children array recursively
      */
-    private static function buildChildren(NewCategory $category): array
+    private static function buildChildren(Category $category): array
     {
         if (!$category->relationLoaded('children') || $category->children->isEmpty()) {
             return [];

@@ -5,7 +5,7 @@ namespace App\Domain\Catalog\Providers;
 use Illuminate\Support\ServiceProvider;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\CatalogReview;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 use App\Domain\Catalog\Models\Brand;
 use App\Domain\Catalog\Observers\CatalogItemObserver;
 use App\Domain\Catalog\Observers\CatalogReviewObserver;
@@ -42,7 +42,7 @@ class CatalogServiceProvider extends ServiceProvider
     {
         CatalogItem::observe(CatalogItemObserver::class);
         CatalogReview::observe(CatalogReviewObserver::class);
-        NewCategory::observe(CategoryObserver::class);
+        Category::observe(CategoryObserver::class);
         Brand::observe(BrandObserver::class);
     }
 

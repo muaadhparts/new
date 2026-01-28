@@ -7,12 +7,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * NewCategory Model - Unified category tree
+ * Category Model - Unified category tree
  *
  * Domain: Catalog
- * Table: newcategories
+ * Table: categories
  *
- * Structure: Brand -> Catalog -> NewCategory (3 levels)
+ * Structure: Brand -> Catalog -> Category (3 levels)
  * Replaces: categories, subcategories, childcategories, treecategories
  *
  * @property int $id
@@ -28,9 +28,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $parent_id
  * @property string|null $Applicability
  */
-class NewCategory extends Model
+class Category extends Model
 {
-    protected $table = 'newcategories';
+    protected $table = 'categories';
     public $timestamps = false;
 
     protected $fillable = [
@@ -85,7 +85,7 @@ class NewCategory extends Model
      */
     public function children(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'parent_id');
+        return $this->hasMany(Category::class, 'parent_id');
     }
 
     /**
@@ -93,7 +93,7 @@ class NewCategory extends Model
      */
     public function trueParent(): BelongsTo
     {
-        return $this->belongsTo(NewCategory::class, 'parent_id');
+        return $this->belongsTo(Category::class, 'parent_id');
     }
 
     /**
@@ -101,7 +101,7 @@ class NewCategory extends Model
      */
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(NewCategory::class, 'parents_key', 'spec_key');
+        return $this->belongsTo(Category::class, 'parents_key', 'spec_key');
     }
 
     /**

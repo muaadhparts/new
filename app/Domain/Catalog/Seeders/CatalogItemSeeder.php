@@ -5,7 +5,7 @@ namespace App\Domain\Catalog\Seeders;
 use Illuminate\Database\Seeder;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\Brand;
-use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Category;
 
 /**
  * Catalog Item Seeder
@@ -20,7 +20,7 @@ class CatalogItemSeeder extends Seeder
     public function run(): void
     {
         $brands = Brand::where('status', 1)->pluck('id')->toArray();
-        $categories = NewCategory::where('status', 1)->where('level', 2)->pluck('id')->toArray();
+        $categories = Category::where('status', 1)->where('level', 2)->pluck('id')->toArray();
 
         if (empty($brands) || empty($categories)) {
             $this->command->warn('Please run BrandSeeder and CategorySeeder first.');
