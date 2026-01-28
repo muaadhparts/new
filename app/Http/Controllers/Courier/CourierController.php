@@ -24,28 +24,114 @@ class CourierController extends CourierBaseController
     public function index()
     {
         $user = $this->courier;
-        $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+        $deliveries = DeliveryCourier::where('courier_id', $this->courier->id)
             ->whereNotNull('purchase_id')
-            ->whereHas('purchase') // Ensure the purchase still exists
-            ->with(['purchase.merchantPurchases', 'merchantBranch'])
+            ->whereHas('purchase')
+            ->with(['purchase', 'merchantBranch'])
             ->orderby('id', 'desc')->take(8)->get();
-
-        // PRE-COMPUTED: Total amount for each delivery (DATA_FLOW_POLICY - no @php in view)
-        $purchases->transform(function ($purchase) {
-            $purchase->display_total_amount = (float)($purchase->purchase_amount ?? 0);
-            return $purchase;
-        });
 
         // Get accounting report
         $report = $this->accountingService->getCourierReport($this->courier->id);
-        $currency = monetaryUnit()->getDefault();
+
+        // PRE-COMPUTED: All display values (DATA_FLOW_POLICY - no helpers in view)
+        $purchasesDisplay = $deliveries->map(function ($delivery) {
+            $purchase = $delivery->purchase;
+            $currencySign = $purchase->currency_sign ?? 'SAR';
+
+            return [
+                'id' => $delivery->id,
+                'purchase_number' => $purchase->purchase_number ?? '-',
+                'customer_city' => $purchase->customer_city ?? '-',
+                'branch_location' => $delivery->merchantBranch->location ?? '-',
+                'total_formatted' => \PriceHelper::showAdminCurrencyPrice(
+                    (float)($delivery->purchase_amount ?? 0),
+                    $currencySign
+                ),
+                'is_cod' => $delivery->payment_method === 'cod',
+                'status' => $this->getDeliveryStatusDisplay($delivery),
+                'details_url' => route('courier-purchase-details', $delivery->id),
+            ];
+        });
+
+        // PRE-COMPUTED: Report display values
+        $reportDisplay = [
+            'current_balance_formatted' => monetaryUnit()->format($report['current_balance'] ?? 0),
+            'current_balance' => $report['current_balance'] ?? 0,
+            'is_in_debt' => ($report['current_balance'] ?? 0) < 0,
+            'has_credit' => ($report['current_balance'] ?? 0) > 0,
+            'total_collected_formatted' => monetaryUnit()->format($report['total_collected'] ?? 0),
+            'total_fees_earned_formatted' => monetaryUnit()->format($report['total_fees_earned'] ?? 0),
+            'deliveries_count' => $report['deliveries_count'] ?? 0,
+            'deliveries_completed' => $report['deliveries_completed'] ?? 0,
+            'cod_deliveries' => $report['cod_deliveries'] ?? 0,
+            'online_deliveries' => $report['online_deliveries'] ?? 0,
+            'deliveries_pending' => $report['deliveries_pending'] ?? 0,
+            'unsettled_deliveries' => $report['unsettled_deliveries'] ?? 0,
+        ];
+
+        // PRE-COMPUTED: User display
+        $userDisplay = userDisplay()->forCard($user);
 
         return view('courier.dashbaord', [
-            'purchases' => $purchases,
-            'user' => $user,
-            'report' => $report,
-            'currency' => $currency,
+            'purchases' => $purchasesDisplay,
+            'user' => $userDisplay,
+            'report' => $reportDisplay,
         ]);
+    }
+
+    /**
+     * Get delivery status display data
+     */
+    private function getDeliveryStatusDisplay(DeliveryCourier $delivery): array
+    {
+        if ($delivery->isPendingApproval()) {
+            return [
+                'label' => __('Awaiting Approval'),
+                'class' => 'bg-warning text-dark',
+                'icon' => 'fa-clock',
+            ];
+        }
+        if ($delivery->isApproved()) {
+            return [
+                'label' => __('Preparing'),
+                'class' => 'bg-info',
+                'icon' => 'fa-box-open',
+            ];
+        }
+        if ($delivery->isReadyForPickup()) {
+            return [
+                'label' => __('Ready for Pickup'),
+                'class' => 'bg-primary',
+                'icon' => 'fa-truck-loading',
+            ];
+        }
+        if ($delivery->isPickedUp()) {
+            return [
+                'label' => __('Picked Up'),
+                'class' => 'bg-info',
+                'icon' => 'fa-truck',
+            ];
+        }
+        if ($delivery->isDelivered()) {
+            return [
+                'label' => __('Delivered'),
+                'class' => 'bg-success',
+                'icon' => 'fa-check-circle',
+            ];
+        }
+        if ($delivery->isRejected()) {
+            return [
+                'label' => __('Rejected'),
+                'class' => 'bg-danger',
+                'icon' => 'fa-times-circle',
+            ];
+        }
+
+        return [
+            'label' => __('Unknown'),
+            'class' => 'bg-secondary',
+            'icon' => 'fa-question-circle',
+        ];
     }
 
     public function profile()
