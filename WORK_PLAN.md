@@ -33,7 +33,7 @@
 
 ---
 
-### ⬜ Phase 5: API-Ready Presentation Layer
+### ✅ Phase 5: API-Ready Presentation Layer (COMPLETED)
 
 **الهدف:** نقل الـ formatting من Controllers إلى Services لإعادة الاستخدام.
 
@@ -50,11 +50,11 @@
 
 | # | المهمة | الوصف | الأولوية |
 |---|--------|-------|----------|
-| 5.1 | PurchaseDisplayService | تنسيق بيانات الطلبات | HIGH |
-| 5.2 | MerchantDisplayService | تنسيق بيانات التاجر | HIGH |
-| 5.3 | OperatorDisplayService | تنسيق بيانات لوحة التحكم | HIGH |
-| 5.4 | UserDisplayService | تنسيق بيانات المستخدم | MEDIUM |
-| 5.5 | Display DTOs | DTOs موحدة للعرض | HIGH |
+| ✅ 5.1 | PurchaseDisplayService | تنسيق بيانات الطلبات | DONE |
+| ✅ 5.2 | MerchantDisplayService | تنسيق بيانات التاجر | DONE |
+| ✅ 5.3 | OperatorDisplayService | تنسيق بيانات لوحة التحكم | DONE |
+| ✅ 5.4 | UserDisplayService | تنسيق بيانات المستخدم | DONE |
+| ✅ 5.5 | Display DTOs | DTOs موحدة للعرض (موجودة) | DONE |
 
 **المخرج المتوقع:**
 ```php
