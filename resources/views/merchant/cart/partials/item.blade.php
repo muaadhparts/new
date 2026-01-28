@@ -99,9 +99,9 @@
         @endif
 
         {{-- Discount Badge --}}
-        @if (($item['discountPercent'] ?? 0) > 0)
+        @if ($item['discountPercent_formatted'] ?? null)
             <span class="m-cart__item-discount-badge">
-                -{{ number_format($item['discountPercent'], 0) }}%
+                -{{ $item['discountPercent_formatted'] }}%
             </span>
         @endif
 

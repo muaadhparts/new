@@ -35,6 +35,8 @@ class MerchantBranchController extends MerchantBaseController
                 'location' => $data->location,
                 'latitude' => $data->latitude,
                 'longitude' => $data->longitude,
+                'latitude_formatted' => $data->latitude ? number_format($data->latitude, 6) : null,
+                'longitude_formatted' => $data->longitude ? number_format($data->longitude, 6) : null,
                 'status' => $data->status,
                 'statusClass' => $data->status == 1 ? 'active' : 'deactive',
                 'statusActiveSelected' => $data->status == 1 ? 'selected' : '',

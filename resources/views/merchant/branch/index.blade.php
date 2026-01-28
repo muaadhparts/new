@@ -69,10 +69,10 @@
                                         <span class="content">{{ $itemData['location'] }}</span>
                                     </td>
                                     <td>
-                                        @if($itemData['latitude'] && $itemData['longitude'])
+                                        @if($itemData['latitude_formatted'] && $itemData['longitude_formatted'])
                                             <small class="text-muted">
-                                                {{ number_format($itemData['latitude'], 6) }},<br>
-                                                {{ number_format($itemData['longitude'], 6) }}
+                                                {{ $itemData['latitude_formatted'] }},<br>
+                                                {{ $itemData['longitude_formatted'] }}
                                             </small>
                                         @else
                                             <span class="text-muted">-</span>

@@ -280,6 +280,7 @@ class CartItemDTO
 
             // Computed values
             'discountPercent' => $discountPercent,
+            'discountPercent_formatted' => $discountPercent > 0 ? number_format($discountPercent, 0) : null,
             'isLowStock' => $this->stock > 0 && $this->stock <= 5,
             'isInStock' => $this->isInStock(),
             'maxQty' => $this->preordered || $this->stock <= 0 ? 9999 : $this->stock,
