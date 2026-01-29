@@ -168,6 +168,14 @@ class CatalogItemDisplayService
     }
 
     /**
+     * Format price for display
+     */
+    public function formatPrice(CatalogItem $item, float $price): string
+    {
+        return CatalogItem::convertPrice($price);
+    }
+
+    /**
      * Get merchant badge/link for admin UI
      */
     public function getMerchantBadge(CatalogItem $item): string

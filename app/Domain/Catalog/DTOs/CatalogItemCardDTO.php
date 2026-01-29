@@ -88,7 +88,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
@@ -164,7 +164,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
@@ -238,7 +238,7 @@ class CatalogItemCardDTO
 
         // CatalogItem data (from catalog_items table)
         $dto->catalogItemId = $catalogItem->id;
-        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getDisplayName($catalogItem);
+        $dto->catalogItemName = app(CatalogItemDisplayService::class)->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
