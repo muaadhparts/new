@@ -38,7 +38,7 @@ class MerchantItemDisplayService
             'branchName' => $item->branch?->name ?? __('Main Branch'),
             'price' => $item->merchantSizePrice(),
             'photoUrl' => $this->getPrimaryPhotoUrl($item),
-            'viewUrl' => route('merchant-item-edit', $item->id),
+            'viewUrl' => route('merchant-catalog-item-edit', $item->id),
         ];
     }
 
