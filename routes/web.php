@@ -34,13 +34,13 @@ Route::get('/checkout/quick', function() {
 })->name('front.checkout.quick');
 
 Route::prefix('modal')->name('modal.')->group(function () {
-    Route::get('/catalog-item/id/{catalogItem}',   [App\Http\Controllers\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.id');
-    Route::get('/catalog-item/part_number/{part_number}',      [App\Http\Controllers\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.part_number');
-    Route::get('/alternative/{key}',      [App\Http\Controllers\CatalogItemDetailsController::class, 'alternativeFragment'])->name('alternative');
-    Route::get('/quickview/{id}',         [App\Http\Controllers\CatalogItemDetailsController::class, 'quickFragment'])->name('quickview');
-    Route::get('/offers/{catalogItemId}', [App\Http\Controllers\CatalogItemDetailsController::class, 'offersFragment'])->name('offers');
-    Route::get('/offers-by-part/{part_number}', [App\Http\Controllers\CatalogItemDetailsController::class, 'offersByPartNumber'])->name('offers-by-part');
-    Route::get('/catalog-item/{key}',          [App\Http\Controllers\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item');
+    Route::get('/catalog-item/id/{catalogItem}',   [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.id');
+    Route::get('/catalog-item/part_number/{part_number}',      [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.part_number');
+    Route::get('/alternative/{key}',      [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'alternativeFragment'])->name('alternative');
+    Route::get('/quickview/{id}',         [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'quickFragment'])->name('quickview');
+    Route::get('/offers/{catalogItemId}', [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'offersFragment'])->name('offers');
+    Route::get('/offers-by-part/{part_number}', [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'offersByPartNumber'])->name('offers-by-part');
+    Route::get('/catalog-item/{key}',          [App\Http\Controllers\Front\CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item');
     Route::get('/fitment/{catalogItemId}', [\App\Http\Controllers\Api\CatalogItemApiController::class, 'getFitmentDetails'])->name('fitment');
 });
 
