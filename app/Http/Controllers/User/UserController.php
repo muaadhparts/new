@@ -83,67 +83,7 @@ class UserController extends UserBaseController
         }
     }
 
-    public function favorite($id1, $id2)
-    {
-        $fav = new FavoriteSeller();
-        $fav->user_id = $id1;
-        $fav->merchant_id = $id2;
-        $fav->save();
-        
-        $data['icon'] = '<i class="fas fa-check"></i>';
-        $data['text'] = __('Favorite');
-        
-        return response()->json($data);
-    }
-
-    public function favorites()
-    {
-        $favorites = FavoriteSeller::where('user_id', '=', $this->user->id)
-            ->with([
-                'catalogItem.fitments.brand',
-                'catalogItem.catalogReviews',
-                'merchantItem.user:id,is_merchant,shop_name,shop_name_ar',
-                'merchantItem.qualityBrand:id,name_en,name_ar,logo',
-                'merchantItem.merchantBranch:id,warehouse_name',
-                'effective_merchant_item.user:id,is_merchant,shop_name,shop_name_ar',
-                'effective_merchant_item.qualityBrand:id,name_en,name_ar,logo',
-                'effective_merchant_item.merchantBranch:id,warehouse_name',
-            ])
-            ->paginate(12);
-
-        // Transform to DTOs with favorite metadata (DATA_FLOW_POLICY)
-        $favoritesDisplay = [];
-        foreach ($favorites as $favoriteItem) {
-            $merchantItem = $favoriteItem->effective_merchant_item ?? $favoriteItem->merchantItem;
-            
-            if ($merchantItem) {
-                $card = $this->cardBuilder->fromMerchantItem($merchantItem);
-            } elseif ($favoriteItem->catalogItem) {
-                $card = $this->cardBuilder->fromCatalogItemFirst($favoriteItem->catalogItem);
-            } else {
-                continue; // Skip if no data
-            }
-
-            $favoritesDisplay[$favoriteItem->id] = [
-                'card' => $card,
-                'favoriteId' => $favoriteItem->id,
-            ];
-        }
-
-        return view('user.favorite', [
-            'favorites' => $favorites,
-            'favoritesDisplay' => $favoritesDisplay,
-        ]);
-    }
-
-    public function favdelete($id)
-    {
-        $wish = FavoriteSeller::findOrFail($id);
-        $wish->delete();
-        
-        return redirect()->route('user-favorites')
-            ->with('success', __('Successfully Removed The Seller.'));
-    }
+    // Old favorite methods removed - now handled by FavoriteController
 
     public function affilate_code()
     {

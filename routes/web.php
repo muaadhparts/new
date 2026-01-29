@@ -1102,9 +1102,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // User Favorite Seller
 
-        Route::get('/favorite/seller', [App\Http\Controllers\User\UserController::class, 'favorites'])->name('user-favorites');
-        Route::get('/favorite/{id1}/{id2}', [App\Http\Controllers\User\UserController::class, 'favorite'])->name('user-favorite');
-        Route::get('/favorite/seller/{id}/delete', [App\Http\Controllers\User\UserController::class, 'favdelete'])->name('user-favorite-delete');
+        // Old favorite routes removed - now handled by FavoriteController
 
     });
 

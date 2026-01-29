@@ -1,42 +1,47 @@
-{{-- Pre-computed values: catalog_item_url, catalog_item_photo_url, catalog_item_name_truncated from FavoriteController (DATA_FLOW_POLICY) --}}
+{{-- Uses FavoriteItemDTO from FavoriteController (Clean Architecture) --}}
 <tbody class="favorite-items-wrapper">
     @foreach($favorites as $favorite)
-    @if($favorite->catalogItem)
-    <tr id="favorite-row-{{ $favorite->id }}" data-row-id="{{ $favorite->id }}">
+    <tr id="favorite-row-{{ $favorite->favoriteId }}" data-row-id="{{ $favorite->favoriteId }}">
         <td class="catalogItem-remove">
             <div>
-                <a href="{{ route('user-favorite-remove', $favorite->id) }}" class="remove favorite-remove remove_from_favorite" name="Remove this catalogItem">×</a>
+                <a href="{{ route('user-favorite-remove', $favorite->favoriteId) }}" class="remove favorite-remove remove_from_favorite" name="Remove this catalogItem">×</a>
             </div>
         </td>
         <td class="catalogItem-thumbnail">
-            <a href="{{ $favorite->catalog_item_url }}"> <img src="{{ $favorite->catalog_item_photo_url }}" alt=""> </a>
+            <a href="{{ $favorite->catalogItemUrl }}"> <img src="{{ $favorite->photoUrl }}" alt=""> </a>
         </td>
-        <td class="catalogItem-name"> <a href="{{ $favorite->catalog_item_url }}">{{ $favorite->catalog_item_name_truncated }}</a></td>
-        <td class="catalogItem-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($favorite->catalogItem, $favorite->catalogItem->lowest_price ?? 0) }}  <small>
-            <del>
-                {{ ($favorite->catalogItem->previous_price > 0 ? \formatPrice($favorite->catalogItem->previous_price) : \'\') }}
-            </del>
-        </small></bdi>
+        <td class="catalogItem-name"> <a href="{{ $favorite->catalogItemUrl }}">{{ $favorite->name }}</a></td>
+        <td class="catalogItem-price">
+            <span class="woocommerce-Price-amount amount">
+                <bdi>
+                    <span class="woocommerce-Price-currencySymbol">{{ $favorite->priceFormatted }}</span>
+                    @if($favorite->previousPriceFormatted)
+                        <small>
+                            <del>{{ $favorite->previousPriceFormatted }}</del>
+                        </small>
+                    @endif
+                </bdi>
             </span>
         </td>
         <td class="catalogItem-stock-status">
-            @if(app(\App\Domain\Catalog\Services\CatalogItemMerchantService::class)->hasNoStock($favorite->catalogItem))
-            <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
+            @if($favorite->hasStock)
+                <div class="stock-availability in-stock text-bold">{{ __('In Stock') }}</div>
             @else
-            <div class="stock-availability in-stock text-bold">{{ __('In Stock') }}</div>
+                <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
             @endif
         </td>
         <td class="catalogItem-add-to-cart">
-            @if($favorite->effective_merchant_item)
-                <button type="button" class="m-cart-add button" data-merchant-item-id="{{ $favorite->effective_merchant_item->id }}">
+            @if($favorite->merchantItemId)
+                <button type="button" class="m-cart-add button" data-merchant-item-id="{{ $favorite->merchantItemId }}">
                     <i class="fas fa-cart-plus"></i> {{ __('Add to cart') }}
                 </button>
             @else
-                <span class="text-muted">{{ __('Not available') }}</span>
+                <button type="button" class="catalog-offers-btn button" data-catalog-item-id="{{ $favorite->catalogItemId }}" data-part-number="{{ $favorite->partNumber }}">
+                    <i class="fas fa-tags"></i> {{ __('View Offers') }}
+                </button>
             @endif
         </td>
     </tr>
-    @endif
     @endforeach
 </tbody>
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use Illuminate\Http\Request;
 use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Commerce\Builders\FavoriteItemDTOBuilder;
 use App\View\Composers\HeaderComposer;
 
 
@@ -18,17 +19,16 @@ class FavoriteController extends UserBaseController
         $user = $this->user;
         $page_count = isset($pageby) ? $pageby : $gs->favorite_count;
 
-        // Note: brand comes from catalog_item_fitments (vehicle compatibility)
+        // Load favorites with necessary relationships
         $favoriteQuery = FavoriteSeller::where('user_id', $user->id)
             ->with([
                 'catalogItem.merchantItems' => fn($q) => $q->where('status', 1)->with(['qualityBrand', 'user'])->orderBy('price'),
-                'catalogItem.fitments.brand',  // brand via fitments
                 'merchantItem',
                 'merchantItem.user',
                 'merchantItem.qualityBrand',
-                'merchantItem.catalogItem.fitments.brand',  // brand via fitments
             ]);
 
+        // Apply sorting
         if (!empty($request->sort)) {
             $sort = $request->sort;
             if ($sort == "id_desc") {
@@ -62,33 +62,14 @@ class FavoriteController extends UserBaseController
 
         $favoriteItems = $favoriteQuery->paginate($page_count);
 
-        $favoriteItems->getCollection()->transform(function ($favoriteItem) {
-            $effectiveMerchantItem = $favoriteItem->getEffectiveMerchantItem();
-
-            if ($effectiveMerchantItem) {
-                $favoriteItem->effective_merchant_item = $effectiveMerchantItem;
-                $favoriteItem->effective_price = $effectiveMerchantItem->merchantSizePrice();
-                $favoriteItem->effective_merchant = $effectiveMerchantItem->user;
-            }
-
-            // Pre-computed values for view (DATA_FLOW_POLICY)
-            $catalogItem = $favoriteItem->catalogItem;
-            $partNumber = $catalogItem?->part_number;
-            $favoriteItem->catalog_item_url = $partNumber
-                ? route('front.part-result', $partNumber)
-                : '#';
-            $favoriteItem->catalog_item_photo_url = $catalogItem && $catalogItem->photo
-                ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo)
-                : asset('assets/images/noimage.png');
-            $favoriteItem->catalog_item_name_truncated = $catalogItem
-                ? (mb_strlen($catalogItem->name, 'UTF-8') > 35
-                    ? mb_substr($catalogItem->name, 0, 35, 'UTF-8') . '...'
-                    : $catalogItem->name)
-                : '';
-
-            return $favoriteItem;
+        // Build DTOs using FavoriteItemDTOBuilder
+        $dtoBuilder = app(FavoriteItemDTOBuilder::class);
+        $favorites = $favoriteItems->getCollection()->map(function ($favorite) use ($dtoBuilder) {
+            return $dtoBuilder->build($favorite);
         });
 
+        // Replace collection with DTOs
+        $favoriteItems->setCollection($favorites);
         $favorites = $favoriteItems;
 
         if ($request->ajax()) {
