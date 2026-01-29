@@ -61,6 +61,9 @@ class MerchantController extends MerchantBaseController
                 ->map(fn($item) => $this->displayService->format($item))
                 ->toArray();
 
+            // Alias for view compatibility
+            $data['merchantItemsDisplay'] = $data['merchantItems'];
+
             // Recent purchases
             $data['purchases'] = MerchantPurchase::where('user_id', $userId)
                 ->latest()
