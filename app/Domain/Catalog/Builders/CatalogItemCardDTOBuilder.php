@@ -81,7 +81,9 @@ class CatalogItemCardDTOBuilder
         }
 
         // URLs
-        $dto->detailsUrl = route('front-catalog-item-details', $catalogItem->slug);
+        $dto->detailsUrl = $catalogItem->part_number 
+            ? route('front.part-result', $catalogItem->part_number)
+            : 'javascript:;';
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
         $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
 
@@ -149,7 +151,9 @@ class CatalogItemCardDTOBuilder
         $dto->offPercentageFormatted = null;
 
         // URLs
-        $dto->detailsUrl = route('front-catalog-item-details', $catalogItem->slug);
+        $dto->detailsUrl = $catalogItem->part_number 
+            ? route('front.part-result', $catalogItem->part_number)
+            : 'javascript:;';
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
         $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
 
@@ -261,7 +265,9 @@ class CatalogItemCardDTOBuilder
         }
 
         // URLs
-        $dto->detailsUrl = route('front-catalog-item-details', $catalogItem->slug);
+        $dto->detailsUrl = $catalogItem->part_number 
+            ? route('front.part-result', $catalogItem->part_number)
+            : 'javascript:;';
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
         $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
 
