@@ -116,7 +116,7 @@ class MerchantDashboardService
             ->paginate(5)
             ->items();
 
-        return $items->map(fn($item) => $this->displayService->format($item))
+        return collect($items)->map(fn($item) => $this->displayService->format($item))
             ->toArray();
     }
 
