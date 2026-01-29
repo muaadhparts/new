@@ -59,6 +59,7 @@ class MerchantItemDisplayService
             
             // Photos
             'primary_photo_url' => $this->getPrimaryPhotoUrl($item),
+            'photoUrl' => $this->getPrimaryPhotoUrl($item), // Alias for backward compatibility
             'photos_count' => $item->relationLoaded('photos') ? $item->photos->count() : 0,
             
             // Reviews
