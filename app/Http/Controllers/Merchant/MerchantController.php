@@ -3,17 +3,23 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Domain\Catalog\Services\ImageService;
-use App\Domain\Commerce\Models\MerchantPurchase;
 use App\Domain\Merchant\Models\TrustBadge;
-use App\Domain\Merchant\Queries\MerchantItemQuery;
-use App\Domain\Merchant\Services\MerchantItemDisplayService;
+use App\Domain\Merchant\Services\MerchantDashboardService;
 use Illuminate\Http\Request;
 
+/**
+ * MerchantController
+ *
+ * DATA FLOW POLICY:
+ * - Controller = Orchestration only
+ * - All business logic in Services
+ * - All formatting in DisplayServices
+ * - All queries in Query classes
+ */
 class MerchantController extends MerchantBaseController
 {
     public function __construct(
-        private MerchantItemQuery $itemQuery,
-        private MerchantItemDisplayService $displayService,
+        private MerchantDashboardService $dashboardService,
         private ImageService $imageService,
     ) {
         parent::__construct();
@@ -24,96 +30,8 @@ class MerchantController extends MerchantBaseController
      */
     public function index()
     {
-        try {
-            $userId = $this->user->id;
-
-            // Sales chart data (last 30 days)
-            $startDate = now()->subDays(29)->startOfDay();
-            $endDate = now()->endOfDay();
-
-            $salesData = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->selectRaw('DATE(created_at) as date, SUM(price) as total')
-                ->groupBy('date')
-                ->pluck('total', 'date')
-                ->toArray();
-
-            $days = [];
-            $sales = [];
-            for ($i = 29; $i >= 0; $i--) {
-                $date = date("Y-m-d", strtotime('-' . $i . ' days'));
-                $days[] = "'" . date("d M", strtotime('-' . $i . ' days')) . "'";
-                $sales[] = "'" . ($salesData[$date] ?? 0) . "'";
-            }
-            $data['days'] = implode(',', $days);
-            $data['sales'] = implode(',', $sales);
-
-            // Recent merchant items
-            $merchantItems = $this->itemQuery::make()
-                ->forMerchant($userId)
-                ->active()
-                ->withRelations()
-                ->latest()
-                ->paginate(5);
-
-            $data['merchantItems'] = collect($merchantItems->items())
-                ->map(fn($item) => $this->displayService->format($item))
-                ->toArray();
-
-            // Alias for view compatibility
-            $data['merchantItemsDisplay'] = $data['merchantItems'];
-
-            // Recent purchases
-            $data['purchases'] = MerchantPurchase::where('user_id', $userId)
-                ->latest()
-                ->take(5)
-                ->get();
-
-            // Statistics
-            $data['totalItems'] = $this->itemQuery::make()
-                ->forMerchant($userId)
-                ->count();
-
-            $data['activeItems'] = $this->itemQuery::make()
-                ->forMerchant($userId)
-                ->active()
-                ->count();
-
-            $data['totalSales'] = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->sum('price');
-
-            $data['pendingOrders'] = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'pending')
-                ->count();
-
-            // Additional statistics for dashboard cards
-            $data['processing'] = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'processing')
-                ->count();
-
-            $data['completed'] = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->count();
-
-            $data['totalCatalogItems'] = $data['totalItems'];
-
-            $data['totalItemsSold'] = MerchantPurchase::where('user_id', $userId)
-                ->where('status', 'completed')
-                ->sum('qty');
-
-            $data['currentBalance'] = $this->user->balance ?? 0;
-
-            $data['totalEarning'] = $data['totalSales'];
-
-            // Alias for view compatibility
-            $data['pending'] = $data['pendingOrders'];
-
-            return view('merchant.index', $data);
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', __('Error loading dashboard'));
-        }
+        $data = $this->dashboardService->getDashboardData($this->user->id);
+        return view('merchant.index', $data);
     }
 
     /**
@@ -121,8 +39,7 @@ class MerchantController extends MerchantBaseController
      */
     public function profile()
     {
-        $data['user'] = $this->user;
-        return view('merchant.profile', $data);
+        return view('merchant.profile', ['user' => $this->user]);
     }
 
     /**

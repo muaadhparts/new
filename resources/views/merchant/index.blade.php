@@ -50,7 +50,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Purchases Pending')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $pending }}</span>
+                            <span class="counter">{{ $statistics['pending'] }}</span>
                         </h3>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Purchases Processing')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $processing }}</span>
+                            <span class="counter">{{ $statistics['processing'] }}</span>
                         </h3>
                     </div>
                 </div>
@@ -72,7 +72,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Purchases Completed!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $completed }}</span>
+                            <span class="counter">{{ $statistics['completed'] }}</span>
                         </h3>
                     </div>
                 </div>
@@ -83,7 +83,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total CatalogItems!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $totalCatalogItems }}</span>
+                            <span class="counter">{{ $statistics['totalItems'] }}</span>
                         </h3>
                     </div>
                 </div>
@@ -94,7 +94,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Item Sold!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $totalItemsSold }}</span>
+                            <span class="counter">{{ $statistics['totalItemsSold'] }}</span>
                         </h3>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_2.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Current Balance')</p>
-                        <h3 class="value">{{ $currentBalance }}</h3>
+                        <h3 class="value">{{ $statistics['currentBalance'] }}</h3>
                     </div>
                 </div>
             </div>
@@ -113,7 +113,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Earning')</p>
-                        <h3 class="value">{{ $totalEarning }}</h3>
+                        <h3 class="value">{{ $statistics['totalSales'] }}</h3>
                     </div>
                 </div>
             </div>
@@ -149,34 +149,34 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($merchantItemsDisplay as $itemData)
+                                @forelse ($recentItems as $item)
                                     <tr>
                                         <td>
-                                            <img class="table-img" src="{{ $itemData['photoUrl'] }}" alt="">
+                                            <img class="table-img" src="{{ $item['photoUrl'] }}" alt="">
                                         </td>
                                         <td>
-                                            <span class="content"><code>{{ $itemData['partNumber'] ?? __('N/A') }}</code></span>
+                                            <span class="content"><code>{{ $item['partNumber'] ?? __('N/A') }}</code></span>
                                         </td>
                                         <td class="text-start">
                                             <div class="catalogItem-name">
-                                                <span class="content">{{ $itemData['name'] }}</span>
+                                                <span class="content">{{ $item['name'] }}</span>
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="content">{{ $itemData['brandName'] }}</span>
+                                            <span class="content">{{ $item['brandName'] }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">{{ $itemData['qualityBrandName'] }}</span>
+                                            <span class="content">{{ $item['qualityBrandName'] }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">{{ $itemData['branchName'] }}</span>
+                                            <span class="content">{{ $item['branchName'] }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">{{ $itemData['price'] }}</span>
+                                            <span class="content">{{ $item['price'] }}</span>
                                         </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ $itemData['viewUrl'] }}" target="_blank" class="view-btn" title="@lang('View')">
+                                                <a href="{{ $item['viewUrl'] }}" target="_blank" class="view-btn" title="@lang('View')">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">
                                                             <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z" fill="white" />
@@ -205,47 +205,31 @@
                         <table id="recent-purchase-table" class="gs-data-table w-100">
                             <thead>
                                 <tr>
-                                    <th>
-                                        <span class="header-name">@lang('Purchase Number')</span>
-                                    </th>
-                                    <th><span class="header-name">@lang('Purchase Date')</span></th>
-                                    <th class="text-center">
-                                        <span class="header-name">@lang('Details')</span>
-                                    </th>
+                                    <th><span class="header-name">@lang('Purchase Number')</span></th>
+                                    <th><span class="header-name">@lang('Total')</span></th>
+                                    <th><span class="header-name">@lang('Status')</span></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($recentMerchantPurchases as $data)
-                                    <!-- table data row 1 start  -->
+                                @forelse ($recentPurchases as $purchase)
                                     <tr>
-                                        <td><span class="content">{{ $data->purchase_number }}</span></td>
-                                        <td><span class="content">{{ $data->date_formatted }}</span>
+                                        <td>
+                                            <a href="{{ route('merchant-purchase-details', $purchase->id) }}" class="content">
+                                                #{{ $purchase->purchase_number }}
+                                            </a>
                                         </td>
                                         <td>
-                                            <div class="table-icon-btns-wrapper">
-                                                <a href="{{ $data->details_url }}"
-                                                    class="view-btn">
-                                                    <svg width="24" height="24" viewBox="0 0 24 24"
-                                                        fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                        <g clip-path="url(#clip0_548_165897)">
-                                                            <path
-                                                                d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
-                                                                fill="white" />
-                                                        </g>
-                                                        <defs>
-                                                            <clipPath id="clip0_548_165897">
-                                                                <rect width="24" height="24" fill="white" />
-                                                            </clipPath>
-                                                        </defs>
-                                                    </svg>
-                                                </a>
-                                            </div>
+                                            <span class="content">{{ $purchase->price }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{{ $purchase->status }}">
+                                                {{ __(ucfirst($purchase->status)) }}
+                                            </span>
                                         </td>
                                     </tr>
-                                    <!-- table data row 1 end  -->
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center">@lang('No Data Available')</td>
+                                        <td colspan="3" class="text-center">@lang('No Recent Purchases')</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -254,73 +238,53 @@
                 </div>
             </div>
         </div>
-        <!-- Table area end  -->
+        <!-- Table area end -->
 
-        <!-- Chart area start -->
-        <div class="gs-chart-wrapper merchant-monthly-sales-chart d-none d-md-block">
-            <div class="chart-name-dropdown-wrapper">
-                <h4 class="chart-name">@lang('Monthly Sales Overview')</h4>
-            </div>
-            <div id="chart">
+        <!-- Sales Chart -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="merchant-table-wrapper">
+                    <h4 class="table-name">@lang('Sales Overview (Last 30 Days)')</h4>
+                    <div class="chart-container p-4">
+                        <canvas id="salesChart" height="80"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- Chart area end -->
     </div>
-@endsection
 
-@section('script')
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-            var options = {
-                colors: ['#27BE69'],
-                series: [{
-                        name: 'Net Profit',
-                        data: [{!! $sales !!}]
-                    },
-
-                ],
-                chart: {
-                    type: 'bar',
-                    height: 450
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        const salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{{ $salesChart['daysFormatted'] }}],
+                datasets: [{
+                    label: '@lang("Sales")',
+                    data: [{{ $salesChart['salesFormatted'] }}],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
                 },
-                plotOptions: {
-                    bar: {
-                        horizontal: false,
-                        columnWidth: '20%',
-                        endingShape: 'rounded',
-                        borderRadius: 8,
-                        borderRadiusApplication: 'end',
-                        borderRadiusWhenStacked: 'last'
-                    },
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    show: true,
-                    width: 2,
-                    colors: ['transparent']
-                },
-                xaxis: {
-                    categories: [{!! $days !!}],
-                },
-                fill: {
-                    opacity: 1
-                },
-                tooltip: {
+                scales: {
                     y: {
-                        formatter: function(val) {
-                            return "$ " + val
-                        }
+                        beginAtZero: true
                     }
                 }
-            };
-            var chart = new ApexCharts($("#chart")[0], options);
-            chart.render();
-
-
-        })(jQuery);
+            }
+        });
     </script>
+    @endpush
 @endsection
