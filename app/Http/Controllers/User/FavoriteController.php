@@ -176,4 +176,44 @@ class FavoriteController extends UserBaseController
         return response()->json($data);
     }
 
+    /**
+     * Toggle favorite status for a catalog item
+     * If already in favorites, remove it. Otherwise, add it.
+     */
+    public function toggle($catalogItemId)
+    {
+        $user = $this->user;
+        $data = ['status' => 0];
+
+        // Check if already in favorites
+        $existing = FavoriteSeller::where('user_id', $user->id)
+            ->where('catalog_item_id', $catalogItemId)
+            ->first();
+
+        if ($existing) {
+            // Remove from favorites
+            $existing->delete();
+            HeaderComposer::invalidateFavoriteCache($user->id);
+            $data['status'] = 1;
+            $data['action'] = 'removed';
+            $data['count'] = FavoriteSeller::where('user_id', $user->id)->count();
+            $data['success'] = __('Successfully Removed From Favorites.');
+        } else {
+            // Add to favorites
+            $favorite = new FavoriteSeller();
+            $favorite->user_id = $user->id;
+            $favorite->catalog_item_id = $catalogItemId;
+            $favorite->merchant_item_id = null; // No specific merchant, just catalog item
+            $favorite->save();
+
+            HeaderComposer::invalidateFavoriteCache($user->id);
+            $data['status'] = 1;
+            $data['action'] = 'added';
+            $data['count'] = FavoriteSeller::where('user_id', $user->id)->count();
+            $data['success'] = __('Successfully Added To Favorites.');
+        }
+
+        return response()->json($data);
+    }
+
 }
