@@ -30,7 +30,7 @@
                 <div class="row justify-content-center">
                     <div class="col-md-6 col-lg-5">
                         <div class="text-center">
-                            <img src="{{ $gs->error_banner_500 ? asset('assets/images/'.$gs->error_banner_500):asset('assets/images/noimage.png') }}" alt="">
+                            <img src="{{ asset('assets/images/noimage.png') }}" alt="500 Error">
                             <h2 class="my-4">{{ __('500 Page not found') }}</h2>
                             <p>{{ __('The page you are looking for dosen’t exist or another error occourd go back to home or another source') }}</p>
                             <a class="btn btn-secondary mt-5" href="{{ route('front.index') }}">{{ __('Return to home') }}</a>
