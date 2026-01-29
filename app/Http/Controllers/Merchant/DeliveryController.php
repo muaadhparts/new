@@ -427,3 +427,228 @@ class DeliveryController extends MerchantBaseController
         }
     }
 }
+
+    /**
+     * Get deliveries datatables (AJAX)
+     */
+    public function datatables(Request $request)
+    {
+        // This will be handled by DeliveryListService in the future
+        // For now, return the same data as index
+        return $this->index($request);
+    }
+
+    /**
+     * Find courier page
+     */
+    public function findCourier(Request $request)
+    {
+        $cityId = $request->city_id;
+        
+        if (!$cityId) {
+            return response()->json(['success' => false, 'error' => 'City ID required']);
+        }
+
+        $html = $this->courierService->getCouriersForCity($cityId);
+        
+        return response()->json(['success' => true, 'html' => $html]);
+    }
+
+    /**
+     * Get merchant branches (AJAX)
+     */
+    public function getMerchantBranches(Request $request)
+    {
+        $branches = $this->displayService->getMerchantBranches($this->user->id);
+        
+        return response()->json([
+            'success' => true,
+            'branches' => $branches->map(function($branch) {
+                return [
+                    'id' => $branch->id,
+                    'name' => $branch->name,
+                    'address' => $branch->address,
+                    'city' => $branch->city,
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Get purchase shipment status (AJAX)
+     */
+    public function getPurchaseShipmentStatus(Request $request, $purchaseId)
+    {
+        $status = $this->providerService->getShipmentStatus(
+            purchaseId: $purchaseId,
+            merchantId: $this->user->id
+        );
+
+        if (!$status) {
+            return response()->json(['success' => false, 'error' => 'Shipment not found']);
+        }
+
+        return response()->json(['success' => true, 'status' => $status]);
+    }
+
+    /**
+     * Get available shipping providers (AJAX)
+     */
+    public function getShippingProviders(Request $request)
+    {
+        $providers = $this->providerService->getAvailableProviders($this->user->id);
+        
+        return response()->json([
+            'success' => true,
+            'providers' => $providers
+        ]);
+    }
+
+    /**
+     * Send shipment to Tryoto (AJAX)
+     * Alias for sendTryotoShipment
+     */
+    public function sendToTryoto(Request $request)
+    {
+        return $this->sendTryotoShipment($request);
+    }
+
+    /**
+     * Send provider shipping (AJAX)
+     * Alias for sendProviderShipment
+     */
+    public function sendProviderShipping(Request $request)
+    {
+        return $this->sendProviderShipment($request);
+    }
+
+    /**
+     * Cancel shipment (AJAX)
+     * Alias for cancelTryotoShipment
+     */
+    public function cancelShipment(Request $request)
+    {
+        return $this->cancelTryotoShipment($request);
+    }
+
+    /**
+     * Track shipment (AJAX)
+     */
+    public function trackShipment(Request $request)
+    {
+        $purchaseId = $request->purchase_id;
+        
+        if (!$purchaseId) {
+            return response()->json(['success' => false, 'error' => 'Purchase ID required']);
+        }
+
+        // Get tracking info from TryotoService or ProviderService
+        $tracking = \App\Domain\Shipping\Models\ShipmentTracking::where('purchase_id', $purchaseId)
+            ->where('merchant_id', $this->user->id)
+            ->first();
+
+        if (!$tracking) {
+            return response()->json(['success' => false, 'error' => 'Tracking not found']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'tracking' => [
+                'tracking_number' => $tracking->tracking_number,
+                'status' => $tracking->status,
+                'provider' => $tracking->provider,
+                'last_update' => $tracking->updated_at->format('Y-m-d H:i:s'),
+            ]
+        ]);
+    }
+
+    /**
+     * Get shipment history (AJAX)
+     */
+    public function shipmentHistory(Request $request, $purchaseId)
+    {
+        $history = \App\Domain\Shipping\Models\ShipmentTracking::where('purchase_id', $purchaseId)
+            ->where('merchant_id', $this->user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'history' => $history->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'status' => $item->status,
+                    'provider' => $item->provider,
+                    'tracking_number' => $item->tracking_number,
+                    'created_at' => $item->created_at->format('Y-m-d H:i:s'),
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Get shipping statistics (AJAX)
+     */
+    public function shippingStats(Request $request)
+    {
+        $stats = $this->listService->getDeliveryStats($this->user->id);
+        
+        return response()->json([
+            'success' => true,
+            'stats' => $stats
+        ]);
+    }
+
+    /**
+     * Mark delivery as ready for courier collection
+     */
+    public function markReadyForCourierCollection(Request $request)
+    {
+        try {
+            $delivery = \App\Domain\Shipping\Models\DeliveryCourier::where('purchase_id', $request->purchase_id)
+                ->where('merchant_id', $this->user->id)
+                ->firstOrFail();
+
+            $delivery->status = 'ready_for_collection';
+            $delivery->ready_at = now();
+            $delivery->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Delivery marked as ready for courier collection'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Confirm handover to courier
+     */
+    public function confirmHandoverToCourier(Request $request)
+    {
+        try {
+            $delivery = \App\Domain\Shipping\Models\DeliveryCourier::where('purchase_id', $request->purchase_id)
+                ->where('merchant_id', $this->user->id)
+                ->firstOrFail();
+
+            $delivery->status = 'picked_up';
+            $delivery->picked_up_at = now();
+            $delivery->save();
+
+            // Update purchase status
+            $purchase = $delivery->purchase;
+            $purchase->status = 'shipped';
+            $purchase->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Handover to courier confirmed'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()]);
+        }
+    }
+}
