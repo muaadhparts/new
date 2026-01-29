@@ -1,4 +1,4 @@
-@extends('layouts.courier')
+@extends('layouts.user')
 
 @section('content')
     <div class="gs-user-panel-review wow-replaced" data-wow-delay=".1s">
@@ -96,8 +96,8 @@
                         </div>
                     </div>
 
-                    <!-- recent purchases -->
-                    <h4 class="table-name mt-4">@lang('Recent Purchases')</h4>
+                    <!-- recent deliveries -->
+                    <h4 class="table-name mt-4">@lang('Recent Deliveries')</h4>
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <tr>
@@ -108,31 +108,31 @@
                                 <th><span class="header-name">{{ __('Purchase Status') }}</span></th>
                                 <th><span class="header-name">{{ __('View') }}</span></th>
                             </tr>
-                            @forelse ($purchases as $purchase)
+                            @forelse ($recentDeliveries as $delivery)
                             <tr>
                                 <td data-label="{{ __('#Purchase') }}">
-                                    {{ $purchase['purchase_number'] }}
+                                    {{ $delivery['purchase_number'] }}
                                 </td>
                                 <td data-label="{{ __('Service Area') }}">
-                                    <p>{{ $purchase['customer_city'] }}</p>
+                                    <p>{{ $delivery['customer_city'] }}</p>
                                 </td>
                                 <td data-label="{{ __('Warehouse Location') }}">
-                                    <p>{{ $purchase['branch_location'] }}</p>
+                                    <p>{{ $delivery['branch_location'] }}</p>
                                 </td>
                                 <td data-label="{{ __('Purchase Total') }}">
-                                    {{ $purchase['total_formatted'] }}
-                                    @if($purchase['is_cod'])
+                                    {{ $delivery['total_formatted'] }}
+                                    @if($delivery['is_cod'])
                                         <br><span class="badge bg-warning text-dark">COD</span>
                                     @endif
                                 </td>
                                 <td data-label="{{ __('Purchase Status') }}">
-                                    <span class="badge {{ $purchase['status']['class'] }}">
-                                        <i class="fas {{ $purchase['status']['icon'] }}"></i>
-                                        {{ $purchase['status']['label'] }}
+                                    <span class="badge {{ $delivery['status']['class'] }}">
+                                        <i class="fas {{ $delivery['status']['icon'] }}"></i>
+                                        {{ $delivery['status']['label'] }}
                                     </span>
                                 </td>
                                 <td data-label="{{ __('View') }}">
-                                    <a href="{{ $purchase['details_url'] }}" class="template-btn sm-btn blue-btn">
+                                    <a href="{{ $delivery['details_url'] }}" class="template-btn sm-btn blue-btn">
                                         @lang('View')
                                     </a>
                                 </td>

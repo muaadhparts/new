@@ -4,10 +4,9 @@ namespace App\Http\Controllers\Courier;
 
 use App\Domain\Shipping\Models\City;
 use App\Domain\Shipping\Models\Country;
-use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Shipping\Models\CourierServiceArea;
-use App\Domain\Accounting\Services\CourierAccountingService;
+use App\Domain\Shipping\Services\CourierDashboardService;
 use App\Domain\Shipping\Services\CourierDisplayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -17,37 +16,28 @@ use Illuminate\Support\Facades\Hash;
  *
  * DATA FLOW POLICY:
  * - Controller = Orchestration only
- * - All formatting in CourierDisplayService (API-ready)
+ * - All business logic in Services
+ * - All formatting in DisplayServices
+ * - All queries in Query classes or Services
  */
 class CourierController extends CourierBaseController
 {
-    protected CourierAccountingService $accountingService;
-    protected CourierDisplayService $displayService;
-
-    public function __construct()
-    {
+    public function __construct(
+        private CourierDashboardService $dashboardService,
+        private CourierDisplayService $displayService,
+    ) {
         parent::__construct();
-        $this->accountingService = app(CourierAccountingService::class);
-        $this->displayService = app(CourierDisplayService::class);
     }
 
+    /**
+     * Courier dashboard
+     */
     public function index()
     {
-        $deliveries = DeliveryCourier::where('courier_id', $this->courier->id)
-            ->whereNotNull('purchase_id')
-            ->whereHas('purchase')
-            ->with(['purchase', 'merchantBranch'])
-            ->orderby('id', 'desc')->take(8)->get();
-
-        // Get accounting report
-        $report = $this->accountingService->getCourierReport($this->courier->id);
-
-        // Format using DisplayService (API-ready)
-        $purchasesDisplay = $this->displayService->formatDeliveriesForDashboard($deliveries);
-        $reportDisplay = $this->displayService->formatReportForDashboard($report);
+        $data = $this->dashboardService->getDashboardData($this->courier->id);
         
-        // Format courier info for display
-        $courierDisplay = [
+        // Add courier info
+        $data['user'] = [
             'name' => $this->courier->name,
             'email' => $this->courier->email,
             'phone' => $this->courier->phone ?? '',
@@ -55,39 +45,31 @@ class CourierController extends CourierBaseController
             'balance' => $this->courier->balance ?? 0,
         ];
 
-        return view('courier.dashbaord', [
-            'purchases' => $purchasesDisplay,
-            'user' => $courierDisplay,
-            'report' => $reportDisplay,
-        ]);
+        return view('courier.dashbaord', $data);
     }
 
+    /**
+     * Show profile
+     */
     public function profile()
     {
-        $user = $this->courier;
-        return view('courier.profile', [
-            'user' => $user,
-        ]);
+        return view('courier.profile', ['user' => $this->courier]);
     }
 
+    /**
+     * Update profile
+     */
     public function profileupdate(Request $request)
     {
-
-        $rules =
-            [
+        $request->validate([
             'photo' => 'mimes:jpeg,jpg,png,svg',
             'email' => 'unique:users,email,' . $this->courier->id,
-        ];
-
-        $customs = [
+        ], [
             'photo.mimes' => __('The image must be a file of type: jpeg, jpg, png, svg.'),
-        ];
+        ]);
 
-        $request->validate($rules, $customs);
-
-        //--- Validation Section Ends
         $input = $request->all();
-        $data = $this->courier;
+        
         if ($file = $request->file('photo')) {
             $extensions = ['jpeg', 'jpg', 'png', 'svg'];
             if (!in_array($file->getClientOriginalExtension(), $extensions)) {
@@ -96,28 +78,36 @@ class CourierController extends CourierBaseController
 
             $name = \PriceHelper::ImageCreateName($file);
             $file->move('assets/images/users/', $name);
-            if ($data->photo != null) {
-                if (file_exists(public_path() . '/assets/images/users/' . $data->photo)) {
-                    unlink(public_path() . '/assets/images/users/' . $data->photo);
+            
+            if ($this->courier->photo != null) {
+                if (file_exists(public_path() . '/assets/images/users/' . $this->courier->photo)) {
+                    unlink(public_path() . '/assets/images/users/' . $this->courier->photo);
                 }
             }
+            
             $input['photo'] = $name;
         }
-        $data->update($input);
+        
+        $this->courier->update($input);
 
         return back()->with('success', __('Profile Updated Successfully!'));
     }
 
+    /**
+     * Show password reset form
+     */
     public function resetform()
     {
         return view('courier.reset');
     }
 
+    /**
+     * Reset password
+     */
     public function reset(Request $request)
     {
-        $user = $this->courier;
         if ($request->cpass) {
-            if (Hash::check($request->cpass, $user->password)) {
+            if (Hash::check($request->cpass, $this->courier->password)) {
                 if ($request->newpass == $request->renewpass) {
                     $input['password'] = Hash::make($request->newpass);
                 } else {
@@ -127,19 +117,21 @@ class CourierController extends CourierBaseController
                 return back()->with('unsuccess', __('Current password Does not match.'));
             }
         }
-        $user->update($input);
+        
+        $this->courier->update($input);
         return back()->with('success', __('Password Updated Successfully!'));
     }
 
+    /**
+     * Show service areas
+     */
     public function serviceArea()
     {
         $cities = City::whereStatus(1)->get();
-        $courier = $this->courier;
-        $service_areas = CourierServiceArea::where('courier_id', $courier->id)
+        $service_areas = CourierServiceArea::where('courier_id', $this->courier->id)
             ->with(['city.country'])
             ->paginate(10);
 
-        // Format using DisplayService (API-ready)
         $serviceAreasDisplay = $this->displayService->formatServiceAreas($service_areas);
 
         return view('courier.service-area', [
@@ -148,14 +140,16 @@ class CourierController extends CourierBaseController
         ]);
     }
 
+    /**
+     * Show create service area form
+     */
     public function serviceAreaCreate()
     {
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
-        return view('courier.add_service', [
-            'countries' => $countries,
-        ]);
+        
+        return view('courier.add_service', ['countries' => $countries]);
     }
 
     /**
@@ -163,7 +157,6 @@ class CourierController extends CourierBaseController
      */
     public function getCitiesByCountry(Request $request)
     {
-        // Validate country_id
         if (!$request->country_id) {
             return response()->json([
                 'success' => false,
@@ -173,13 +166,11 @@ class CourierController extends CourierBaseController
             ]);
         }
 
-        // Get active cities for this country
         $cities = City::where('country_id', $request->country_id)
             ->where('status', 1)
             ->orderBy('name')
             ->get(['id', 'name']);
 
-        // Build options HTML
         $options = '<option value="">' . __('Select City') . '</option>';
         foreach ($cities as $city) {
             $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->name) . '</option>';
@@ -192,9 +183,11 @@ class CourierController extends CourierBaseController
         ]);
     }
 
+    /**
+     * Store service area
+     */
     public function serviceAreaStore(Request $request)
     {
-        // Step 1: Basic validation
         $request->validate([
             'country_id' => 'required|exists:countries,id',
             'service_area_id' => 'required|exists:cities,id',
@@ -202,7 +195,7 @@ class CourierController extends CourierBaseController
             'service_radius_km' => 'required|integer|min:1|max:500',
         ]);
 
-        // Step 2: Strict backend validation - verify city belongs to country and is active
+        // Verify city belongs to country and is active
         $city = City::where('id', $request->service_area_id)
             ->where('country_id', $request->country_id)
             ->where('status', 1)
@@ -214,7 +207,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['service_area_id' => __('Invalid city selection. City must be active and belong to the selected country.')]);
         }
 
-        // Step 3: Check country is active
+        // Check country is active
         $country = Country::where('id', $request->country_id)->where('status', 1)->first();
         if (!$country) {
             return redirect()->back()
@@ -222,7 +215,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['country_id' => __('Selected country is not available.')]);
         }
 
-        // Step 4: Check uniqueness - this courier doesn't already have this city
+        // Check uniqueness
         $exists = CourierServiceArea::where('courier_id', $this->courier->id)
             ->where('city_id', $city->id)
             ->exists();
@@ -233,7 +226,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['service_area_id' => __('You already have a service area for this city.')]);
         }
 
-        // Step 5: Create service area
+        // Create service area
         $service_area = new CourierServiceArea();
         $service_area->courier_id = $this->courier->id;
         $service_area->city_id = $city->id;
@@ -241,12 +234,15 @@ class CourierController extends CourierBaseController
         $service_area->service_radius_km = $request->service_radius_km;
         $service_area->latitude = $city->latitude;
         $service_area->longitude = $city->longitude;
-        $service_area->status = 1; // Active by default
+        $service_area->status = 1;
         $service_area->save();
 
         return redirect()->route('courier-service-area')->with('success', __('Successfully created your service area'));
     }
 
+    /**
+     * Show edit service area form
+     */
     public function serviceAreaEdit($id)
     {
         $service_area = CourierServiceArea::findOrFail($id);
@@ -254,11 +250,9 @@ class CourierController extends CourierBaseController
             $q->where('status', 1);
         })->get();
 
-        // Get the country of the current city
         $currentCity = City::find($service_area->city_id);
         $selectedCountryId = $currentCity ? $currentCity->country_id : null;
 
-        // Get cities for the selected country
         $cities = $selectedCountryId
             ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('name')->get()
             : collect();
@@ -271,14 +265,15 @@ class CourierController extends CourierBaseController
         ]);
     }
 
+    /**
+     * Update service area
+     */
     public function serviceAreaUpdate(Request $request, $id)
     {
-        // Step 1: Verify ownership
         $service_area = CourierServiceArea::where('id', $id)
             ->where('courier_id', $this->courier->id)
             ->firstOrFail();
 
-        // Step 2: Basic validation
         $request->validate([
             'country_id' => 'required|exists:countries,id',
             'service_area_id' => 'required|exists:cities,id',
@@ -286,7 +281,7 @@ class CourierController extends CourierBaseController
             'service_radius_km' => 'required|integer|min:1|max:500',
         ]);
 
-        // Step 3: Strict backend validation - verify city belongs to country and is active
+        // Verify city belongs to country and is active
         $city = City::where('id', $request->service_area_id)
             ->where('country_id', $request->country_id)
             ->where('status', 1)
@@ -298,7 +293,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['service_area_id' => __('Invalid city selection. City must be active and belong to the selected country.')]);
         }
 
-        // Step 4: Check country is active
+        // Check country is active
         $country = Country::where('id', $request->country_id)->where('status', 1)->first();
         if (!$country) {
             return redirect()->back()
@@ -306,7 +301,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['country_id' => __('Selected country is not available.')]);
         }
 
-        // Step 5: Check uniqueness (exclude current record)
+        // Check uniqueness (exclude current record)
         $exists = CourierServiceArea::where('courier_id', $this->courier->id)
             ->where('city_id', $city->id)
             ->where('id', '!=', $id)
@@ -318,7 +313,7 @@ class CourierController extends CourierBaseController
                 ->withErrors(['service_area_id' => __('You already have a service area for this city.')]);
         }
 
-        // Step 6: Update service area
+        // Update service area
         $service_area->city_id = $city->id;
         $service_area->price = $request->price / $this->curr->value;
         $service_area->service_radius_km = $request->service_radius_km;
@@ -329,16 +324,22 @@ class CourierController extends CourierBaseController
         return redirect()->route('courier-service-area')->with('success', __('Successfully updated your service area'));
     }
 
+    /**
+     * Delete service area
+     */
     public function serviceAreaDestroy($id)
     {
-        $service_area = CourierServiceArea::where('courier_id', $this->courier->id)->where('id', $id)->first();
+        $service_area = CourierServiceArea::where('courier_id', $this->courier->id)
+            ->where('id', $id)
+            ->first();
+        
         $service_area->delete();
-        $msg = __('Successfully deleted your service area');
-        return back()->with('success', $msg);
+        
+        return back()->with('success', __('Successfully deleted your service area'));
     }
 
     /**
-     * Toggle service area status (active/inactive)
+     * Toggle service area status
      */
     public function serviceAreaToggleStatus($id)
     {
@@ -353,82 +354,15 @@ class CourierController extends CourierBaseController
         return back()->with('success', __('Service area successfully') . ' ' . $statusText);
     }
 
+    /**
+     * Show orders page
+     */
     public function orders(Request $request)
     {
         $type = $request->type;
-        $courierId = $this->courier->id;
-
-        // ✅ حساب counts للـ tabs في الـ Controller بدلاً من الـ View
-        // هذا يتبع مبدأ "لا استعلامات في العروض"
-        $tabCounts = [
-            'active' => DeliveryCourier::where('courier_id', $courierId)
-                ->whereIn('status', [
-                    DeliveryCourier::STATUS_PENDING_APPROVAL,
-                    DeliveryCourier::STATUS_APPROVED,
-                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                    DeliveryCourier::STATUS_PICKED_UP,
-                ])
-                ->count(),
-            'pending' => DeliveryCourier::where('courier_id', $courierId)
-                ->where('status', DeliveryCourier::STATUS_PENDING_APPROVAL)
-                ->count(),
-            'in_progress' => DeliveryCourier::where('courier_id', $courierId)
-                ->whereIn('status', [
-                    DeliveryCourier::STATUS_APPROVED,
-                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                    DeliveryCourier::STATUS_PICKED_UP,
-                ])
-                ->count(),
-        ];
-
-        if ($type == 'completed') {
-            // Completed/delivered orders
-            $purchases = DeliveryCourier::where('courier_id', $courierId)
-                ->whereNotNull('purchase_id')
-                ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
-                ->whereIn('status', [DeliveryCourier::STATUS_DELIVERED, DeliveryCourier::STATUS_CONFIRMED])
-                ->orderby('id', 'desc')
-                ->paginate(10);
-        } elseif ($type == 'pending') {
-            // Orders waiting for courier approval
-            $purchases = DeliveryCourier::where('courier_id', $courierId)
-                ->whereNotNull('purchase_id')
-                ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
-                ->where('status', DeliveryCourier::STATUS_PENDING_APPROVAL)
-                ->orderby('id', 'desc')
-                ->paginate(10);
-        } elseif ($type == 'in_progress') {
-            // Orders in progress (approved, ready, picked up)
-            $purchases = DeliveryCourier::where('courier_id', $courierId)
-                ->whereNotNull('purchase_id')
-                ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
-                ->whereIn('status', [
-                    DeliveryCourier::STATUS_APPROVED,
-                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                    DeliveryCourier::STATUS_PICKED_UP,
-                ])
-                ->orderby('id', 'desc')
-                ->paginate(10);
-        } else {
-            // Default: All active orders (pending approval + in progress)
-            $purchases = DeliveryCourier::where('courier_id', $courierId)
-                ->whereNotNull('purchase_id')
-                ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
-                ->whereIn('status', [
-                    DeliveryCourier::STATUS_PENDING_APPROVAL,
-                    DeliveryCourier::STATUS_APPROVED,
-                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                    DeliveryCourier::STATUS_PICKED_UP,
-                ])
-                ->orderby('id', 'desc')
-                ->paginate(10);
-        }
-
-        // Format using DisplayService (API-ready)
+        
+        $tabCounts = $this->dashboardService->getOrdersTabCounts($this->courier->id);
+        $purchases = $this->dashboardService->getOrders($this->courier->id, $type);
         $purchasesDisplay = $this->displayService->formatDeliveriesForOrders($purchases);
 
         return view('courier.orders', [
@@ -438,6 +372,9 @@ class CourierController extends CourierBaseController
         ]);
     }
 
+    /**
+     * Show order details
+     */
     public function orderDetails($id)
     {
         $data = DeliveryCourier::with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
@@ -452,8 +389,6 @@ class CourierController extends CourierBaseController
         }
 
         $purchase = $data->purchase;
-
-        // Format using DisplayService (API-ready)
         $deliveryDto = $this->displayService->buildDeliveryDto($data);
         $deliveryDetails = $this->displayService->formatDeliveryDetails($data);
         $cartItems = $purchase->getCartItems();
@@ -469,8 +404,7 @@ class CourierController extends CourierBaseController
     }
 
     /**
-     * Courier approves the delivery request
-     * STEP 1: pending_approval -> approved
+     * Accept delivery request
      */
     public function orderAccept($id)
     {
@@ -489,8 +423,7 @@ class CourierController extends CourierBaseController
     }
 
     /**
-     * Courier rejects the delivery request
-     * STEP 1 ALT: pending_approval -> rejected
+     * Reject delivery request
      */
     public function orderReject(Request $request, $id)
     {
@@ -510,8 +443,7 @@ class CourierController extends CourierBaseController
     }
 
     /**
-     * Courier marks the order as delivered to customer
-     * STEP 4: picked_up -> delivered
+     * Mark order as delivered
      */
     public function orderComplete($id)
     {
@@ -525,76 +457,44 @@ class CourierController extends CourierBaseController
             return back()->with('unsuccess', __('Cannot complete this delivery. Current status: ') . $delivery->status_label);
         }
 
-        // Use model method which handles status transition and financial transactions
         $delivery->markAsDelivered();
 
         return back()->with('success', __('Order delivered successfully to customer!'));
     }
 
     /**
-     * View courier deliveries history (transactions)
+     * Show transactions
      */
     public function transactions(Request $request)
     {
-        $query = DeliveryCourier::where('courier_id', $this->courier->id)
-            ->with('purchase')
-            ->orderBy('created_at', 'desc');
+        $data = $this->dashboardService->getTransactionsData(
+            $this->courier->id,
+            $request->status
+        );
 
-        if ($request->status) {
-            $query->where('status', $request->status);
-        }
-
-        $deliveries = $query->paginate(20);
-        $report = $this->accountingService->getCourierReport($this->courier->id);
-
-        // Format using DisplayService (API-ready)
-        $deliveriesDisplay = $this->displayService->formatDeliveriesForTransactions($deliveries);
-        $reportDisplay = $this->displayService->formatReportForTransactions($report);
-
-        return view('courier.transactions', [
-            'deliveries' => $deliveriesDisplay,
-            'report' => $reportDisplay,
-        ]);
+        return view('courier.transactions', $data);
     }
 
     /**
-     * View courier settlements / accounting summary
+     * Show settlements
      */
     public function settlements()
     {
-        $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
-        $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
-        $report = $this->accountingService->getCourierReport($this->courier->id);
-
-        // Format using DisplayService (API-ready)
-        $reportDisplay = $this->displayService->formatReportForSettlements($report);
-        $settlementDisplay = $this->displayService->formatSettlementCalc($settlementCalc);
-        $deliveriesDisplay = $this->displayService->formatUnsettledDeliveries(collect($unsettledDeliveries));
-
-        return view('courier.settlements', [
-            'settlementCalc' => $settlementDisplay,
-            'unsettledDeliveries' => $deliveriesDisplay,
-            'report' => $reportDisplay,
-        ]);
+        $data = $this->dashboardService->getSettlementsData($this->courier->id);
+        return view('courier.settlements', $data);
     }
 
     /**
-     * View financial summary/report
+     * Show financial report
      */
     public function financialReport(Request $request)
     {
-        $startDate = $request->start_date;
-        $endDate = $request->end_date;
+        $data = $this->dashboardService->getFinancialReportData(
+            $this->courier->id,
+            $request->start_date,
+            $request->end_date
+        );
 
-        $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
-
-        // Format using DisplayService (API-ready)
-        $reportDisplay = $this->displayService->formatFinancialReport($report);
-
-        return view('courier.financial_report', [
-            'report' => $reportDisplay,
-            'startDate' => $startDate,
-            'endDate' => $endDate,
-        ]);
+        return view('courier.financial_report', $data);
     }
 }
