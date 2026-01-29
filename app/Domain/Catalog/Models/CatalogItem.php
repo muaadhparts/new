@@ -130,6 +130,30 @@ class CatalogItem extends Model
         return monetaryUnit()->convert((float) ($price ?? 0));
     }
 
+    /**
+     * Filter products collection for API responses.
+     * Processes nested arrays/collections and returns flattened result.
+     */
+    public static function filterProducts($products)
+    {
+        if (empty($products)) {
+            return [];
+        }
+
+        // If it's already a collection, return as array
+        if ($products instanceof \Illuminate\Support\Collection) {
+            return $products->toArray();
+        }
+
+        // If it's an array, return as is
+        if (is_array($products)) {
+            return $products;
+        }
+
+        // Otherwise, wrap in array
+        return [$products];
+    }
+
     /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */
@@ -198,6 +222,24 @@ class CatalogItem extends Model
             'id'
         )->where('merchant_photos.status', 1)
          ->orderBy('merchant_photos.sort_order');
+    }
+
+    /**
+     * Get merchant photos for a specific merchant with limit.
+     */
+    public function merchantPhotosForMerchant(int $merchantUserId, int $limit = 4)
+    {
+        return $this->hasManyThrough(
+            MerchantPhoto::class,
+            MerchantItem::class,
+            'catalog_item_id',
+            'merchant_item_id',
+            'id',
+            'id'
+        )->where('merchant_photos.status', 1)
+         ->where('merchant_items.user_id', $merchantUserId)
+         ->orderBy('merchant_photos.sort_order')
+         ->limit($limit);
     }
 
     /**
