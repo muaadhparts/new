@@ -48,7 +48,7 @@ class CatalogItemCardDTOBuilder
         $dto->catalogItemName = $this->catalogDisplayService->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
-        $dto->photo = $this->resolvePhoto($catalogItem->photo);
+        $dto->photo = $catalogItem->photo_url;
         $dto->itemType = $merchant->item_type ?? '';
         $dto->affiliateLink = $merchant->affiliate_link;
         $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
@@ -127,7 +127,7 @@ class CatalogItemCardDTOBuilder
         $dto->catalogItemName = $this->catalogDisplayService->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
-        $dto->photo = $this->resolvePhoto($catalogItem->photo);
+        $dto->photo = $catalogItem->photo_url;
         $dto->itemType = '';
         $dto->affiliateLink = null;
         $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
@@ -196,7 +196,7 @@ class CatalogItemCardDTOBuilder
         $dto->catalogItemName = $this->catalogDisplayService->getLocalizedName($catalogItem);
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
-        $dto->photo = $this->resolvePhoto($catalogItem->photo);
+        $dto->photo = $catalogItem->photo_url;
         $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
         $dto->catalogReviewsCount = (int) ($catalogItem->catalog_reviews_count ?? 0);
 
@@ -303,17 +303,6 @@ class CatalogItemCardDTOBuilder
                 default => throw new \InvalidArgumentException("Unknown source type: {$sourceType}"),
             };
         })->toArray();
-    }
-
-    /**
-     * Resolve photo URL
-     */
-    private function resolvePhoto(?string $photo): string
-    {
-        if ($photo) {
-            return asset('assets/images/catalog_items/' . $photo);
-        }
-        return asset('assets/images/noimage.png');
     }
 
     /**
