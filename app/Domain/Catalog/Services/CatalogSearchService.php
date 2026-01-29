@@ -60,7 +60,7 @@ class CatalogSearchService
     {
         return CatalogItem::where('part_number', 'like', "{$partNumber}%")
             ->with(['fitments.brand'])
-            ->withCount(['merchantItems as offers_count' => function ($q) {
+            ->withCount(['activeMerchantItems', 'merchantItems as offers_count' => function ($q) {
                 $q->where('status', 1)
                   ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             }])
@@ -102,7 +102,7 @@ class CatalogSearchService
                     }
                 })
                 ->with(['fitments.brand'])
-                ->withCount(['merchantItems as offers_count' => function ($q) {
+                ->withCount(['activeMerchantItems', 'merchantItems as offers_count' => function ($q) {
                     $q->where('status', 1)
                       ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
                 }])

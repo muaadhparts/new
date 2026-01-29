@@ -83,7 +83,7 @@ class CatalogItemCardDataBuilder
             'merchantBranch:id,warehouse_name',
             'catalogItem' => function ($q) {
                 $q->with('fitments.brand')
-                    ->withCount('catalogReviews')
+                    ->withCount(['catalogReviews', 'activeMerchantItems'])
                     ->withAvg('catalogReviews', 'rating');
             },
         ]);
@@ -106,7 +106,7 @@ class CatalogItemCardDataBuilder
                     ])
                     ->orderBy('price');
             },
-        ])->withCount('catalogReviews')->withAvg('catalogReviews', 'rating');
+        ])->withCount(['catalogReviews', 'activeMerchantItems'])->withAvg('catalogReviews', 'rating');
     }
 
     /**
