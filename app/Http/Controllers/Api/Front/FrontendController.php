@@ -7,13 +7,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\BrandResource;
-use App\Http\Resources\CatalogItemListResource;
 use App\Domain\Platform\Models\Language;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Platform\Models\Page;
 use App\Domain\Platform\Models\FrontendSetting;
 use App\Domain\Catalog\Models\Brand;
-use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\CatalogItemApiService;
 use App\Domain\Identity\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -21,6 +20,9 @@ use Validator;
 
 class FrontendController extends Controller
 {
+    public function __construct(
+        private CatalogItemApiService $catalogItemApiService
+    ) {}
     // Display Banners & Brands
 
     public function section_customization()
@@ -43,23 +45,11 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Merchant not found']]);
             }
 
-            // CatalogItem-first: Query catalog items that have merchant offers from this merchant
-            $query = CatalogItem::whereHas('merchantItems', function($q) use ($user, $request) {
-                    $q->where('user_id', $user->id)->where('status', 1);
-                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                        $q->where('item_type', $request->type);
-                    }
-                })
-                ->with(['merchantItems' => function($q) use ($user, $request) {
-                    $q->where('user_id', $user->id)->where('status', 1);
-                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                        $q->where('item_type', $request->type);
-                    }
-                }]);
+            // Get DTOs from service (Clean Architecture)
+            $filters = ['type' => $request->type];
+            $catalogItemCards = $this->catalogItemApiService->getMerchantCatalogItems($user->id, $filters);
 
-            $prods = $query->get();
-
-            return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
+            return response()->json(['status' => true, 'data' => $catalogItemCards->toArray(), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -180,39 +170,35 @@ class FrontendController extends Controller
         try {
             $input = $request->all();
 
-            if (!empty($input)) {
-                $itemType = isset($input['item_type']) ? $input['item_type'] : '';
-                $itemTypeCheck = !empty($itemType) && in_array($itemType, ['normal', 'affiliate']);
-                $limit = isset($input['limit']) ? (int) $input['limit'] : 0;
-                $paginate = isset($input['paginate']) ? (int) $input['paginate'] : 0;
-                $highlight = isset($input['highlight']) ? $input['highlight'] : '';
+            // Get DTOs from service (Clean Architecture)
+            $filters = [
+                'item_type' => $input['item_type'] ?? null,
+                'limit' => isset($input['limit']) ? (int) $input['limit'] : 0,
+                'paginate' => isset($input['paginate']) ? (int) $input['paginate'] : 0,
+                'highlight' => $input['highlight'] ?? null,
+            ];
 
-                $prods = CatalogItem::where('status', 1);
+            $result = $this->catalogItemApiService->getCatalogItems($filters);
 
-                // item_type filter via merchantItems
-                if ($itemTypeCheck) {
-                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('item_type', $itemType)->where('status', 1));
-                }
-
-                // Only 'latest' highlight is supported (others are removed)
-                if ($highlight == 'latest') {
-                    $prods = $prods->orderBy('id', 'desc');
-                }
-
-                if ($limit != 0) {
-                    $prods = $prods->take($limit);
-                }
-
-                if ($paginate == 0) {
-                    $prods = $prods->get();
-                } else {
-                    $prods = $prods->paginate($paginate);
-                }
-
-                return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods)->response()->getData(true), 'error' => []]);
+            // Handle paginated vs non-paginated response
+            if ($result instanceof \Illuminate\Contracts\Pagination\LengthAwarePaginator) {
+                $data = [
+                    'current_page' => $result->currentPage(),
+                    'data' => $result->items(),
+                    'first_page_url' => $result->url(1),
+                    'from' => $result->firstItem(),
+                    'last_page' => $result->lastPage(),
+                    'last_page_url' => $result->url($result->lastPage()),
+                    'next_page_url' => $result->nextPageUrl(),
+                    'path' => $result->path(),
+                    'per_page' => $result->perPage(),
+                    'prev_page_url' => $result->previousPageUrl(),
+                    'to' => $result->lastItem(),
+                    'total' => $result->total(),
+                ];
+                return response()->json(['status' => true, 'data' => $data, 'error' => []]);
             } else {
-                $prods = CatalogItem::where('status', 1)->get();
-                return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
+                return response()->json(['status' => true, 'data' => $result->toArray(), 'error' => []]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

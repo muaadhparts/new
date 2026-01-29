@@ -184,10 +184,10 @@ class CatalogSearchService
     }
 
     /**
-     * Search with filters (for API).
+     * Search with filters (for API) - returns DTOs.
      *
      * @param array $filters ['search' => string, 'min' => float, 'max' => float, 'sort' => string]
-     * @return Collection<CatalogItem>
+     * @return Collection<CatalogItemCardDTO>
      */
     public function searchWithFilters(array $filters): Collection
     {
@@ -198,20 +198,36 @@ class CatalogSearchService
             $query->where('name', 'like', '%' . $filters['search'] . '%');
         }
 
-        // Price filters - Note: These assume price on CatalogItem exists
-        // For proper multi-merchant, price should come from MerchantItem
+        // Price filters via merchantItems
         if (!empty($filters['min'])) {
-            $query->whereHas('merchantItems', fn($q) => $q->where('price', '>=', $filters['min']));
+            $query->whereHas('merchantItems', fn($q) => $q->where('price', '>=', $filters['min'])->where('status', 1));
         }
 
         if (!empty($filters['max'])) {
-            $query->whereHas('merchantItems', fn($q) => $q->where('price', '<=', $filters['max']));
+            $query->whereHas('merchantItems', fn($q) => $q->where('price', '<=', $filters['max'])->where('status', 1));
         }
+
+        // Eager load relationships
+        $query->with([
+            'merchantItems' => function($q) {
+                $q->where('status', 1)
+                  ->with(['user:id,is_merchant,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo', 'merchantBranch:id,warehouse_name']);
+            },
+            'fitments.brand',
+            'catalogReviews'
+        ])
+        ->withCount('catalogReviews')
+        ->withAvg('catalogReviews', 'rating');
 
         // Sorting
         $this->applySorting($query, $filters['sort'] ?? 'price_asc');
 
-        return $query->get();
+        $catalogItems = $query->get();
+
+        // Transform to DTOs
+        return $catalogItems->map(function ($catalogItem) {
+            return $this->dtoBuilder->fromCatalogItemFirst($catalogItem);
+        });
     }
 
     /**

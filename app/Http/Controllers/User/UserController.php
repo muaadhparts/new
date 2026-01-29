@@ -7,12 +7,14 @@ use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Identity\DTOs\UserProfileDTO;
 use App\Domain\Identity\Services\UserDashboardBuilder;
 use App\Domain\Identity\Services\UserProfileService;
+use App\Domain\Catalog\Services\CatalogItemCardDTOBuilder;
 use Illuminate\Http\Request;
 
 class UserController extends UserBaseController
 {
     public function __construct(
         private UserProfileService $profileService,
+        private CatalogItemCardDTOBuilder $cardBuilder,
     ) {}
 
     public function index(UserDashboardBuilder $dashboardBuilder)
@@ -97,15 +99,34 @@ class UserController extends UserBaseController
     public function favorites()
     {
         $favorites = FavoriteSeller::where('user_id', '=', $this->user->id)
-            ->with(['catalogItem', 'merchantItem', 'effective_merchant_item'])
+            ->with([
+                'catalogItem.fitments.brand',
+                'catalogItem.catalogReviews',
+                'merchantItem.user:id,is_merchant,shop_name,shop_name_ar',
+                'merchantItem.qualityBrand:id,name_en,name_ar,logo',
+                'merchantItem.merchantBranch:id,warehouse_name',
+                'effective_merchant_item.user:id,is_merchant,shop_name,shop_name_ar',
+                'effective_merchant_item.qualityBrand:id,name_en,name_ar,logo',
+                'effective_merchant_item.merchantBranch:id,warehouse_name',
+            ])
             ->paginate(12);
 
-        // PRE-COMPUTED: Display data for each favorite item (DATA_FLOW_POLICY - no @php in view)
+        // Transform to DTOs with favorite metadata (DATA_FLOW_POLICY)
         $favoritesDisplay = [];
         foreach ($favorites as $favoriteItem) {
+            $merchantItem = $favoriteItem->effective_merchant_item ?? $favoriteItem->merchantItem;
+            
+            if ($merchantItem) {
+                $card = $this->cardBuilder->fromMerchantItem($merchantItem);
+            } elseif ($favoriteItem->catalogItem) {
+                $card = $this->cardBuilder->fromCatalogItemFirst($favoriteItem->catalogItem);
+            } else {
+                continue; // Skip if no data
+            }
+
             $favoritesDisplay[$favoriteItem->id] = [
-                'catalogItem' => $favoriteItem->catalogItem,
-                'mp' => $favoriteItem->effective_merchant_item ?? $favoriteItem->merchantItem,
+                'card' => $card,
+                'favoriteId' => $favoriteItem->id,
             ];
         }
 

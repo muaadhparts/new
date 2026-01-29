@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Catalog\Events\ProductFavoritedEvent;
+use App\Domain\Catalog\Services\CatalogItemApiService;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CatalogItemListResource;
 use App\View\Composers\HeaderComposer;
 
 use Auth;
@@ -14,46 +13,22 @@ use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
+    public function __construct(
+        private CatalogItemApiService $catalogItemApiService
+    ) {}
     public function favorites(Request $request)
     {
-        try{
-
-            $sort = '';
+        try {
             $user = Auth::guard('api')->user();
-            $catalogItemIds = FavoriteSeller::where('user_id','=',$user->id)->pluck('catalog_item_id');
-
-            $productsQuery = CatalogItem::status(1)->whereIn('id', $catalogItemIds);
-
             $sort = $request->sort ?? 'price_asc';
 
-            $isArabic = app()->getLocale() === 'ar';
+            // Get DTOs from service (Clean Architecture)
+            $catalogItemCards = $this->catalogItemApiService->getUserFavorites($user->id, $sort);
 
-            if ($sort === 'name_asc') {
-                if ($isArabic) {
-                    $productsQuery->orderByRaw("CASE WHEN label_ar IS NOT NULL AND label_ar != '' THEN 0 ELSE 1 END ASC")
-                                  ->orderByRaw("COALESCE(NULLIF(label_ar, ''), NULLIF(label_en, ''), name) ASC");
-                } else {
-                    $productsQuery->orderByRaw("CASE WHEN label_en IS NOT NULL AND label_en != '' THEN 0 ELSE 1 END ASC")
-                                  ->orderByRaw("COALESCE(NULLIF(label_en, ''), NULLIF(label_ar, ''), name) ASC");
-                }
-            } else {
-                match ($sort) {
-                    'price_desc' => $productsQuery->orderBy('price', 'desc'),
-                    'part_number' => $productsQuery->orderBy('part_number', 'asc'),
-                    default => $productsQuery->orderBy('price', 'asc'),
-                };
-            }
-
-            $prods = $productsQuery->get();
-
-            return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
-
-        }
-        catch(\Exception $e){
+            return response()->json(['status' => true, 'data' => $catalogItemCards->toArray(), 'error' => []]);
+        } catch(\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
         }
-
-
     }
 
     public function add(Request $request)

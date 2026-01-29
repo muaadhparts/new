@@ -6,6 +6,7 @@ use App\Domain\Identity\Models\User;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\QualityBrand;
 use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Catalog\Services\CatalogItemCardDTOBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\DB;
  */
 class MerchantCatalogService
 {
+    public function __construct(
+        private CatalogItemCardDTOBuilder $cardBuilder
+    ) {}
     /**
      * Find merchant by shop slug.
      *
@@ -93,7 +97,7 @@ class MerchantCatalogService
     }
 
     /**
-     * Get filtered catalog items for a merchant.
+     * Get filtered catalog items for a merchant (returns DTOs).
      *
      * @param int $merchantId
      * @param array $filters [
@@ -121,7 +125,7 @@ class MerchantCatalogService
             'merchantItems' => function ($q) use ($merchantId) {
                 $q->where('user_id', $merchantId)
                   ->where('status', 1)
-                  ->with(['user:id,is_merchant,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo']);
+                  ->with(['user:id,is_merchant,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo', 'merchantBranch:id,warehouse_name']);
             }
         ]);
 
@@ -147,15 +151,16 @@ class MerchantCatalogService
         // Apply sorting
         $this->applySorting($query, $sort, $merchantId);
 
-        // Load reviews
+        // Load reviews and fitments
         $query->withCount('catalogReviews')
-              ->withAvg('catalogReviews', 'rating');
+              ->withAvg('catalogReviews', 'rating')
+              ->with(['fitments.brand']);
 
         // Paginate
         $paginator = $query->paginate($perPage);
 
-        // Transform items to attach merchant-specific data
-        $this->transformWithMerchantPrices($paginator, $merchantId);
+        // Transform items to DTOs
+        $this->transformToDTOs($paginator, $merchantId);
 
         return $paginator;
     }
@@ -188,29 +193,24 @@ class MerchantCatalogService
     }
 
     /**
-     * Transform paginated items to include merchant-specific price data.
+     * Transform paginated items to DTOs.
      */
-    private function transformWithMerchantPrices(LengthAwarePaginator $paginator, int $merchantId): void
+    private function transformToDTOs(LengthAwarePaginator $paginator, int $merchantId): void
     {
-        $paginator->getCollection()->transform(function ($item) {
-            $mp = $item->merchantItems->first();
+        $paginator->getCollection()->transform(function ($catalogItem) {
+            $merchantItem = $catalogItem->merchantItems->first();
 
-            if ($mp) {
-                $item->merchant_merchant_item = $mp;
-                $item->price = method_exists($mp, 'merchantSizePrice')
-                    ? $mp->merchantSizePrice()
-                    : $mp->price;
+            if ($merchantItem) {
+                return $this->cardBuilder->fromMerchantItem($merchantItem);
             } else {
-                $item->merchant_merchant_item = null;
-                $item->price = null;
+                // Fallback: build from catalog item if no merchant item found
+                return $this->cardBuilder->fromCatalogItemFirst($catalogItem);
             }
-
-            return $item;
         });
     }
 
     /**
-     * Get filtered catalog items for API (returns Collection, not paginator).
+     * Get filtered catalog items for API (returns Collection of DTOs).
      *
      * @param int $merchantId
      * @param array $filters ['min' => float, 'max' => float, 'sort' => string]
@@ -225,11 +225,14 @@ class MerchantCatalogService
         $query = CatalogItem::query();
 
         // Eager load merchantItems for this merchant with price filters
-        $query->with(['merchantItems' => function ($q) use ($merchantId, $minPrice, $maxPrice) {
-            $q->where('user_id', $merchantId)->where('status', 1);
-            if ($minPrice) $q->where('price', '>=', $minPrice);
-            if ($maxPrice) $q->where('price', '<=', $maxPrice);
-        }]);
+        $query->with([
+            'merchantItems' => function ($q) use ($merchantId, $minPrice, $maxPrice) {
+                $q->where('user_id', $merchantId)->where('status', 1)
+                  ->with(['user:id,is_merchant,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo', 'merchantBranch:id,warehouse_name']);
+                if ($minPrice) $q->where('price', '>=', $minPrice);
+                if ($maxPrice) $q->where('price', '<=', $maxPrice);
+            }
+        ]);
 
         // Filter by merchant
         $query->whereHas('merchantItems', function ($q) use ($merchantId, $minPrice, $maxPrice) {
@@ -241,6 +244,22 @@ class MerchantCatalogService
         // Apply sorting
         $this->applySorting($query, $sort, $merchantId);
 
-        return $query->get();
+        // Load reviews and fitments
+        $query->withCount('catalogReviews')
+              ->withAvg('catalogReviews', 'rating')
+              ->with(['fitments.brand']);
+
+        // Get results and transform to DTOs
+        $catalogItems = $query->get();
+
+        return $catalogItems->map(function ($catalogItem) {
+            $merchantItem = $catalogItem->merchantItems->first();
+
+            if ($merchantItem) {
+                return $this->cardBuilder->fromMerchantItem($merchantItem);
+            } else {
+                return $this->cardBuilder->fromCatalogItemFirst($catalogItem);
+            }
+        });
     }
 }

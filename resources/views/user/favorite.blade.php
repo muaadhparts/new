@@ -26,13 +26,15 @@
                 <div class="row gy-4 mt-20">
                     @foreach ($favorites as $favoriteItem)
                     {{-- Display data pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                    @if(isset($favoritesDisplay[$favoriteItem->id]))
                     @include('includes.frontend.home_catalog_item', [
-                    'class' => 'col-6 col-md-4 col-lg-3',
-                    'favorite' => true,
-                    'favoriteId' => $favoriteItem->id,
-                    'catalogItem' => $favoritesDisplay[$favoriteItem->id]['catalogItem'],
-                    'mp' => $favoritesDisplay[$favoriteItem->id]['mp']
+                        'class' => 'col-6 col-md-4 col-lg-3',
+                        'layout' => 'grid',
+                        'favorite' => true,
+                        'favoriteId' => $favoritesDisplay[$favoriteItem->id]['favoriteId'],
+                        'card' => $favoritesDisplay[$favoriteItem->id]['card'],
                     ])
+                    @endif
                     @endforeach
                 </div>
                 {{ $favorites->links('includes.frontend.pagination') }}

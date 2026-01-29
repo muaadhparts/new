@@ -3,12 +3,8 @@
     ====================================
     Single source of truth for all catalog item cards.
 
-    Data sources:
-    1. CatalogItemCardDTO: $card (from category, search-results, catalog items)
-    2. CatalogItem + MerchantItem: $catalogItem, $mp (from favorites, merchant, related)
-
+    Data source: CatalogItemCardDTO ($card)
     Layout: $layout = 'grid' (default) | 'list'
-
     CSS: public/assets/css/catalog-item-card.css
 --}}
 
@@ -58,90 +54,6 @@
         // Offers count
         $offersCount = $card->offersCount ?? 1;
         $hasMultipleOffers = $card->hasMultipleOffers ?? false;
-    } else {
-        // === Source: CatalogItem + MerchantItem ===
-        // Skip if no catalog item is provided
-        if (!isset($catalogItem) || !$catalogItem) {
-            return;
-        }
-
-        $isMerchantItem = $catalogItem instanceof \App\Domain\Merchant\Models\MerchantItem;
-
-        if ($isMerchantItem) {
-            $merchantItem = $catalogItem;
-            $actualCatalogItem = $catalogItem->catalogItem;
-        } else {
-            $actualCatalogItem = $catalogItem;
-            $merchantItem = $mp ?? $catalogItem->best_merchant_item ?? null;
-        }
-
-        // Skip if catalog item no longer exists
-        if (!$actualCatalogItem) {
-            return;
-        }
-
-        $catalogItemId = $actualCatalogItem->id;
-        $merchantItemId = $merchantItem->id ?? null;
-        $merchantUserId = $merchantItem->user_id ?? null;
-        $catalogItemName = $actualCatalogItem->localized_name;
-
-        // NEW: CatalogItem-first URL using part_number
-        $partNumber = $actualCatalogItem->part_number ?? null;
-        $catalogItemUrl = $partNumber
-            ? route('front.part-result', $partNumber)
-            : '#';
-
-        $mainPhoto = $actualCatalogItem->photo ?? null;
-        $photo = $mainPhoto
-            ? (filter_var($mainPhoto, FILTER_VALIDATE_URL) ? $mainPhoto : Storage::url($mainPhoto))
-            : $defaultImage;
-
-        $part_number = $actualCatalogItem->part_number ?? null;
-        // Vehicle fitment brands from catalog_item_fitments (multiple brands support)
-        $fitments = $actualCatalogItem->fitments ?? collect();
-        $uniqueBrands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-        $fitmentBrands = $uniqueBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
-        $fitmentCount = count($fitmentBrands);
-        $hasSingleBrand = $fitmentCount === 1;
-        $fitsMultipleBrands = $fitmentCount > 1;
-        $qualityBrandName = $merchantItem?->qualityBrand?->localized_name;
-        $qualityBrandLogo = $merchantItem?->qualityBrand?->logo_url;
-        $merchantName = $merchantItem?->user ? getLocalizedShopName($merchantItem->user) : null;
-        $branchName = $merchantItem?->merchantBranch?->warehouse_name;
-
-        $offPercentage = $merchantItem && method_exists($merchantItem, 'offPercentage')
-            ? $merchantItem->offPercentage()
-            : ($actualCatalogItem && method_exists($actualCatalogItem, 'offPercentage') ? $actualCatalogItem->offPercentage() : 0);
-        $offPercentageFormatted = $offPercentage > 0 ? round($offPercentage) . '%' : null;
-
-        $stockQty = $merchantItem ? (int)($merchantItem->stock ?? 0) : 0;
-        $inStock = $stockQty > 0 || ($merchantItem && $merchantItem->preordered);
-        $stockText = $inStock ? __('In Stock') : __('Out of Stock');
-        $hasMerchant = $merchantItem && $merchantItem->user_id > 0;
-
-        if ($merchantItem) {
-            $priceFormatted = method_exists($merchantItem, 'showPrice') ? app(\App\Domain\Merchant\Services\MerchantItemDisplayService::class)->formatPrice($merchantItem) : \formatPrice($merchantItem->price);
-            $previousPrice = $merchantItem->previous_price ?? 0;
-            $previousPriceFormatted = $previousPrice > 0 ? \formatPrice($previousPrice) : '';
-        } else {
-            $priceFormatted = app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($actualCatalogItem, $actualCatalogItem->lowest_price ?? 0);
-            $previousPrice = $actualCatalogItem->previous_price ?? 0;
-            $previousPriceFormatted = $previousPrice > 0 ? \formatPrice($previousPrice) : '';
-        }
-
-        $ratingsAvg = $actualCatalogItem->catalog_reviews_avg_rating ?? 0;
-        $ratingsCount = $actualCatalogItem->catalog_reviews_count ?? 0;
-        $minQty = max(1, (int)($merchantItem->minimum_qty ?? 1));
-        $preordered = $merchantItem->preordered ?? false;
-        $catalogItemType = 'Physical'; // All catalog items are Physical
-        // item_type and affiliate_link are now on merchant_items, not catalog_items
-        $affiliateCatalogItemType = $merchantItem->item_type ?? null;
-        $affiliateLink = $merchantItem->affiliate_link ?? null;
-        $favoriteUrl = $merchantItemId ? route('user-favorite-add-merchant', $merchantItemId) : '#';
-        $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
-        // Offers count - use passed parameter or get from loaded count
-        $offersCount = $offersCount ?? ($actualCatalogItem->active_merchant_items_count ?? 0);
-        $hasMultipleOffers = $offersCount > 1;
     }
 
     $cardId = 'ci_' . ($catalogItemId ?? uniqid()) . '_' . ($merchantItemId ?? '0');

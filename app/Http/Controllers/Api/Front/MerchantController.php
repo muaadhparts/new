@@ -4,16 +4,13 @@ namespace App\Http\Controllers\Api\Front;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\MerchantResource;
 use App\Domain\Commerce\Models\ChatThread;
 use App\Domain\Commerce\Models\ChatEntry;
-use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Identity\Models\User;
 use App\Domain\Merchant\Services\MerchantCatalogService;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Validator;
 
 class MerchantController extends Controller
@@ -41,10 +38,9 @@ class MerchantController extends Controller
                 'sort' => $request->sort,
             ];
 
-            $prods = $this->merchantCatalogService->getFilteredCatalogItemsForApi($merchant->id, $filters);
-
-            $vprods = (new Collection(CatalogItem::filterProducts($prods)));
-            $data['catalogItems'] = CatalogItemListResource::collection($vprods);
+            // Get DTOs from service (Clean Architecture)
+            $catalogItemCards = $this->merchantCatalogService->getFilteredCatalogItemsForApi($merchant->id, $filters);
+            $data['catalogItems'] = $catalogItemCards->toArray();
 
             return response()->json(['status' => true, 'data' => $data, 'error' => []]);
         } catch (\Exception $e) {

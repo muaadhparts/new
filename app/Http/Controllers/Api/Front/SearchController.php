@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\Api\Front;
 
-use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Services\CatalogSearchService;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CatalogItemListResource;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 
 class SearchController extends Controller
 {
@@ -28,13 +25,12 @@ class SearchController extends Controller
                 'sort' => $request->sort ?? 'price_asc',
             ];
 
-            $prods = $this->searchService->searchWithFilters($filters);
-
-            $prods = (new Collection(CatalogItem::filterProducts($prods)));
+            // Get DTOs from service (Clean Architecture)
+            $catalogItemCards = $this->searchService->searchWithFilters($filters);
 
             return response()->json([
                 'status' => true,
-                'data' => CatalogItemListResource::collection($prods->flatten(1)),
+                'data' => $catalogItemCards->toArray(),
                 'error' => []
             ]);
         } catch(\Exception $e) {
