@@ -85,6 +85,9 @@ class MerchantController extends MerchantBaseController
                 ->where('status', 'pending')
                 ->count();
 
+            // Alias for view compatibility
+            $data['pending'] = $data['pendingOrders'];
+
             return view('merchant.index', $data);
         } catch (\Exception $e) {
             return redirect()->back()->with('error', __('Error loading dashboard'));

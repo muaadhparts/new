@@ -451,7 +451,7 @@ Route::prefix('operator')->group(function () {
 
         Route::get('/merchants/{id}/show', 'Operator\MerchantController@show')->name('operator-merchant-show');
         Route::get('/merchants/{id}/items/datatables', 'Operator\MerchantController@merchantItemsDatatables')->name('operator-merchant-items-datatables');
-        Route::get('/merchants/secret/login/{id}', 'Operator\MerchantController@secret')->name('operator-merchant-secret');
+        Route::get('/merchants/secret/login/{id}', 'Operator\MerchantController@secretLogin')->name('operator-merchant-secret');
         Route::get('/merchant/edit/{id}', 'Operator\MerchantController@edit')->name('operator-merchant-edit');
         Route::post('/merchant/edit/{id}', 'Operator\MerchantController@update')->name('operator-merchant-update');
 

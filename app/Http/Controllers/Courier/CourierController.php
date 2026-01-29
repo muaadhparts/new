@@ -33,7 +33,6 @@ class CourierController extends CourierBaseController
 
     public function index()
     {
-        $user = $this->courier;
         $deliveries = DeliveryCourier::where('courier_id', $this->courier->id)
             ->whereNotNull('purchase_id')
             ->whereHas('purchase')
@@ -46,11 +45,19 @@ class CourierController extends CourierBaseController
         // Format using DisplayService (API-ready)
         $purchasesDisplay = $this->displayService->formatDeliveriesForDashboard($deliveries);
         $reportDisplay = $this->displayService->formatReportForDashboard($report);
-        $userDisplay = userDisplay()->forCard($user);
+        
+        // Format courier info for display
+        $courierDisplay = [
+            'name' => $this->courier->name,
+            'email' => $this->courier->email,
+            'phone' => $this->courier->phone ?? '',
+            'photo' => $this->courier->photo ?? asset('assets/images/noimage.png'),
+            'balance' => $this->courier->balance ?? 0,
+        ];
 
         return view('courier.dashbaord', [
             'purchases' => $purchasesDisplay,
-            'user' => $userDisplay,
+            'user' => $courierDisplay,
             'report' => $reportDisplay,
         ]);
     }
