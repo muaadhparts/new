@@ -7,6 +7,7 @@ use App\Domain\Shipping\Models\Courier;
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Accounting\Services\CourierAccountingService;
+use App\Domain\Accounting\Models\SettlementBatch;
 use Illuminate\Http\Request;
 
 class CourierManagementController extends Controller
@@ -88,5 +89,66 @@ class CourierManagementController extends Controller
             'unsettled' => $unsettled,
             'summary' => $summary,
         ]);
+    }
+
+    /**
+     * Display all settlements
+     */
+    public function settlements(Request $request)
+    {
+        $currency = monetaryUnit()->getDefault();
+        
+        // Get settlement batches for couriers
+        // TODO: Filter by party_type='courier' when AccountParty is properly implemented
+        $settlements = SettlementBatch::with(['toParty', 'fromParty'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        return view('operator.courier.settlements', [
+            'settlements' => $settlements,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * Create a new settlement for a courier
+     */
+    public function createSettlement(Request $request, $courierId)
+    {
+        $courier = Courier::findOrFail($courierId);
+        
+        // Get unsettled deliveries
+        $unsettled = $this->accountingService->getUnsettledDeliveriesForCourier($courierId);
+        
+        if ($unsettled->isEmpty()) {
+            return redirect()->back()->with('error', 'لا توجد توصيلات غير مسوّاة لهذا المندوب');
+        }
+
+        // Calculate settlement amounts
+        $settlementCalc = $this->accountingService->calculateSettlementAmount($courierId);
+        
+        // TODO: Create proper settlement batch using AccountParty
+        // For now, create a simple settlement record
+        $settlement = SettlementBatch::create([
+            'from_party_id' => 1, // Platform party (TODO: get from config)
+            'to_party_id' => $courierId, // TODO: Map courier to AccountParty
+            'total_amount' => $settlementCalc['net_amount'],
+            'currency' => monetaryUnit()->getDefault()->name,
+            'status' => SettlementBatch::STATUS_PENDING,
+            'notes' => $request->input('notes', 'Courier settlement for ' . $courier->name),
+        ]);
+
+        // Mark deliveries as settled
+        // TODO: Update DeliveryCourier table to add settlement_batch_id column
+        $unsettled->each(function ($delivery) use ($settlement) {
+            $delivery->update([
+                'is_settled' => true,
+                'settled_at' => now(),
+            ]);
+        });
+
+        return redirect()
+            ->route('operator-courier-balances')
+            ->with('success', 'تم إنشاء التسوية بنجاح');
     }
 }

@@ -49,6 +49,7 @@ Route::prefix('api')->middleware(['web', 'throttle:120,1'])->group(function () {
     Route::get('/callouts', [App\Http\Controllers\CalloutController::class, 'show'])->name('api.callouts.show');
     Route::get('/callouts/html', [App\Http\Controllers\CalloutController::class, 'showHtml'])->name('api.callouts.html');
     Route::get('/callouts/metadata', [App\Http\Controllers\CalloutController::class, 'metadata'])->name('api.callouts.metadata');
+    Route::get('/modal/alternative/{part_number}', [App\Http\Controllers\Api\CatalogItemApiController::class, 'getAlternatives'])->name('modal.alternative');
 });
 
 
@@ -166,11 +167,13 @@ Route::prefix('operator')->group(function () {
         Route::get('/purchase/catalog-item/add/{catalog_item_id}', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'addCatalogItem'])->name('operator-purchase-catalog-item-add');
         Route::get('/purchase/catalog-item/add', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'purchaseStore'])->name('operator.purchase.store.new');
         Route::get('/purchase/catalog-item/remove/{catalog_item_id}', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'removePurchaseCatalogItem'])->name('operator.purchase.catalog-item.remove');
+        Route::get('/purchase/remove-cart/{catalog_item_id}', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'removePurchaseCatalogItem'])->name('operator.purchase.remove.cart');
         Route::get('/purchase/create/catalog-item-show/{id}', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'catalog_item_show']);
         // REMOVED: addcart, removecart, CreatePurchaseSubmit - MerchantCart class deleted
         Route::get('/purchase/create/user-address', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'userAddress']);
         Route::post('/purchase/create/user-address', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'userAddressSubmit'])->name('operator.purchase.create.user.address');
         Route::post('/purchase/create/purchase/view', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'viewCreatePurchase'])->name('operator.purchase.create.view');
+        Route::get('/purchase/create/submit', [App\Http\Controllers\Operator\PurchaseCreateController::class, 'submitPurchase'])->name('operator-purchase-create-submit');
 
         Route::get('/purchase/{id}/timeline', [App\Http\Controllers\Operator\PurchaseTimelineController::class, 'index'])->name('operator-purchase-timeline');
         Route::get('/purchase/{id}/timelineload', [App\Http\Controllers\Operator\PurchaseTimelineController::class, 'load'])->name('operator-purchase-timeline-load');
@@ -437,6 +440,8 @@ Route::prefix('operator')->group(function () {
         Route::get('/couriers/balances', [App\Http\Controllers\Operator\CourierManagementController::class, 'index'])->name('operator-courier-balances');
         Route::get('/courier/{id}/details', [App\Http\Controllers\Operator\CourierManagementController::class, 'show'])->name('operator-courier-details');
         Route::get('/courier/{id}/unsettled', [App\Http\Controllers\Operator\CourierManagementController::class, 'unsettledDeliveries'])->name('operator-courier-unsettled');
+        Route::get('/couriers/settlements', [App\Http\Controllers\Operator\CourierManagementController::class, 'settlements'])->name('operator-courier-settlements');
+        Route::post('/courier/{id}/create-settlement', [App\Http\Controllers\Operator\CourierManagementController::class, 'createSettlement'])->name('operator-courier-create-settlement');
         // Use /accounts/couriers for courier accounting (AccountLedgerController)
         // COURIER MANAGEMENT SECTION ENDS
 
@@ -528,6 +533,7 @@ Route::prefix('operator')->group(function () {
         Route::get('/general-settings/affilate', [App\Http\Controllers\Operator\MuaadhSettingController::class, 'affilate'])->name('operator-gs-affilate');
         Route::get('/general-settings/error-banner', [App\Http\Controllers\Operator\MuaadhSettingController::class, 'error_banner'])->name('operator-gs-error-banner');
         Route::get('/general-settings/popup', [App\Http\Controllers\Operator\MuaadhSettingController::class, 'popup'])->name('operator-gs-popup');
+        Route::get('/general-settings/footer', [App\Http\Controllers\Operator\MuaadhSettingController::class, 'footer'])->name('operator-gs-footer');
         // Breadcrumb banner removed - using modern minimal design
         Route::get('/general-settings/maintenance', [App\Http\Controllers\Operator\MuaadhSettingController::class, 'maintain'])->name('operator-gs-maintenance');
 
@@ -1035,6 +1041,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         // User Profile
         Route::get('/profile', [App\Http\Controllers\User\UserController::class, 'profile'])->name('user-profile');
         Route::post('/profile', [App\Http\Controllers\User\UserController::class, 'profileupdate'])->name('user-profile-update');
+        Route::get('/packages', [App\Http\Controllers\User\UserController::class, 'packages'])->name('user-package');
         // User Profile Ends
 
         // Get cities by country (states removed) - moved to GeocodingController
@@ -1220,6 +1227,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     // - catalog = Catalog slug (e.g., "safari-patrol-1997")
     // - cat1/cat2/cat3 = Category slugs (levels 1, 2, 3)
     Route::get('/brands/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}', [App\Http\Controllers\Front\CatalogController::class, 'catalog'])->name('front.catalog');
+    Route::get('/category/{brand_slug}/{catalog_slug}/{cat1?}/{cat2?}/{cat3?}', [App\Http\Controllers\Front\CatalogController::class, 'category'])->name('front.catalog.category');
 
     // AJAX APIs for catalog selector (lightweight on-demand loading)
     Route::get('/api/catalog/catalogs', [App\Http\Controllers\Front\CatalogController::class, 'getCatalogs'])->name('front.api.catalogs');

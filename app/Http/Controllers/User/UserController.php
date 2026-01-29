@@ -168,6 +168,16 @@ class UserController extends UserBaseController
     }
 
     /**
+     * Display pricing packages
+     */
+    public function packages()
+    {
+        // TODO: Implement packages/pricing page
+        // This should show merchant subscription plans
+        return view('user.packages');
+    }
+
+    /**
      * Submit merchant application
      */
     public function submitMerchantApplication(Request $request)

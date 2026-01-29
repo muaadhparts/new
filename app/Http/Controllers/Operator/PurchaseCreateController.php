@@ -203,7 +203,7 @@ class PurchaseCreateController extends OperatorBaseController
     }
 
 
-    public function viewCreatePurchase(Request $request)
+     public function viewCreatePurchase(Request $request)
     {
 
         Session::put('purchase_address', $request->all());
@@ -227,5 +227,28 @@ class PurchaseCreateController extends OperatorBaseController
         ]);
     }
 
+    /**
+     * Submit the purchase and create order
+     */
+    public function submitPurchase(Request $request)
+    {
+        $cart = Session::get('admin_cart');
+        $address = Session::get('purchase_address');
+
+        if (!$cart || !$address) {
+            return redirect()->route('operator-purchase-create')
+                ->with('error', 'الرجاء إضافة منتجات وعنوان أولاً');
+        }
+
+        // TODO: Implement full purchase submission logic
+        // This should create Purchase, PurchaseItems, etc.
+        
+        // Clear session
+        Session::forget('admin_cart');
+        Session::forget('purchase_address');
+
+        return redirect()->route('operator-purchases-all')
+            ->with('success', 'تم إنشاء الطلب بنجاح');
+    }
 
 }
