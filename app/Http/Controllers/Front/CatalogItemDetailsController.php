@@ -91,15 +91,41 @@ class CatalogItemDetailsController extends FrontBaseController
      */
     public function offersFragment(int $catalogItemId, CatalogItemOffersService $offersService)
     {
-        $sort = request()->input('sort', 'price_asc');
-        $data = $offersService->getGroupedOffers($catalogItemId, $sort);
+        try {
+            $sort = request()->input('sort', 'price_asc');
+            $data = $offersService->getGroupedOffers($catalogItemId, $sort);
 
-        // Return as JSON for API or HTML for modal
-        if (request()->wantsJson() || request()->has('json')) {
-            return response()->json($data);
+            // Return as JSON for API or HTML for modal
+            if (request()->wantsJson() || request()->has('json')) {
+                return response()->json($data);
+            }
+
+            return response()->view('partials.catalog-item-offers', $data);
+        } catch (\Exception $e) {
+            \Log::error('Error loading offers', [
+                'catalog_item_id' => $catalogItemId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            if (request()->wantsJson() || request()->has('json')) {
+                return response()->json([
+                    'error' => 'Failed to load offers',
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
+
+            return response()->view('partials.catalog-item-offers', [
+                'catalog_item' => null,
+                'offers_count' => 0,
+                'lowest_price' => 0,
+                'grouped_offers' => [],
+                'flat_offers' => [],
+                'current_sort' => $sort ?? 'price_asc',
+                'error_message' => $e->getMessage(),
+            ]);
         }
-
-        return response()->view('partials.catalog-item-offers', $data);
     }
 
     /**

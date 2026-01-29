@@ -231,10 +231,16 @@
             @endforeach
         </div>
     @else
-        {{-- No Offers --}}
+        {{-- No Offers or Error --}}
         <div class="catalog-empty">
-            <i class="fas fa-box-open"></i>
-            <p>@lang('No offers available')</p>
+            @if(isset($error_message))
+                <i class="fas fa-exclamation-triangle text-danger"></i>
+                <p class="text-danger">@lang('Error loading offers')</p>
+                <small class="text-muted">{{ $error_message }}</small>
+            @else
+                <i class="fas fa-box-open"></i>
+                <p>@lang('No offers available')</p>
+            @endif
         </div>
     @endif
 </div>
