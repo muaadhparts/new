@@ -56,15 +56,19 @@ class LogUserActivityListener implements ShouldQueue
 
     /**
      * Update user's last login timestamp
+     * 
+     * NOTE: Disabled because last_login_at and last_login_ip columns don't exist in users table
+     * TODO: Add migration to add these columns if needed
      */
     protected function updateLastLogin(UserLoginEvent $event): void
     {
-        DB::table('users')
-            ->where('id', $event->userId)
-            ->update([
-                'last_login_at' => now(),
-                'last_login_ip' => $event->ipAddress,
-            ]);
+        // Temporarily disabled - columns don't exist in database
+        // DB::table('users')
+        //     ->where('id', $event->userId)
+        //     ->update([
+        //         'last_login_at' => now(),
+        //         'last_login_ip' => $event->ipAddress,
+        //     ]);
     }
 
     /**

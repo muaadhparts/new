@@ -122,6 +122,10 @@ class OperatorPurchaseDataBuilder
 
         // Load shippings for merchant_shipping_id
         $merchantShippingIds = json_decode($this->purchase->merchant_shipping_id, true) ?? [];
+        // Ensure it's an array before filtering
+        if (!is_array($merchantShippingIds)) {
+            $merchantShippingIds = [];
+        }
         $shippingIds = array_values(array_filter($merchantShippingIds));
         if (!empty($shippingIds)) {
             $this->shippingsLookup = Shipping::whereIn('id', $shippingIds)
