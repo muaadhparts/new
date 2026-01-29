@@ -4,6 +4,7 @@ namespace App\Domain\Identity\Services;
 
 use App\Domain\Identity\DTOs\UserDashboardDTO;
 use App\Domain\Identity\Models\User;
+use App\Domain\Commerce\Services\PriceFormatterService;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Storage;
  */
 class UserDashboardBuilder
 {
+    public function __construct(
+        private PriceFormatterService $priceFormatter
+    ) {}
     /**
      * Build dashboard DTO for a user
      */
@@ -84,7 +88,7 @@ class UserDashboardBuilder
             'status_class' => $statusClass,
             'status_label' => __($purchase->status),
             'created_at' => $purchase->created_at?->format('d M Y'),
-            'total_formatted' => \App\Domain\Catalog\Models\CatalogItem::convertPrice($purchase->pay_amount ?? 0),
+            'total_formatted' => $this->priceFormatter->format($purchase->pay_amount ?? 0),
             'details_url' => route('user-purchase', $purchase->id),
         ];
     }

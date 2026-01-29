@@ -5,6 +5,7 @@ namespace App\Domain\Catalog\Services;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\SkuAlternative;
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Commerce\Services\PriceFormatterService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\DB;
  */
 class AlternativeService
 {
+    public function __construct(
+        private PriceFormatterService $priceFormatter
+    ) {}
     /**
      * جلب البدائل لـ PART_NUMBER معين
      * يجلب البدائل من sku_alternatives باستخدام group_id
@@ -116,10 +120,10 @@ class AlternativeService
             $catalogItem->lowest_price = $stats['lowest_price'] ?? null;
             $catalogItem->highest_price = $stats['highest_price'] ?? null;
             $catalogItem->lowest_price_formatted = $stats
-                ? CatalogItem::convertPrice($stats['lowest_price'])
+                ? $this->priceFormatter->format($stats['lowest_price'])
                 : null;
             $catalogItem->highest_price_formatted = $stats
-                ? CatalogItem::convertPrice($stats['highest_price'])
+                ? $this->priceFormatter->format($stats['highest_price'])
                 : null;
             $catalogItem->offers_count = $stats['offers_count'] ?? 0;
             return $catalogItem;
@@ -177,10 +181,10 @@ class AlternativeService
         $catalogItem->lowest_price = $lowestPrice;
         $catalogItem->highest_price = $highestPrice;
         $catalogItem->lowest_price_formatted = $lowestPrice
-            ? CatalogItem::convertPrice($lowestPrice)
+            ? $this->priceFormatter->format($lowestPrice)
             : null;
         $catalogItem->highest_price_formatted = $highestPrice
-            ? CatalogItem::convertPrice($highestPrice)
+            ? $this->priceFormatter->format($highestPrice)
             : null;
         $catalogItem->offers_count = $merchantItems->count();
 

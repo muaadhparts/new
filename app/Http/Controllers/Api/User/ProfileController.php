@@ -7,19 +7,24 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Catalog\Models\CatalogItem;
-use App\Domain\Identity\Models\User;use Auth;
+use App\Domain\Identity\Models\User;
+use App\Domain\Commerce\Services\PriceFormatterService;
+use Auth;
 use Hash;
 use Illuminate\Http\Request;
 use Validator;
 
 class ProfileController extends Controller
 {
+    public function __construct(
+        private PriceFormatterService $priceFormatter
+    ) {}
     public function dashboard()
     {
         try {
             $user = Auth::guard('api')->user();
             $data['user'] = $user;
-            $data['affilate_income'] = CatalogItem::merchantConvertPrice($user->affilate_income);
+            $data['affilate_income'] = $this->priceFormatter->format($user->affilate_income);
             $data['completed_purchases'] = (string) Auth::user()->purchases()->where('status', 'completed')->count();
             $data['pending_purchases'] = (string) Auth::user()->purchases()->where('status', 'pending')->count();
             $data['recent_purchases'] = (string) Auth::user()->purchases()->latest()->take(5)->get();

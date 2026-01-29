@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\DTOs\CatalogItemCardDTO;
+use App\Domain\Catalog\Builders\CatalogItemCardDTOBuilder;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Traits\NormalizesInput;
 use Illuminate\Support\Collection;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\Auth;
 class CatalogSearchService
 {
     use NormalizesInput;
+
+    public function __construct(
+        private CatalogItemCardDTOBuilder $dtoBuilder
+    ) {}
 
     /**
      * Search catalog items by query string.
@@ -148,9 +153,8 @@ class CatalogSearchService
         return $catalogItems->map(function ($catalogItem) use ($favoriteCatalogItemIds, $favoriteMerchantIds) {
             $bestMerchant = $this->getBestMerchant($catalogItem->id);
 
-            return CatalogItemCardDTO::fromCatalogItemFirst(
+            return $this->dtoBuilder->fromCatalogItemFirst(
                 $catalogItem,
-                $bestMerchant,
                 $favoriteCatalogItemIds,
                 $favoriteMerchantIds
             );

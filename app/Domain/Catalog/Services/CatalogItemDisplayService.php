@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\Services;
 
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Commerce\Services\PriceFormatterService;
 use Illuminate\Support\Collection;
 
 /**
@@ -16,6 +17,7 @@ class CatalogItemDisplayService
     public function __construct(
         private CatalogItemMerchantService $merchantService,
         private CatalogItemPricingService $pricingService,
+        private PriceFormatterService $priceFormatter,
     ) {}
 
     /**
@@ -172,7 +174,7 @@ class CatalogItemDisplayService
      */
     public function formatPrice(CatalogItem $item, float $price): string
     {
-        return CatalogItem::convertPrice($price);
+        return $this->priceFormatter->format($price);
     }
 
     /**

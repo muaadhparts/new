@@ -2,7 +2,8 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\DataTransferObjects\CatalogItemCardDTO;
+use App\Domain\Catalog\DTOs\CatalogItemCardDTO;
+use App\Domain\Catalog\Builders\CatalogItemCardDTOBuilder;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Commerce\Models\FavoriteSeller;
@@ -31,6 +32,10 @@ class CatalogItemCardDataBuilder
     private ?Collection $userFavoriteMerchantIds = null;
     private ?object $muaadhSettings = null;
     private bool $initialized = false;
+
+    public function __construct(
+        private CatalogItemCardDTOBuilder $dtoBuilder
+    ) {}
 
     /**
      * Standard eager loading for MerchantItem queries
@@ -210,7 +215,7 @@ class CatalogItemCardDataBuilder
         $this->initialize();
 
         return collect($merchants)->map(
-            fn($merchant) => CatalogItemCardDTO::fromMerchantItem(
+            fn($merchant) => $this->dtoBuilder->fromMerchantItem(
                 $merchant,
                 $this->userFavoriteCatalogItemIds,
                 $this->userFavoriteMerchantIds
@@ -230,7 +235,7 @@ class CatalogItemCardDataBuilder
         $this->initialize();
 
         $dtos = $paginator->getCollection()->map(
-            fn($merchant) => CatalogItemCardDTO::fromMerchantItem(
+            fn($merchant) => $this->dtoBuilder->fromMerchantItem(
                 $merchant,
                 $this->userFavoriteCatalogItemIds,
                 $this->userFavoriteMerchantIds
@@ -251,12 +256,9 @@ class CatalogItemCardDataBuilder
         $this->initialize();
 
         return collect($catalogItems)->map(function ($catalogItem) {
-            $merchant = $catalogItem->merchantItems?->first();
-            return CatalogItemCardDTO::fromCatalogItem(
+            return $this->dtoBuilder->fromCatalogItem(
                 $catalogItem,
-                $merchant,
-                $this->userFavoriteCatalogItemIds,
-                $this->userFavoriteMerchantIds
+                $this->userFavoriteCatalogItemIds
             );
         });
     }
@@ -275,12 +277,8 @@ class CatalogItemCardDataBuilder
         $this->initialize();
 
         $dtos = $paginator->getCollection()->map(function ($catalogItem) {
-            // Get best merchant (first from eager-loaded, sorted by price)
-            $merchant = $catalogItem->merchantItems?->first();
-
-            return CatalogItemCardDTO::fromCatalogItemFirst(
+            return $this->dtoBuilder->fromCatalogItemFirst(
                 $catalogItem,
-                $merchant,
                 $this->userFavoriteCatalogItemIds,
                 $this->userFavoriteMerchantIds
             );
@@ -296,7 +294,7 @@ class CatalogItemCardDataBuilder
     {
         $this->initialize();
 
-        return CatalogItemCardDTO::fromMerchantItem(
+        return $this->dtoBuilder->fromMerchantItem(
             $merchant,
             $this->userFavoriteCatalogItemIds,
             $this->userFavoriteMerchantIds
