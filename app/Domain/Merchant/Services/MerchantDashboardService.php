@@ -113,8 +113,8 @@ class MerchantDashboardService
             ->active()
             ->withRelations()
             ->latest()
-            ->take(5)
-            ->get();
+            ->paginate(5)
+            ->items();
 
         return $items->map(fn($item) => $this->displayService->format($item))
             ->toArray();
