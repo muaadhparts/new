@@ -70,7 +70,8 @@
         },
         "files": [
             "app/Helpers/helper.php",
-            "app/Helpers/LocalizationHelper.php"
+            "app/Helpers/LocalizationHelper.php",
+            "app/Helpers/price_helper.php"
         ]
     },
     "autoload-dev": {

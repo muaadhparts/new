@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\DTOs;
 
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Services\CatalogItemDisplayService;
+use App\Domain\Commerce\Services\PriceFormatterService;
 use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Facades\Storage;
 
@@ -96,18 +97,19 @@ class QuickViewDTO
         $rawPrice = $merchantItem?->price ?? null;
         $rawPrev = $merchantItem?->previous_price ?? null;
 
+        $priceFormatter = app(PriceFormatterService::class);
         if ($forceMerchantId || $merchantItem) {
             $dto->priceHtml = $rawPrice !== null
-                ? CatalogItem::convertPrice($rawPrice)
+                ? $priceFormatter->format($rawPrice)
                 : '-';
             $dto->prevPriceHtml = $rawPrev !== null && $rawPrev > 0
-                ? CatalogItem::convertPrice($rawPrev)
+                ? $priceFormatter->format($rawPrev)
                 : null;
         } else {
             $displayService = app(CatalogItemDisplayService::class);
             $dto->priceHtml = $displayService->formatPrice($catalogItem, $rawPrice ?? 0);
             $dto->prevPriceHtml = $rawPrev !== null && $rawPrev > 0 
-                ? CatalogItem::convertPrice($rawPrev) 
+                ? $priceFormatter->format($rawPrev) 
                 : null;
         }
 

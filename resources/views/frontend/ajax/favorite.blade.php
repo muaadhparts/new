@@ -14,7 +14,7 @@
         <td class="catalogItem-name"> <a href="{{ $favorite->catalog_item_url }}">{{ $favorite->catalog_item_name_truncated }}</a></td>
         <td class="catalogItem-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($favorite->catalogItem, $favorite->catalogItem->lowest_price ?? 0) }}  <small>
             <del>
-                {{ ($favorite->catalogItem->previous_price > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($favorite->catalogItem->previous_price) : \'\') }}
+                {{ ($favorite->catalogItem->previous_price > 0 ? \formatPrice($favorite->catalogItem->previous_price) : \'\') }}
             </del>
         </small></bdi>
             </span>

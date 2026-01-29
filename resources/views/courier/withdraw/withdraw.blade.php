@@ -24,7 +24,7 @@
                             <div class="form-group">
                                 <label for="c_balance">@lang('Current Balance')</label>
                                 <input type="text" class="form-control" id="c_balance"
-                                    placeholder="{{ App\Domain\Catalog\Models\CatalogItem::merchantConvertPrice(Auth::user()->affilate_income) }}"
+                                    placeholder="{{ formatPrice(Auth::user()->affilate_income) }}"
                                     disabled>
 
                                 <label for="w_method">@lang('Withdraw Method *')</label>

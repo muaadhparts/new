@@ -42,7 +42,7 @@
                                         </div>
                                         <div class="col-sm-6">
                                             <small class="text-muted d-block">@lang('Total Amount')</small>
-                                            <strong>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($purchase->pay_amount ?? 0) }}</strong>
+                                            <strong>{{ formatPrice($purchase->pay_amount ?? 0) }}</strong>
                                         </div>
                                         <div class="col-sm-6">
                                             <small class="text-muted d-block">@lang('Payment Method')</small>
