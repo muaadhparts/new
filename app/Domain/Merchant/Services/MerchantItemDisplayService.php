@@ -235,6 +235,14 @@ class MerchantItemDisplayService
     }
 
     /**
+     * Format price for display
+     */
+    public function formatPrice(MerchantItem $item): string
+    {
+        return $this->pricingService->getFormattedPrice($item);
+    }
+
+    /**
      * Format for cart display (minimal data)
      */
     public function formatForCart(MerchantItem $item): array

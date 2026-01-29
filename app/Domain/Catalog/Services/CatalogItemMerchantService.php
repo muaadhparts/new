@@ -88,6 +88,17 @@ class CatalogItemMerchantService
     }
 
     /**
+     * Check if catalog item has no stock at all
+     */
+    public function hasNoStock(CatalogItem $item): bool
+    {
+        return $item->merchantItems()
+            ->where('status', 1)
+            ->where('stock', '>', 0)
+            ->doesntExist();
+    }
+
+    /**
      * Check if out of stock
      */
     public function isOutOfStock(CatalogItem $item, ?int $userId = null): bool
