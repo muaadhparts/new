@@ -94,6 +94,13 @@ class AppServiceProvider extends ServiceProvider
             'layouts.merchant',
         ], MerchantHeaderComposer::class);
 
+        // === LocationViewComposer ===
+        // يوفر $customerHasLocation, $customerLocationDisplay
+        // لتجنب استدعاء Services في Views
+        View::composer([
+            'components.location-trigger',
+        ], \App\Http\View\Composers\LocationViewComposer::class);
+
         // =========================================================
         // BLADE DIRECTIVE: @themeStyles
         // =========================================================

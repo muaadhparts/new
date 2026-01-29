@@ -144,4 +144,51 @@ class PriceFormatterService
     {
         return monetaryUnit()->getCurrent()->name ?? '';
     }
+
+    /**
+     * Calculate final price with merchant commission
+     *
+     * @param float $basePrice Base price before commission
+     * @param object|null $commission MerchantCommission object
+     * @return float Final price with commission applied
+     */
+    public function calculateFinalPriceWithCommission(float $basePrice, $commission = null): float
+    {
+        if ($basePrice <= 0) {
+            return 0.0;
+        }
+
+        $final = $basePrice;
+
+        if ($commission && $commission->is_active) {
+            $fixed = (float) ($commission->fixed_commission ?? 0);
+            $percent = (float) ($commission->percentage_commission ?? 0);
+
+            if ($fixed > 0) {
+                $final += $fixed;
+            }
+
+            if ($percent > 0) {
+                $final += $basePrice * ($percent / 100);
+            }
+        }
+
+        return round($final, 2);
+    }
+
+    /**
+     * Calculate discount percentage between two prices
+     *
+     * @param float $currentPrice Current/sale price
+     * @param float $previousPrice Original/previous price
+     * @return float Discount percentage (0.00 if no discount)
+     */
+    public function calculateDiscountPercentage(float $currentPrice, float $previousPrice): float
+    {
+        if ($previousPrice <= 0 || $currentPrice >= $previousPrice) {
+            return 0.0;
+        }
+
+        return round((($previousPrice - $currentPrice) / $previousPrice) * 100, 2);
+    }
 }

@@ -374,46 +374,6 @@ class Purchase extends Model
     }
 
     // =========================================================================
-    // STATIC METHODS
-    // =========================================================================
-
-    public static function getShipData($cart): array
-    {
-        $merchant_shipping_id = 0;
-        $users = [];
-
-        foreach ($cart->items as $cartItem) {
-            $users[] = $cartItem['item']['user_id'];
-        }
-        $users = array_unique($users);
-
-        if (count($users) == 1) {
-            $merchantId = (int) $users[0];
-
-            $shipping_data = Shipping::where('status', 1)
-                ->where(function ($q) use ($merchantId) {
-                    $q->where('user_id', $merchantId)
-                      ->orWhere(function ($q2) use ($merchantId) {
-                          $q2->where('user_id', 0)
-                             ->where('operator', $merchantId);
-                      });
-                })
-                ->get();
-
-            if ($shipping_data->count() > 0) {
-                $merchant_shipping_id = $merchantId;
-            }
-        } else {
-            $shipping_data = collect();
-        }
-
-        return [
-            'shipping_data' => $shipping_data,
-            'merchant_shipping_id' => $merchant_shipping_id,
-        ];
-    }
-
-    // =========================================================================
     // CUSTOMER SHIPPING METHODS
     // =========================================================================
 

@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Front;
 
 use App\Domain\Catalog\Models\AbuseFlag;
+use App\Domain\Catalog\Services\BrandService;
+use App\Domain\Catalog\Services\CatalogService;
+use App\Domain\Catalog\Services\CategoryService;
 use App\Domain\Catalog\Services\CatalogItemFilterService;
 use App\Domain\Catalog\Services\CategoryTreeService;
 use Illuminate\Http\Request;
@@ -12,7 +15,10 @@ class CatalogController extends FrontBaseController
 {
     public function __construct(
         private CatalogItemFilterService $filterService,
-        private CategoryTreeService $categoryTreeService
+        private CategoryTreeService $categoryTreeService,
+        private BrandService $brandService,
+        private CatalogService $catalogService,
+        private CategoryService $categoryService
     ) {
         parent::__construct();
     }
@@ -285,15 +291,12 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        $brand = \App\Domain\Catalog\Models\Brand::where('slug', $brandSlug)->where('status', 1)->first();
+        $brand = $this->brandService->findBySlug($brandSlug);
         if (!$brand) {
             return response()->json([]);
         }
 
-        $catalogs = \App\Domain\Catalog\Models\Catalog::where('brand_id', $brand->id)
-            ->where('status', 1)
-            ->orderBy('name')
-            ->get(['id', 'slug', 'name', 'name_ar']);
+        $catalogs = $this->catalogService->getCatalogsForBrand($brand->id);
 
         return response()->json($catalogs->map(fn($c) => [
             'slug' => $c->slug,
@@ -314,33 +317,25 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        $catalog = \App\Domain\Catalog\Models\Catalog::where('slug', $catalogSlug)->first();
+        $catalog = $this->catalogService->findBySlug($catalogSlug, false);
         if (!$catalog) {
             return response()->json([]);
         }
 
-        $query = \App\Domain\Catalog\Models\Category::where('catalog_id', $catalog->id)
-            ->where('level', $level)
-            ->orderBy('label_en');
-
         if ($level === 1) {
-            // Level 1: no parent filter
+            // Level 1: root categories
+            $categories = $this->categoryService->getCategoriesByLevel($catalog->id, $level);
         } else {
             // Level 2+: need parent
             if (!$parentSlug) {
                 return response()->json([]);
             }
-            $parent = \App\Domain\Catalog\Models\Category::where('catalog_id', $catalog->id)
-                ->where('slug', $parentSlug)
-                ->where('level', $level - 1)
-                ->first();
-            if (!$parent) {
+            $parent = $this->categoryService->findBySlugAndCatalog($parentSlug, $catalog->id);
+            if (!$parent || $parent->level !== $level - 1) {
                 return response()->json([]);
             }
-            $query->where('parent_id', $parent->id);
+            $categories = $this->categoryService->getChildCategories($catalog->id, $parent->id);
         }
-
-        $categories = $query->get(['id', 'slug', 'label_en', 'label_ar']);
 
         return response()->json($categories->map(fn($c) => [
             'slug' => $c->slug,

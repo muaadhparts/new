@@ -93,49 +93,4 @@ class MerchantItem extends Model
     {
         return $this->user_id === $merchantId;
     }
-
-    /**
-     * Calculate final price with commission
-     */
-    public function merchantSizePrice(): float
-    {
-        $base = (float) ($this->price ?? 0);
-        if ($base <= 0) {
-            return 0.0;
-        }
-        $final = $base;
-        $commission = $this->getMerchantCommission();
-        if ($commission && $commission->is_active) {
-            $fixed = (float) ($commission->fixed_commission ?? 0);
-            $percent = (float) ($commission->percentage_commission ?? 0);
-            if ($fixed > 0) {
-                $final += $fixed;
-            }
-            if ($percent > 0) {
-                $final += $base * ($percent / 100);
-            }
-        }
-        return round($final, 2);
-    }
-
-    /**
-     * Calculate discount percentage
-     */
-    public function offPercentage(): float
-    {
-        $current = (float) ($this->price ?? 0);
-        $previous = (float) ($this->previous_price ?? 0);
-        if ($previous <= 0 || $current >= $previous) {
-            return 0.0;
-        }
-        return round((($previous - $current) / $previous) * 100, 2);
-    }
-
-    /**
-     * Get the merchant commission for this item
-     */
-    public function getMerchantCommission()
-    {
-        return $this->user?->merchantCommission;
-    }
 }
