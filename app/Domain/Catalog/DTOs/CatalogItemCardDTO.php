@@ -103,7 +103,7 @@ class CatalogItemCardDTO
         $dto->merchantItemId = $merchant->id;
         $dto->merchantId = $merchant->user_id;
         $dto->price = (float) $merchant->price;
-        $dto->priceFormatted = app(MerchantItemDisplayService::class)->formatPrice($merchant);
+        $dto->priceFormatted = CatalogItem::convertPrice($merchant->price);
         $dto->previousPrice = (float) ($merchant->previous_price ?? 0);
         $dto->previousPriceFormatted = $dto->previousPrice > 0
             ? CatalogItem::convertPrice($dto->previousPrice)
@@ -179,7 +179,7 @@ class CatalogItemCardDTO
         $dto->merchantItemId = null;
         $dto->merchantId = null;
         $dto->price = 0;
-        $dto->priceFormatted = app(CatalogItemDisplayService::class)->formatPrice($catalogItem, 0);
+        $dto->priceFormatted = CatalogItem::convertPrice(0);
         $dto->previousPrice = 0;
         $dto->previousPriceFormatted = '';
         $dto->stock = 0;
@@ -257,7 +257,7 @@ class CatalogItemCardDTO
             $dto->merchantItemId = $bestMerchant->id;
             $dto->merchantId = $bestMerchant->user_id;
             $dto->price = (float) $bestMerchant->price;
-            $dto->priceFormatted = app(MerchantItemDisplayService::class)->formatPrice($bestMerchant);
+            $dto->priceFormatted = CatalogItem::convertPrice($bestMerchant->price);
             $dto->previousPrice = (float) ($bestMerchant->previous_price ?? 0);
             $dto->previousPriceFormatted = $dto->previousPrice > 0
                 ? CatalogItem::convertPrice($dto->previousPrice)
