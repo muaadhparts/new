@@ -85,6 +85,25 @@ class MerchantController extends MerchantBaseController
                 ->where('status', 'pending')
                 ->count();
 
+            // Additional statistics for dashboard cards
+            $data['processing'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'processing')
+                ->count();
+
+            $data['completed'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->count();
+
+            $data['totalCatalogItems'] = $data['totalItems'];
+
+            $data['totalItemsSold'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->sum('qty');
+
+            $data['currentBalance'] = $this->user->balance ?? 0;
+
+            $data['totalEarning'] = $data['totalSales'];
+
             // Alias for view compatibility
             $data['pending'] = $data['pendingOrders'];
 
