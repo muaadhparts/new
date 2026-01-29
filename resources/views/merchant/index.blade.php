@@ -215,7 +215,7 @@
                                 @forelse ($recentPurchases as $purchase)
                                     <tr>
                                         <td>
-                                            <a href="{{ route('merchant-purchase-details', $purchase->id) }}" class="content">
+                                            <a href="{{ route('merchant-purchase-show', $purchase->id) }}" class="content">
                                                 #{{ $purchase->purchase_number }}
                                             </a>
                                         </td>
