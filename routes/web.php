@@ -1053,7 +1053,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         Route::get('/favorite/add/merchant/{merchantItemId}', [App\Http\Controllers\User\FavoriteController::class, 'add'])->name('user-favorite-add-merchant');
         Route::get('/favorite/remove/{id}', [App\Http\Controllers\User\FavoriteController::class, 'remove'])->name('user-favorite-remove');
-        Route::get('/favorite/toggle/{catalogItemId}', [App\Http\Controllers\User\FavoriteController::class, 'toggle'])->name('user-favorite-toggle');
+        Route::get('/favorite/toggle/{merchantItemId}', [App\Http\Controllers\User\FavoriteController::class, 'toggle'])->name('user-favorite-toggle');
         // User Favorites Ends
 
         // User Purchases

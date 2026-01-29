@@ -84,8 +84,8 @@ class CatalogItemCardDTOBuilder
         $dto->detailsUrl = $catalogItem->part_number 
             ? route('front.part-result', $catalogItem->part_number)
             : 'javascript:;';
-        $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
-        $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
+        $dto->isInFavorites = $favoriteMerchantIds->contains($merchant->id);
+        $dto->favoriteUrl = route('user-favorite-toggle', $merchant->id);
 
         // Merchant
         $dto->merchantName = $merchant->user?->name;
@@ -154,8 +154,8 @@ class CatalogItemCardDTOBuilder
         $dto->detailsUrl = $catalogItem->part_number 
             ? route('front.part-result', $catalogItem->part_number)
             : 'javascript:;';
-        $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
-        $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
+        $dto->isInFavorites = false; // No merchant, can't favorite
+        $dto->favoriteUrl = null; // No merchant item to favorite
 
         // Merchant
         $dto->merchantName = null;
@@ -268,8 +268,10 @@ class CatalogItemCardDTOBuilder
         $dto->detailsUrl = $catalogItem->part_number 
             ? route('front.part-result', $catalogItem->part_number)
             : 'javascript:;';
-        $dto->isInFavorites = $favoriteCatalogItemIds->contains($catalogItem->id);
-        $dto->favoriteUrl = route('user-favorite-toggle', $catalogItem->id);
+        $dto->isInFavorites = $dto->merchantItemId && $favoriteMerchantIds->contains($dto->merchantItemId);
+        $dto->favoriteUrl = $dto->merchantItemId 
+            ? route('user-favorite-toggle', $dto->merchantItemId)
+            : null;
 
         // Vehicle Fitment Brands
         $this->buildFitmentData($dto, $catalogItem);
