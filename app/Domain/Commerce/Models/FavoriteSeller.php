@@ -46,6 +46,24 @@ class FavoriteSeller extends Model
         return $this->belongsTo(MerchantItem::class, 'merchant_item_id')->withDefault();
     }
 
+    /**
+     * Get the effective merchant item - either the specific one or the cheapest active one
+     * This is a dynamic relationship that returns the most relevant merchant item
+     */
+    public function effective_merchant_item(): BelongsTo
+    {
+        // If merchant_item_id is set, use it
+        if ($this->merchant_item_id) {
+            return $this->belongsTo(MerchantItem::class, 'merchant_item_id');
+        }
+
+        // Otherwise, get the cheapest active merchant item for this catalog item
+        return $this->belongsTo(MerchantItem::class, 'catalog_item_id', 'catalog_item_id')
+            ->where('status', 1)
+            ->orderBy('price', 'asc')
+            ->limit(1);
+    }
+
     // =========================================================================
     // HELPER METHODS
     // =========================================================================
