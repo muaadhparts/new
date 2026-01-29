@@ -107,7 +107,7 @@ class CatalogItemCardDTOBuilder
         $this->buildStockDisplay($dto);
 
         // Offers count
-        $dto->offersCount = (int) ($catalogItem->active_merchant_items_count ?? 1);
+        $dto->offersCount = (int) ($catalogItem->active_merchant_items_count ?? $catalogItem->offers_count ?? 1);
         $dto->hasMultipleOffers = $dto->offersCount > 1;
 
         return $dto;
@@ -279,8 +279,8 @@ class CatalogItemCardDTOBuilder
         // Stock display
         $this->buildStockDisplay($dto);
 
-        // Offers count
-        $dto->offersCount = (int) ($catalogItem->active_merchant_items_count ?? 0);
+        // Offers count (support both active_merchant_items_count and offers_count)
+        $dto->offersCount = (int) ($catalogItem->active_merchant_items_count ?? $catalogItem->offers_count ?? 0);
         $dto->hasMultipleOffers = $dto->offersCount > 1;
 
         return $dto;
