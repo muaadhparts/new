@@ -8,10 +8,10 @@
         </div>
         <!-- breadcrumb end -->
 
-        {{-- تنبيه التاجر تحت التحقق --}}
+        {{-- Merchant Verification Alert --}}
         @if(auth()->user()->is_merchant == 1)
             @if($hasPendingVerification)
-                {{-- تم إرسال المستندات - في انتظار المراجعة --}}
+                {{-- Documents submitted - awaiting review --}}
                 <div class="m-alert m-alert--info mb-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                         <div class="d-flex align-items-center">
@@ -24,7 +24,7 @@
                     </div>
                 </div>
             @else
-                {{-- لم يتم إرسال المستندات بعد --}}
+                {{-- Documents not submitted yet --}}
                 <div class="m-alert m-alert--warning mb-4">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                         <div class="d-flex align-items-center">
@@ -42,7 +42,7 @@
             @endif
         @endif
 
-        <!-- Info cards area start -->
+        <!-- Statistics Cards -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 row-cols-xxl-4 gy-4">
             <div class="col">
                 <div class="merchant-panel-info-card purchase-pending">
@@ -70,7 +70,7 @@
                 <div class="merchant-panel-info-card purchase-delivered">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_6.svg" alt="">
                     <div class="name-and-value-wrapper">
-                        <p class="name">@lang('Purchases Completed!')</p>
+                        <p class="name">@lang('Purchases Completed')</p>
                         <h3 class="value">
                             <span class="counter">{{ $statistics['completed'] }}</span>
                         </h3>
@@ -81,7 +81,7 @@
                 <div class="merchant-panel-info-card total-purchase">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_5.svg" alt="">
                     <div class="name-and-value-wrapper">
-                        <p class="name">@lang('Total CatalogItems!')</p>
+                        <p class="name">@lang('Total Items')</p>
                         <h3 class="value">
                             <span class="counter">{{ $statistics['totalItems'] }}</span>
                         </h3>
@@ -92,7 +92,7 @@
                 <div class="merchant-panel-info-card total-item-sold">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_1.svg" alt="">
                     <div class="name-and-value-wrapper">
-                        <p class="name">@lang('Total Item Sold!')</p>
+                        <p class="name">@lang('Total Items Sold')</p>
                         <h3 class="value">
                             <span class="counter">{{ $statistics['totalItemsSold'] }}</span>
                         </h3>
@@ -112,20 +112,20 @@
                 <div class="merchant-panel-info-card total-earning">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
                     <div class="name-and-value-wrapper">
-                        <p class="name">@lang('Total Earning')</p>
+                        <p class="name">@lang('Total Sales')</p>
                         <h3 class="value">{{ $statistics['totalSales'] }}</h3>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- Info cards area end -->
+        <!-- Statistics Cards End -->
 
-        <!-- Table area start  -->
+        <!-- Tables Area -->
         <div class="row gy-4 table-area">
-            <!-- Recent CatalogItem(s) Table -->
+            <!-- Recent Items Table -->
             <div class="col-xxl-8">
                 <div class="merchant-table-wrapper recent-catalogItems-table-wrapper">
-                    <h4 class="table-name">@lang('Recent CatalogItem(s)')</h4>
+                    <h4 class="table-name">@lang('Recent Items')</h4>
                     <div class="user-table table-responsive">
                         <table id="recent-catalogItem-table" class="gs-data-table w-100">
                             <thead>
@@ -144,7 +144,7 @@
                                     <th><span class="header-name">@lang('Branch')</span></th>
                                     <th><span class="header-name">@lang('Price')</span></th>
                                     <th class="text-center">
-                                        <span class="header-name">@lang('Details')</span>
+                                        <span class="header-name">@lang('Actions')</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -155,7 +155,7 @@
                                             <img class="table-img" src="{{ $item['photoUrl'] }}" alt="">
                                         </td>
                                         <td>
-                                            <span class="content"><code>{{ $item['partNumber'] ?? __('N/A') }}</code></span>
+                                            <span class="content"><code>{{ $item['partNumber'] }}</code></span>
                                         </td>
                                         <td class="text-start">
                                             <div class="catalogItem-name">
@@ -189,7 +189,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center">@lang('No Merchant Items Found')</td>
+                                        <td colspan="8" class="text-center">@lang('No Items Found')</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -197,10 +197,11 @@
                     </div>
                 </div>
             </div>
-            <!-- Recent Purchase(s) Table  -->
+            
+            <!-- Recent Purchases Table -->
             <div class="col-xxl-4">
                 <div class="merchant-table-wrapper recent-orders-table-wrapper">
-                    <h4 class="table-name">@lang('Recent Purchase(s)')</h4>
+                    <h4 class="table-name">@lang('Recent Purchases')</h4>
                     <div class="user-table table-responsive">
                         <table id="recent-purchase-table" class="gs-data-table w-100">
                             <thead>
@@ -238,7 +239,7 @@
                 </div>
             </div>
         </div>
-        <!-- Table area end -->
+        <!-- Tables Area End -->
 
         <!-- Sales Chart -->
         <div class="row mt-4">

@@ -10,6 +10,11 @@ use Illuminate\Support\Collection;
  *
  * Single source of truth for displaying merchant items across Web/API/Mobile.
  * DATA FLOW POLICY: Controller → Service → DTO → View/API
+ *
+ * NAMING CONVENTION:
+ * - Use clear, descriptive names
+ * - NO aliases or duplicate keys
+ * - Consistent naming across all methods
  */
 class MerchantItemDisplayService
 {
@@ -19,7 +24,26 @@ class MerchantItemDisplayService
     ) {}
 
     /**
-     * Format merchant item for display
+     * Format merchant item for dashboard display
+     * Returns simplified data optimized for dashboard tables
+     */
+    public function formatForDashboard(MerchantItem $item): array
+    {
+        return [
+            'id' => $item->id,
+            'partNumber' => $item->catalogItem?->part_number ?? __('N/A'),
+            'name' => $item->catalogItem?->name ?? __('Unknown'),
+            'brandName' => $item->catalogItem?->brand?->name ?? __('N/A'),
+            'qualityBrandName' => $item->qualityBrand?->name ?? __('N/A'),
+            'branchName' => $item->branch?->name ?? __('Main Branch'),
+            'price' => $item->merchantSizePrice(),
+            'photoUrl' => $this->getPrimaryPhotoUrl($item),
+            'viewUrl' => route('merchant-item-edit', $item->id),
+        ];
+    }
+
+    /**
+     * Format merchant item for full display (details page, API)
      */
     public function format(MerchantItem $item): array
     {
@@ -27,44 +51,43 @@ class MerchantItemDisplayService
 
         return [
             'id' => $item->id,
-            'catalog_item_id' => $item->catalog_item_id,
-            'merchant_id' => $item->user_id,
-            'branch_id' => $item->merchant_branch_id,
-            'quality_brand_id' => $item->quality_brand_id,
+            'catalogItemId' => $item->catalog_item_id,
+            'merchantId' => $item->user_id,
+            'branchId' => $item->merchant_branch_id,
+            'qualityBrandId' => $item->quality_brand_id,
             
             // Type & Condition
-            'item_type' => $item->item_type,
-            'is_affiliate' => $item->item_type === 'affiliate',
-            'affiliate_link' => $item->affiliate_link,
+            'itemType' => $item->item_type,
+            'isAffiliate' => $item->item_type === 'affiliate',
+            'affiliateLink' => $item->affiliate_link,
             'condition' => $item->item_condition,
-            'condition_label' => $this->getConditionLabel($item),
+            'conditionLabel' => $this->getConditionLabel($item),
             
             // Stock
             'stock' => $item->stock,
-            'is_in_stock' => $item->stock > 0 || $item->preordered,
-            'is_preordered' => $item->preordered,
-            'minimum_qty' => $item->minimum_qty ?? 1,
-            'whole_sell_qty' => $item->whole_sell_qty,
-            'whole_sell_discount' => $item->whole_sell_discount,
-            'stock_status_label' => $this->stockService->getStockStatusLabel($item),
-            'stock_status_color' => $this->stockService->getStockStatusColor($item),
+            'isInStock' => $item->stock > 0 || $item->preordered,
+            'isPreordered' => $item->preordered,
+            'minimumQty' => $item->minimum_qty ?? 1,
+            'wholeSellQty' => $item->whole_sell_qty,
+            'wholeSellDiscount' => $item->whole_sell_discount,
+            'stockStatusLabel' => $this->stockService->getStockStatusLabel($item),
+            'stockStatusColor' => $this->stockService->getStockStatusColor($item),
             
             // Status
             'status' => $item->status,
-            'is_active' => $item->status === 1,
-            'is_available' => $this->stockService->isAvailable($item),
+            'isActive' => $item->status === 1,
+            'isAvailable' => $this->stockService->isAvailable($item),
             
             // Pricing (from PricingService)
             'pricing' => $pricing,
             
             // Photos
-            'primary_photo_url' => $this->getPrimaryPhotoUrl($item),
-            'photoUrl' => $this->getPrimaryPhotoUrl($item), // Alias for backward compatibility
-            'photos_count' => $item->relationLoaded('photos') ? $item->photos->count() : 0,
+            'primaryPhotoUrl' => $this->getPrimaryPhotoUrl($item),
+            'photosCount' => $item->relationLoaded('photos') ? $item->photos->count() : 0,
             
             // Reviews
-            'average_rating' => $this->getAverageRating($item),
-            'reviews_count' => $this->getReviewsCount($item),
+            'averageRating' => $this->getAverageRating($item),
+            'reviewsCount' => $this->getReviewsCount($item),
             
             // Details
             'details' => $item->details,
@@ -72,11 +95,11 @@ class MerchantItemDisplayService
             'ship' => $item->ship,
             
             // Timestamps
-            'created_at' => $item->created_at?->toISOString(),
-            'updated_at' => $item->updated_at?->toISOString(),
+            'createdAt' => $item->created_at?->toISOString(),
+            'updatedAt' => $item->updated_at?->toISOString(),
             
             // Relations (if loaded)
-            'catalog_item' => $item->relationLoaded('catalogItem') && $item->catalogItem
+            'catalogItem' => $item->relationLoaded('catalogItem') && $item->catalogItem
                 ? $this->formatCatalogItem($item->catalogItem) 
                 : null,
             'merchant' => $item->relationLoaded('user') && $item->user
@@ -85,7 +108,7 @@ class MerchantItemDisplayService
             'branch' => $item->relationLoaded('branch') && $item->branch
                 ? $this->formatBranch($item->branch) 
                 : null,
-            'quality_brand' => $item->relationLoaded('qualityBrand') && $item->qualityBrand
+            'qualityBrand' => $item->relationLoaded('qualityBrand') && $item->qualityBrand
                 ? $this->formatQualityBrand($item->qualityBrand)
                 : null,
         ];
@@ -108,41 +131,43 @@ class MerchantItemDisplayService
     /**
      * Get primary photo URL
      */
-    public function getPrimaryPhotoUrl(MerchantItem $item): ?string
+    private function getPrimaryPhotoUrl(MerchantItem $item): string
     {
-        // Try primary photo
-        if ($item->relationLoaded('primaryPhoto') && $item->primaryPhoto) {
-            return asset('assets/images/products/' . $item->primaryPhoto->photo);
-        }
-
-        // Try first photo
+        // Try merchant item photo first
         if ($item->relationLoaded('photos') && $item->photos->isNotEmpty()) {
-            return asset('assets/images/products/' . $item->photos->first()->photo);
+            $photo = $item->photos->first()->photo ?? null;
+            if ($photo) {
+                return asset('assets/images/merchant_items/' . $photo);
+            }
         }
 
         // Fallback to catalog item photo
-        if ($item->relationLoaded('catalogItem') && $item->catalogItem?->photo) {
-            return asset('assets/images/products/' . $item->catalogItem->photo);
+        if ($item->relationLoaded('catalogItem') && $item->catalogItem) {
+            $catalogPhoto = $item->catalogItem->photo ?? null;
+            if ($catalogPhoto) {
+                return asset('assets/images/catalog_items/' . $catalogPhoto);
+            }
         }
 
-        return null;
+        // Default no image
+        return asset('assets/images/noimage.png');
     }
 
     /**
      * Get average rating
      */
-    public function getAverageRating(MerchantItem $item): float
+    private function getAverageRating(MerchantItem $item): float
     {
-        if ($item->relationLoaded('reviews')) {
-            return round($item->reviews->avg('rating') ?? 0, 1);
+        if ($item->relationLoaded('reviews') && $item->reviews->isNotEmpty()) {
+            return round($item->reviews->avg('rating'), 1);
         }
-        return 0;
+        return 0.0;
     }
 
     /**
      * Get reviews count
      */
-    public function getReviewsCount(MerchantItem $item): int
+    private function getReviewsCount(MerchantItem $item): int
     {
         if ($item->relationLoaded('reviews')) {
             return $item->reviews->count();
@@ -153,59 +178,50 @@ class MerchantItemDisplayService
     /**
      * Format catalog item (simplified)
      */
-    private function formatCatalogItem($catalogItem): ?array
+    private function formatCatalogItem($catalogItem): array
     {
-        if (!$catalogItem) return null;
-
         return [
             'id' => $catalogItem->id,
+            'partNumber' => $catalogItem->part_number,
             'name' => $catalogItem->name,
-            'part_number' => $catalogItem->part_number,
-            'slug' => $catalogItem->slug,
-            'photo_url' => $catalogItem->photo 
-                ? asset('assets/images/products/' . $catalogItem->photo)
-                : null,
+            'brandName' => $catalogItem->brand?->name ?? __('N/A'),
+            'photoUrl' => $catalogItem->photo 
+                ? asset('assets/images/catalog_items/' . $catalogItem->photo)
+                : asset('assets/images/noimage.png'),
         ];
     }
 
     /**
      * Format merchant (simplified)
      */
-    private function formatMerchant($merchant): ?array
+    private function formatMerchant($merchant): array
     {
-        if (!$merchant) return null;
-
         return [
             'id' => $merchant->id,
-            'shop_name' => $merchant->shop_name,
-            'is_approved' => $merchant->is_merchant === 2,
-            'logo_url' => $merchant->logo 
-                ? asset('assets/images/merchants/' . $merchant->logo)
-                : null,
+            'name' => $merchant->name,
+            'email' => $merchant->email,
+            'phone' => $merchant->phone,
         ];
     }
 
     /**
      * Format branch (simplified)
      */
-    private function formatBranch($branch): ?array
+    private function formatBranch($branch): array
     {
-        if (!$branch) return null;
-
         return [
             'id' => $branch->id,
             'name' => $branch->name,
-            'city' => $branch->city?->name,
+            'address' => $branch->address,
+            'city' => $branch->city?->name ?? __('N/A'),
         ];
     }
 
     /**
      * Format quality brand (simplified)
      */
-    private function formatQualityBrand($qualityBrand): ?array
+    private function formatQualityBrand($qualityBrand): array
     {
-        if (!$qualityBrand) return null;
-
         return [
             'id' => $qualityBrand->id,
             'name' => $qualityBrand->name,
@@ -213,52 +229,18 @@ class MerchantItemDisplayService
     }
 
     /**
-     * Format collection of merchant items
+     * Format collection of items for dashboard
      */
-    public function formatCollection($items): array
+    public function formatCollectionForDashboard(Collection $items): array
     {
-        if ($items instanceof Collection) {
-            return $items->map(fn($item) => $this->format($item))->toArray();
-        }
-
-        // For paginated results
-        return [
-            'data' => collect($items->items())->map(fn($item) => $this->format($item))->toArray(),
-            'pagination' => [
-                'current_page' => $items->currentPage(),
-                'last_page' => $items->lastPage(),
-                'per_page' => $items->perPage(),
-                'total' => $items->total(),
-                'from' => $items->firstItem(),
-                'to' => $items->lastItem(),
-            ],
-        ];
+        return $items->map(fn($item) => $this->formatForDashboard($item))->toArray();
     }
 
     /**
-     * Format price for display
+     * Format collection of items (full format)
      */
-    public function formatPrice(MerchantItem $item): string
+    public function formatCollection(Collection $items): array
     {
-        return $this->pricingService->getFormattedPrice($item);
-    }
-
-    /**
-     * Format for cart display (minimal data)
-     */
-    public function formatForCart(MerchantItem $item): array
-    {
-        return [
-            'id' => $item->id,
-            'catalog_item_id' => $item->catalog_item_id,
-            'name' => $item->catalogItem?->name ?? 'N/A',
-            'part_number' => $item->catalogItem?->part_number ?? 'N/A',
-            'price' => $this->pricingService->getPriceWithCommission($item),
-            'price_formatted' => $this->pricingService->getFormattedPrice($item),
-            'photo_url' => $this->getPrimaryPhotoUrl($item),
-            'is_available' => $this->stockService->isAvailable($item),
-            'stock' => $item->stock,
-            'merchant_name' => $item->user?->shop_name ?? 'N/A',
-        ];
+        return $items->map(fn($item) => $this->format($item))->toArray();
     }
 }
