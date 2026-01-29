@@ -126,7 +126,7 @@
         } else {
             $priceFormatted = app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($actualCatalogItem, $actualCatalogItem->lowest_price ?? 0);
             $previousPrice = $actualCatalogItem->previous_price ?? 0;
-            $previousPriceFormatted = $previousPrice > 0 ? ($previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : \'\') : '';
+            $previousPriceFormatted = $previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : '';
         }
 
         $ratingsAvg = $actualCatalogItem->catalog_reviews_avg_rating ?? 0;
