@@ -139,8 +139,8 @@
         $affiliateLink = $merchantItem->affiliate_link ?? null;
         $favoriteUrl = $merchantItemId ? route('user-favorite-add-merchant', $merchantItemId) : '#';
         $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
-        // Offers count - use passed parameter or get from model method
-        $offersCount = $offersCount ?? $actualCatalogItem->getActiveOffersCount();
+        // Offers count - use passed parameter or get from loaded count
+        $offersCount = $offersCount ?? ($actualCatalogItem->active_merchant_items_count ?? 0);
         $hasMultipleOffers = $offersCount > 1;
     }
 
