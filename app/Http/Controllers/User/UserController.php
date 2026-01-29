@@ -4,14 +4,16 @@ namespace App\Http\Controllers\User;
 
 use App\Domain\Accounting\Models\ReferralCommission;
 use App\Domain\Commerce\Models\FavoriteSeller;
-use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Identity\DTOs\UserProfileDTO;
 use App\Domain\Identity\Services\UserDashboardBuilder;
+use App\Domain\Identity\Services\UserProfileService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends UserBaseController
 {
+    public function __construct(
+        private UserProfileService $profileService,
+    ) {}
 
     public function index(UserDashboardBuilder $dashboardBuilder)
     {
@@ -33,8 +35,7 @@ class UserController extends UserBaseController
 
     public function profileupdate(Request $request)
     {
-        $rules =
-            [
+        $rules = [
             'photo' => 'mimes:jpeg,jpg,png,svg',
             'email' => 'unique:users,email,' . $this->user->id,
         ];
@@ -45,27 +46,18 @@ class UserController extends UserBaseController
 
         $request->validate($rules, $customs);
 
-        //--- Validation Section Ends
-        $input = $request->all();
-        $data = $this->user;
-        if ($file = $request->file('photo')) {
-            $extensions = ['jpeg', 'jpg', 'png', 'svg'];
-            if (!in_array($file->getClientOriginalExtension(), $extensions)) {
-                return back()->with('unsuccess', __('The image must be a file of type: jpeg, jpg, png, svg.'));
-            }
+        try {
+            $this->profileService->updateProfile(
+                $this->user,
+                $request->except('photo'),
+                $request->file('photo')
+            );
 
-            $name = \PriceHelper::ImageCreateName($file);
-            $file->move('assets/images/users/', $name);
-            if ($data->photo != null) {
-                if (file_exists(public_path() . '/assets/images/users/' . $data->photo)) {
-                    unlink(public_path() . '/assets/images/users/' . $data->photo);
-                }
-            }
-            $input['photo'] = $name;
+            return redirect()->route('user-profile')
+                ->with('success', __('Profile Updated Successfully!'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('unsuccess', $e->getMessage());
         }
-        $data->update($input);
-
-        return redirect()->route('user-profile')->with('success', __('Profile Updated Successfully!'));
     }
 
     public function resetform()
@@ -75,20 +67,18 @@ class UserController extends UserBaseController
 
     public function reset(Request $request)
     {
-        $user = $this->user;
-        if ($request->cpass) {
-            if (Hash::check($request->cpass, $user->password)) {
-                if ($request->newpass == $request->renewpass) {
-                    $input['password'] = Hash::make($request->newpass);
-                } else {
-                    return back()->with('unsuccess', __('Confirm password does not match.'));
-                }
-            } else {
-                return back()->with('unsuccess', __('Current password Does not match.'));
-            }
+        try {
+            $this->profileService->resetPassword(
+                $this->user,
+                $request->cpass,
+                $request->newpass,
+                $request->renewpass
+            );
+
+            return back()->with('success', __('Password Updated Successfully!'));
+        } catch (\InvalidArgumentException $e) {
+            return back()->with('unsuccess', $e->getMessage());
         }
-        $user->update($input);
-        return back()->with('success', __('Password Updated Successfully!'));
     }
 
     public function favorite($id1, $id2)
@@ -97,8 +87,10 @@ class UserController extends UserBaseController
         $fav->user_id = $id1;
         $fav->merchant_id = $id2;
         $fav->save();
+        
         $data['icon'] = '<i class="fas fa-check"></i>';
         $data['text'] = __('Favorite');
+        
         return response()->json($data);
     }
 
@@ -127,7 +119,9 @@ class UserController extends UserBaseController
     {
         $wish = FavoriteSeller::findOrFail($id);
         $wish->delete();
-        return redirect()->route('user-favorites')->with('success', __('Successfully Removed The Seller.'));
+        
+        return redirect()->route('user-favorites')
+            ->with('success', __('Successfully Removed The Seller.'));
     }
 
     public function affilate_code()
@@ -178,13 +172,6 @@ class UserController extends UserBaseController
      */
     public function submitMerchantApplication(Request $request)
     {
-        $user = $this->user;
-
-        // إذا كان المستخدم تاجر بالفعل
-        if ($user->is_merchant >= 1) {
-            return redirect()->route('merchant.dashboard');
-        }
-
         $request->validate([
             'shop_name' => 'required|unique:users,shop_name',
             'shop_number' => 'nullable|max:10',
@@ -196,15 +183,16 @@ class UserController extends UserBaseController
             'shop_address.required' => __('Shop address is required.'),
         ]);
 
-        // تحديث بيانات المستخدم ليصبح تاجر تحت التحقق
-        $user->shop_name = $request->shop_name;
-        $user->shop_number = $request->shop_number;
-        $user->shop_address = $request->shop_address;
-        $user->shop_message = $request->shop_message;
-        $user->is_merchant = 1; // تحت التحقق
-        $user->save();
+        try {
+            $this->profileService->submitMerchantApplication(
+                $this->user,
+                $request->only(['shop_name', 'shop_number', 'shop_address', 'shop_message'])
+            );
 
-        return redirect()->route('merchant.dashboard')->with('success', __('Your merchant application has been submitted. Please wait for admin verification.'));
+            return redirect()->route('merchant.dashboard')
+                ->with('success', __('Your merchant application has been submitted. Please wait for admin verification.'));
+        } catch (\LogicException $e) {
+            return redirect()->route('merchant.dashboard');
+        }
     }
-
 }
