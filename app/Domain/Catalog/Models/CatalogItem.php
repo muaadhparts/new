@@ -103,6 +103,34 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
+     |  PRICE CONVERSION HELPERS
+     | ========================================================================= */
+
+    /**
+     * Convert and format price with currency
+     */
+    public static function convertPrice($price)
+    {
+        return monetaryUnit()->convertAndFormat((float) ($price ?? 0));
+    }
+
+    /**
+     * Convert and format price with currency (merchant alias)
+     */
+    public static function merchantConvertPrice($price)
+    {
+        return monetaryUnit()->convertAndFormat((float) ($price ?? 0));
+    }
+
+    /**
+     * Convert price without currency symbol
+     */
+    public static function merchantConvertWithoutCurrencyPrice($price)
+    {
+        return monetaryUnit()->convert((float) ($price ?? 0));
+    }
+
+    /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */
 
