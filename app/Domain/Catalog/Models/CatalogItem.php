@@ -110,30 +110,6 @@ class CatalogItem extends Model
      | @see \App\Domain\Commerce\Services\PriceFormatterService
      */
 
-    /**
-     * Filter products collection for API responses.
-     * Processes nested arrays/collections and returns flattened result.
-     */
-    public static function filterProducts($products)
-    {
-        if (empty($products)) {
-            return [];
-        }
-
-        // If it's already a collection, return as array
-        if ($products instanceof \Illuminate\Support\Collection) {
-            return $products->toArray();
-        }
-
-        // If it's an array, return as is
-        if (is_array($products)) {
-            return $products;
-        }
-
-        // Otherwise, wrap in array
-        return [$products];
-    }
-
     /* =========================================================================
      |  RELATIONSHIPS
      | ========================================================================= */
