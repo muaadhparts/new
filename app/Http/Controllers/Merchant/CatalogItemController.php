@@ -39,7 +39,7 @@ class CatalogItemController extends MerchantBaseController
             ->paginate(10);
 
         $merchantItemsDisplay = collect($merchantItems->items())
-            ->map(fn($item) => $this->displayService->format($item))
+            ->map(fn($item) => $this->displayService->formatForDashboard($item))
             ->toArray();
 
         return view('merchant.catalog-item.index', [
@@ -61,7 +61,7 @@ class CatalogItemController extends MerchantBaseController
             ->where('status', 1)
             ->get();
 
-        $qualityBrands = QualityBrand::where('status', 1)->get();
+        $qualityBrands = QualityBrand::all();
 
         return view('merchant.catalog-item.create', compact(
             'catalogItem',
@@ -172,7 +172,7 @@ class CatalogItemController extends MerchantBaseController
             ->where('status', 1)
             ->get();
 
-        $qualityBrands = QualityBrand::where('status', 1)->get();
+        $qualityBrands = QualityBrand::all();
 
         $itemDisplay = $this->displayService->format($item);
 
