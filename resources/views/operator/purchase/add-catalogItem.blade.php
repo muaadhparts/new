@@ -14,7 +14,7 @@
 
   {{-- CATALOGITEM STOCK CONDITION SECTION --}}
 
-  @if(!$catalogItem->emptyStock())
+  @if(!app(\App\Domain\Catalog\Services\CatalogItemMerchantService::class)->hasNoStock($catalogItem))
   <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
   @else
   <input type="hidden" class="catalogItem-stock" value="">
@@ -64,7 +64,7 @@
 
   {{-- CATALOGITEM ATTRIBUTE SECTION ENDS --}}
 
-  <input type="hidden" id="catalogItem_price" value="{{ round($catalogItem->merchantPrice() * $curr->value,2) }}">
+  <input type="hidden" id="catalogItem_price" value="{{ round($catalogItem->lowest_price ?? 0 * $curr->value,2) }}">
   <input type="hidden" id="catalogItem_id" value="{{ $catalogItem->id }}">
   <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
   <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">

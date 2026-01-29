@@ -83,7 +83,7 @@
         $catalogItemId = $actualCatalogItem->id;
         $merchantItemId = $merchantItem->id ?? null;
         $merchantUserId = $merchantItem->user_id ?? null;
-        $catalogItemName = $actualCatalogItem->showName();
+        $catalogItemName = $actualCatalogItem->localized_name;
 
         // NEW: CatalogItem-first URL using part_number
         $partNumber = $actualCatalogItem->part_number ?? null;
@@ -124,9 +124,9 @@
             $previousPrice = $merchantItem->previous_price ?? 0;
             $previousPriceFormatted = $previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : '';
         } else {
-            $priceFormatted = $actualCatalogItem->showPrice();
+            $priceFormatted = app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($actualCatalogItem, $actualCatalogItem->lowest_price ?? 0);
             $previousPrice = $actualCatalogItem->previous_price ?? 0;
-            $previousPriceFormatted = $previousPrice > 0 ? $actualCatalogItem->showPreviousPrice() : '';
+            $previousPriceFormatted = $previousPrice > 0 ? ($previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : \'\') : '';
         }
 
         $ratingsAvg = $actualCatalogItem->catalog_reviews_avg_rating ?? 0;

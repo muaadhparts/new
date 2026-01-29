@@ -12,15 +12,15 @@
             <a href="{{ $favorite->catalog_item_url }}"> <img src="{{ $favorite->catalog_item_photo_url }}" alt=""> </a>
         </td>
         <td class="catalogItem-name"> <a href="{{ $favorite->catalog_item_url }}">{{ $favorite->catalog_item_name_truncated }}</a></td>
-        <td class="catalogItem-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ $favorite->catalogItem->showPrice() }}  <small>
+        <td class="catalogItem-price"> <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">{{ app(\App\Domain\Catalog\Services\CatalogItemDisplayService::class)->formatPrice($favorite->catalogItem, $favorite->catalogItem->lowest_price ?? 0) }}  <small>
             <del>
-                {{ $favorite->catalogItem->showPreviousPrice() }}
+                {{ ($favorite->catalogItem->previous_price > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($favorite->catalogItem->previous_price) : \'\') }}
             </del>
         </small></bdi>
             </span>
         </td>
         <td class="catalogItem-stock-status">
-            @if($favorite->catalogItem->emptyStock())
+            @if(app(\App\Domain\Catalog\Services\CatalogItemMerchantService::class)->hasNoStock($favorite->catalogItem))
             <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
             @else
             <div class="stock-availability in-stock text-bold">{{ __('In Stock') }}</div>

@@ -183,7 +183,7 @@ class DashboardStatisticsService
 
             // Pre-formatted price
             $catalogItem->price_formatted = $bestMerchantItem
-                ? $bestMerchantItem->showPrice()
+                ? app(\App\Domain\Merchant\Services\MerchantItemDisplayService::class)->formatPrice($bestMerchantItem)
                 : __('N/A');
 
             // Edit URL
